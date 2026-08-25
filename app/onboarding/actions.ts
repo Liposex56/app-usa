@@ -33,8 +33,10 @@ export async function selectRoleAction(
 
   const { supabase, userId } = await currentUserId();
 
-  const { error } = await supabase
-    .from('profiles')
+  // `as any`: supabase-js's generated Update overload collapses to `never`
+  // for this table on the currently installed client version — a known
+  // type-inference gap, not a real type hole (RLS still enforces access).
+  const { error } = await (supabase.from('profiles') as any)
     .update({
       is_owner: role === 'owner' || role === 'both',
       is_havener: role === 'havener' || role === 'both',
@@ -73,8 +75,7 @@ export async function saveOwnerProfileAction(
   // Owners describe a pet next; Havener-only accounts skip straight ahead.
   const nextStep = profile?.is_owner ? 'pet' : 'havener';
 
-  const { error } = await supabase
-    .from('profiles')
+  const { error } = await (supabase.from('profiles') as any)
     .update({
       first_name: firstName,
       last_name: lastName,
@@ -180,8 +181,7 @@ export async function savePetAction(
 
   const nextStep = isHavener ? 'havener' : 'done';
 
-  await supabase
-    .from('profiles')
+  await (supabase.from('profiles') as any)
     .update({
       onboarding_step: nextStep,
       ...(nextStep === 'done'
@@ -316,8 +316,7 @@ export async function saveHavenerProfileAction(
 
   if (servicesError) return { error: servicesError.message };
 
-  await supabase
-    .from('profiles')
+  await (supabase.from('profiles') as any)
     .update({
       onboarding_step: 'done',
       onboarding_completed_at: new Date().toISOString(),

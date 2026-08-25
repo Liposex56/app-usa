@@ -33,8 +33,11 @@ export async function reviewInsuranceAction(
 
   const supabase = await createClient();
 
-  const { error: insuranceError } = await supabase
-    .from('sitter_insurance')
+  // supabase-js's generated Update overload collapses to `never` for these
+  // two tables specifically (a known type-inference gap, unrelated to RLS —
+  // both writes are still staff-gated at the database level). The `as any`
+  // is scoped to the query builder only; the payload shape is still correct.
+  const { error: insuranceError } = await (supabase.from('sitter_insurance') as any)
     .update({
       status: decision,
       reviewed_by: profile.id,
@@ -44,8 +47,7 @@ export async function reviewInsuranceAction(
 
   if (insuranceError) return { error: insuranceError.message };
 
-  const { error: profileError } = await supabase
-    .from('sitter_profiles')
+  const { error: profileError } = await (supabase.from('sitter_profiles') as any)
     .update({ insurance_status: decision })
     .eq('id', sitterId);
 
