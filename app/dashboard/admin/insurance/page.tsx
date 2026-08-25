@@ -69,7 +69,7 @@ export default async function AdminInsurancePage() {
             <div className="space-y-1.5">
               <div className="flex items-center gap-2">
                 <p className="font-medium text-espresso-700">
-                  {havener?.display_name ??
+                  {havener?.display_name ||
                     `${havener?.first_name ?? ''} ${havener?.last_name ?? ''}`.trim() ||
                     row.sitter_id}
                 </p>
