@@ -25,6 +25,7 @@ export async function updateCommissionAction(
   const supabase = await createClient();
   // `as any`: see the comment in dashboard/admin/insurance/actions.ts —
   // supabase-js's generated Update overload collapses to `never` here.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { error } = await (supabase.from('platform_settings') as any)
     .update({
       company_commission_percent: percent,

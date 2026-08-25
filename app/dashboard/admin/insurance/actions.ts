@@ -37,6 +37,7 @@ export async function reviewInsuranceAction(
   // two tables specifically (a known type-inference gap, unrelated to RLS —
   // both writes are still staff-gated at the database level). The `as any`
   // is scoped to the query builder only; the payload shape is still correct.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { error: insuranceError } = await (supabase.from('sitter_insurance') as any)
     .update({
       status: decision,
@@ -47,6 +48,7 @@ export async function reviewInsuranceAction(
 
   if (insuranceError) return { error: insuranceError.message };
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { error: profileError } = await (supabase.from('sitter_profiles') as any)
     .update({ insurance_status: decision })
     .eq('id', sitterId);

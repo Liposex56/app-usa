@@ -36,6 +36,7 @@ export async function selectRoleAction(
   // `as any`: supabase-js's generated Update overload collapses to `never`
   // for this table on the currently installed client version — a known
   // type-inference gap, not a real type hole (RLS still enforces access).
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { error } = await (supabase.from('profiles') as any)
     .update({
       is_owner: role === 'owner' || role === 'both',
@@ -75,6 +76,7 @@ export async function saveOwnerProfileAction(
   // Owners describe a pet next; Havener-only accounts skip straight ahead.
   const nextStep = profile?.is_owner ? 'pet' : 'havener';
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { error } = await (supabase.from('profiles') as any)
     .update({
       first_name: firstName,
@@ -181,6 +183,7 @@ export async function savePetAction(
 
   const nextStep = isHavener ? 'havener' : 'done';
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   await (supabase.from('profiles') as any)
     .update({
       onboarding_step: nextStep,
@@ -316,6 +319,7 @@ export async function saveHavenerProfileAction(
 
   if (servicesError) return { error: servicesError.message };
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   await (supabase.from('profiles') as any)
     .update({
       onboarding_step: 'done',
