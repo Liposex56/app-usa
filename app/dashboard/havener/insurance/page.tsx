@@ -23,13 +23,15 @@ export default async function HavenerInsurancePage() {
   if (!profile.is_havener) redirect('/dashboard');
 
   const supabase = await createClient();
-  const { data: insurance } = await supabase
-    .from('sitter_insurance')
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data: insurance }: { data: SitterInsuranceRow | null } = await (
+    supabase.from('sitter_insurance') as any
+  )
     .select('*')
     .eq('sitter_id', profile.id)
     .maybeSingle();
 
-  const status = STATUS_COPY[(insurance?.status ?? 'not_started') as CheckStatus];
+  const status = STATUS_COPY[insurance?.status ?? 'not_started'];
 
   return (
     <div className="mx-auto max-w-xl">
@@ -55,7 +57,7 @@ export default async function HavenerInsurancePage() {
       </p>
 
       <div className="mt-8 rounded-2xl border border-espresso-700/10 bg-white p-6">
-        <InsuranceForm existing={(insurance as SitterInsuranceRow) ?? null} />
+        <InsuranceForm existing={insurance} />
       </div>
     </div>
   );
