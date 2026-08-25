@@ -23,10 +23,9 @@ export default async function HavenerInsurancePage() {
   if (!profile.is_havener) redirect('/dashboard');
 
   const supabase = await createClient();
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data: insurance }: { data: SitterInsuranceRow | null } = await (
-    supabase.from('sitter_insurance') as any
-  )
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- see note in dashboard/admin/insurance/actions.ts
+  const insuranceTable = supabase.from('sitter_insurance') as any;
+  const { data: insurance }: { data: SitterInsuranceRow | null } = await insuranceTable
     .select('*')
     .eq('sitter_id', profile.id)
     .maybeSingle();
