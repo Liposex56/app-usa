@@ -19,7 +19,15 @@ export default async function HavenerSettingsPage() {
       >
         ← Back to dashboard
       </Link>
-      <div className="mt-6">
+      <div className="mt-6 flex justify-end">
+        <Link
+          href="/dashboard/havener/insurance"
+          className="text-sm font-medium text-gold-600 hover:text-gold-700"
+        >
+          Gestionar mi seguro →
+        </Link>
+      </div>
+      <div className="mt-4">
         <HavenerForm isOwner={profile.is_owner} hideSteps />
       </div>
     </div>

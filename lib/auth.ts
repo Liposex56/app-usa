@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation';
 
-import type { ProfileRow } from '@/lib/database.types';
+import type { ProfileRow, StaffRole } from '@/lib/database.types';
 import { createClient } from '@/lib/supabase/server';
 
 /**
@@ -36,6 +36,31 @@ export async function requireProfile(): Promise<ProfileRow> {
   }
 
   return profile as ProfileRow;
+}
+
+/**
+ * Returns the signed-in user's profile plus their staff role, or redirects
+ * to /dashboard if they aren't staff. RLS on `staff_members` only lets a
+ * staff member read that table at all, so a non-staff user simply gets no
+ * row back here — there's no separate "is this person staff" check to keep
+ * in sync with the database.
+ */
+export async function requireStaff(): Promise<{
+  profile: ProfileRow;
+  role: StaffRole;
+}> {
+  const profile = await requireProfile();
+  const supabase = await createClient();
+
+  const { data: staffRow } = await supabase
+    .from('staff_members')
+    .select('role')
+    .eq('user_id', profile.id)
+    .maybeSingle();
+
+  if (!staffRow) redirect('/dashboard');
+
+  return { profile, role: staffRow.role };
 }
 
 /** Where a partially onboarded user should be sent next. */

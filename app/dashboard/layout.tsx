@@ -2,6 +2,7 @@ import Link from 'next/link';
 
 import { LogoLink } from '@/components/logo';
 import { requireProfile } from '@/lib/auth';
+import { createClient } from '@/lib/supabase/server';
 
 export default async function DashboardLayout({
   children,
@@ -9,6 +10,14 @@ export default async function DashboardLayout({
   children: React.ReactNode;
 }) {
   const profile = await requireProfile();
+
+  const supabase = await createClient();
+  const { data: staffRow } = await supabase
+    .from('staff_members')
+    .select('role')
+    .eq('user_id', profile.id)
+    .maybeSingle();
+  const isStaff = Boolean(staffRow);
 
   return (
     <div className="min-h-screen bg-bone">
@@ -37,6 +46,14 @@ export default async function DashboardLayout({
                 className="text-sm text-espresso-500 hover:text-espresso-700"
               >
                 Havener profile
+              </Link>
+            )}
+            {isStaff && (
+              <Link
+                href="/dashboard/admin"
+                className="text-sm text-espresso-500 hover:text-espresso-700"
+              >
+                Panel administrativo
               </Link>
             )}
           </nav>

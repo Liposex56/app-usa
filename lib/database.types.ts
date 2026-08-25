@@ -253,6 +253,13 @@ export type StaffMemberRow = {
   created_at: string;
 };
 
+export type PlatformSettingsRow = {
+  id: 1;
+  company_commission_percent: number;
+  updated_by: string | null;
+  updated_at: string;
+};
+
 export type WaitlistRow = {
   id: string;
   email: string;
@@ -328,6 +335,7 @@ export type Database = {
       favorites: Table<FavoriteRow, 'owner_id' | 'sitter_id'>;
       staff_members: Table<StaffMemberRow, 'user_id'>;
       waitlist: Table<WaitlistRow, 'email'>;
+      platform_settings: Table<PlatformSettingsRow, never>;
     };
     Views: {
       public_sitters: {

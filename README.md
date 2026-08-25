@@ -43,6 +43,8 @@ En el **SQL Editor** de Supabase, ejecuta en este orden:
 1. `supabase/migrations/0001_schema.sql` — tablas, enums, triggers
 2. `supabase/migrations/0002_rls.sql` — Row Level Security y la vista pública
 3. `supabase/migrations/0003_storage.sql` — buckets y sus políticas
+4. `supabase/migrations/0004_payments_settings.sql` — comisión configurable
+   y el candado que evita que un Havener se auto-apruebe el seguro
 
 Cada archivo es idempotente: se puede volver a correr sin romper nada.
 
@@ -107,6 +109,35 @@ salir y volver donde quedó.
 `/dashboard` con mascotas, estado del listado de Havener, avance de las cuatro
 verificaciones, y `/dashboard/pets`, `/dashboard/pets/new`, `/dashboard/havener`.
 
+### Seguro del Havener
+
+`/dashboard/havener/insurance` — el Havener registra aseguradora, póliza,
+cobertura, vigencia y sube el documento (bucket privado `verification-docs`).
+Cada envío queda en `pending`; un Havener no puede aprobarse a sí mismo
+(`sitter_insurance_protect_trust`, ver `0004_payments_settings.sql`).
+
+### Panel administrativo (arranque)
+
+Visible en el menú sólo para filas en `staff_members`. Por ahora sólo cubre
+lo que se pidió como primer avance del módulo de pagos/seguros:
+
+| Ruta | Contenido |
+|---|---|
+| `/dashboard/admin` | Resumen: seguros pendientes, comisión vigente |
+| `/dashboard/admin/insurance` | Aprobar/rechazar seguros enviados; actualiza `sitter_insurance` y la insignia pública `is_insured` |
+| `/dashboard/admin/settings` | Comisión de la empresa (`platform_settings`, sólo editable por `role = 'admin'`) y un simulador de reparto |
+
+El resto del panel (usuarios, reservas, chat, reportes — sección 15 de la
+propuesta) sigue sin construir.
+
+### Reparto de pago (empresa / Havener)
+
+`lib/payments.ts` calcula el reparto — hoy 20% empresa / 80% Havener,
+configurable desde `/dashboard/admin/settings` — pero **no mueve dinero**.
+No hay todavía `bookings` ni pasarela de pago conectada; eso implica elegir
+un proveedor (Stripe Connect u otro) y abrir cuenta empresarial con él antes
+de poder cobrar y liquidar de verdad.
+
 ---
 
 ## 4. Cómo está protegida la privacidad
@@ -137,9 +168,12 @@ En orden sugerido:
 2. **Reservas** — tabla `bookings`, máquina de estados, calendario, y la
    política RLS que le da al Havener acceso a la mascota mientras dure la reserva
 3. **Chat interno** con detección de contactos externos
-4. **Pagos** — pasarela de marketplace, comisión, propinas, liquidación
+4. **Pagos reales** — el reparto empresa/Havener ya está (ver arriba); falta
+   conectar `bookings` con una pasarela de marketplace (Stripe Connect u
+   otra), propinas y liquidación de verdad
 5. **App móvil** (React Native + Expo) con GPS e informes de servicio
-6. **Panel administrativo**
+6. **Panel administrativo completo** — usuarios, reservas, chat, reportes
+   (hoy sólo existen seguros y comisión, ver arriba)
 7. **Reels y multimedia**
 
 ### Pendientes que no son código
@@ -150,7 +184,9 @@ En orden sugerido:
   existe. Sin él no se puede programar el cálculo de fees.
 - **Proveedores externos**: background check (tipo Checkr), pasarela de pagos,
   mapas, correo transaccional. Cada uno necesita cuenta empresarial a nombre
-  de Havenr.
+  de Havenr. Mientras tanto, el seguro se revisa a mano desde
+  `/dashboard/admin/insurance` — no hay verificación automática con la
+  aseguradora.
 
 ---
 
