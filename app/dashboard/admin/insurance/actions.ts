@@ -25,10 +25,11 @@ export async function reviewInsuranceAction(
   const sitterId = text(formData, 'sitterId');
   if (!sitterId) return { error: 'Solicitud inválida.' };
 
-  const decision = text(formData, 'decision');
-  if (decision !== 'approved' && decision !== 'rejected') {
+  const rawDecision = text(formData, 'decision');
+  if (rawDecision !== 'approved' && rawDecision !== 'rejected') {
     return { error: 'Solicitud inválida.' };
   }
+  const decision: 'approved' | 'rejected' = rawDecision;
 
   const supabase = await createClient();
 
