@@ -1,0 +1,58 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --brand-gold: #be8210;
+    --brand-sky: #c2dcf4;
+    --brand-cream: #fff8cd;
+    --brand-bone: #f8f5e9;
+    --brand-olive: #69532a;
+    --brand-espresso: #26100b;
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-bone text-espresso-700 antialiased;
+    font-family: var(--font-body), ui-sans-serif, system-ui, sans-serif;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply font-display tracking-tight text-espresso-700;
+    font-weight: 400;
+  }
+
+  ::selection {
+    background-color: var(--brand-cream);
+    color: var(--brand-espresso);
+  }
+
+  /* Visible focus everywhere — this product will be used by people who are
+     not comfortable with technology, and keyboard users deserve better than
+     the browser default. */
+  :focus-visible {
+    @apply outline-none ring-2 ring-gold-500 ring-offset-2 ring-offset-bone;
+  }
+}
+
+@layer components {
+  .container-page {
+    @apply mx-auto w-full max-w-6xl px-5 sm:px-8;
+  }
+
+  .eyebrow {
+    @apply text-xs font-semibold uppercase tracking-[0.18em] text-olive-500;
+  }
+
+  .prose-havenr p {
+    @apply text-base leading-relaxed text-espresso-500;
+  }
+}
