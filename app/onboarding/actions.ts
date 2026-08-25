@@ -123,7 +123,8 @@ export async function savePetAction(
   const size = text(formData, 'size');
   const energy = text(formData, 'energyLevel');
 
-  const { error } = await supabase.from('pets').insert({
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { error } = await (supabase.from('pets') as any).insert({
     owner_id: userId,
     name,
     species,
@@ -235,8 +236,8 @@ export async function saveHavenerProfileAction(
 
   const submitForReview = formData.get('intent') === 'submit';
 
-  const { error: profileError } = await supabase
-    .from('sitter_profiles')
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { error: profileError } = await (supabase.from('sitter_profiles') as any)
     .upsert(
       {
         id: userId,
@@ -313,8 +314,8 @@ export async function saveHavenerProfileAction(
     };
   }
 
-  const { error: servicesError } = await supabase
-    .from('sitter_services')
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { error: servicesError } = await (supabase.from('sitter_services') as any)
     .insert(rows);
 
   if (servicesError) return { error: servicesError.message };

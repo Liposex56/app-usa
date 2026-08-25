@@ -41,7 +41,8 @@ export async function saveInsuranceAction(
     if (uploadError) return { error: uploadError.message };
   }
 
-  const { error } = await supabase.from('sitter_insurance').upsert(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { error } = await (supabase.from('sitter_insurance') as any).upsert(
     {
       sitter_id: user.id,
       provider,

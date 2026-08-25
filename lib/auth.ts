@@ -25,8 +25,8 @@ export async function requireProfile(): Promise<ProfileRow> {
   if (!profile) {
     // The handle_new_user() trigger should have created this. If it didn't
     // (trigger not installed yet), create it now rather than dead-ending.
-    const { data: created, error } = await supabase
-      .from('profiles')
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: created, error } = await (supabase.from('profiles') as any)
       .insert({ id: user.id, email: user.email })
       .select('*')
       .single();
