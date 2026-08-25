@@ -1,7 +1,14 @@
 import { cookies } from 'next/headers';
 import { createServerClient } from '@supabase/ssr';
 
-import type { Database } from '@/lib/database.types';
+// No <Database> generic here on purpose: the currently installed
+// @supabase/ssr + @supabase/supabase-js resolve every .from(table).select()/
+// update()/insert() to `never` when strictly typed against our hand-written
+// Database type (a version-drift issue — package.json pins old versions but
+// npm still resolves newer ones), which fails the production build outright.
+// Row shapes still live in @/lib/database.types and should be applied at
+// call sites with `as Xxxxx` casts where useful; RLS is what actually
+// enforces access, not these compile-time types.
 
 /**
  * Supabase client for Server Components, Server Actions and Route Handlers.
@@ -10,7 +17,7 @@ import type { Database } from '@/lib/database.types';
 export async function createClient() {
   const cookieStore = await cookies();
 
-  return createServerClient<Database>(
+  return createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
