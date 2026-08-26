@@ -19,7 +19,13 @@ export default async function HavenerSettingsPage() {
       >
         ← Back to dashboard
       </Link>
-      <div className="mt-6 flex justify-end">
+      <div className="mt-6 flex flex-wrap justify-end gap-x-5 gap-y-1">
+        <Link
+          href="/dashboard/havener/services"
+          className="text-sm font-medium text-gold-600 hover:text-gold-700"
+        >
+          Manage your services →
+        </Link>
         <Link
           href="/dashboard/havener/insurance"
           className="text-sm font-medium text-gold-600 hover:text-gold-700"

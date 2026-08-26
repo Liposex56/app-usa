@@ -54,6 +54,14 @@ export type BadgeType =
   | 'top_rated'
   | 'repeat_favorite';
 
+export type PottyBreakFrequency = '0-2h' | '2-4h' | '4-8h' | '8+h';
+export type ServiceCancellationPolicy =
+  | 'same_day'
+  | 'one_day'
+  | 'three_day'
+  | 'seven_day';
+export type DayOfWeek = 'sun' | 'mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat';
+
 export type OnboardingStep =
   | 'role'
   | 'owner_profile'
@@ -168,6 +176,16 @@ export type SitterProfileRow = {
   comfortable_with_anxiety: boolean;
   comfortable_with_reactive: boolean;
   cancellation_policy: string;
+  home_full_time: boolean;
+  available_days: DayOfWeek[];
+  potty_break_frequency: PottyBreakFrequency | null;
+  advance_notice_days: number;
+  accepts_extended_stays: boolean;
+  allows_smoking: boolean;
+  dogs_on_furniture: boolean;
+  dogs_on_bed: boolean;
+  hosts_multiple_families: boolean;
+  accepts_not_crate_trained: boolean;
   status: SitterStatus;
   submitted_at: string | null;
   approved_at: string | null;
@@ -198,6 +216,12 @@ export type SitterServiceRow = {
   accepts_cats: boolean;
   duration_minutes: number | null;
   description: string | null;
+  is_paused: boolean;
+  accepts_new_customers: boolean;
+  extended_stay_rate_cents: number | null;
+  bathing_rate_cents: number | null;
+  pickup_dropoff_rate_cents: number | null;
+  cancellation_policy: ServiceCancellationPolicy;
   created_at: string;
   updated_at: string;
 };
