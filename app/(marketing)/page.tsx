@@ -96,6 +96,14 @@ const FEATURES = [
   },
 ];
 
+const SERVICE_SWATCHES = [
+  'bg-cream',
+  'bg-sky-100',
+  'bg-gold-50',
+  'bg-white',
+  'bg-sky-200',
+];
+
 const MARQUEE_ITEMS = [
   'Background checked',
   'Interviewed',
@@ -229,16 +237,11 @@ export default function HomePage() {
               href={`/services/${service.slug}`}
               data-reveal
               style={{ transitionDelay: `${(i + 1) * 90}ms` }}
-              className="group flex flex-col border-[3px] border-espresso-700 bg-white p-7 text-espresso-700 shadow-poster transition-transform hover:translate-x-[3px] hover:translate-y-[3px]"
+              className={`group flex flex-col border-[3px] border-espresso-700 p-7 text-espresso-700 shadow-poster transition-transform hover:translate-x-[3px] hover:translate-y-[3px] ${SERVICE_SWATCHES[i % SERVICE_SWATCHES.length]}`}
             >
-              <div className="flex items-start justify-between gap-4">
-                <h3 className="font-display text-2xl font-black uppercase">
-                  {service.name}
-                </h3>
-                <span className="shrink-0 border-2 border-espresso-700 bg-cream px-2.5 py-1 font-display text-xs font-bold text-olive-600">
-                  from ${service.fromRate}/{service.rateUnit}
-                </span>
-              </div>
+              <h3 className="font-display text-2xl font-black uppercase">
+                {service.name}
+              </h3>
               <p className="mt-2 text-sm font-bold text-gold-700">
                 {service.tagline}
               </p>
