@@ -61,6 +61,13 @@ export type ServiceCancellationPolicy =
   | 'three_day'
   | 'seven_day';
 export type DayOfWeek = 'sun' | 'mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat';
+export type Skill =
+  | 'first_aid_cpr'
+  | 'oral_medication'
+  | 'injectable_medication'
+  | 'senior_care'
+  | 'special_needs_care'
+  | 'daily_exercise_high_energy';
 
 export type OnboardingStep =
   | 'role'
@@ -186,6 +193,12 @@ export type SitterProfileRow = {
   dogs_on_bed: boolean;
   hosts_multiple_families: boolean;
   accepts_not_crate_trained: boolean;
+  skills: string[];
+  schedule_description: string | null;
+  home_environment_description: string | null;
+  pet_care_notes: string | null;
+  cat_bio: string | null;
+  cat_years_experience: number | null;
   status: SitterStatus;
   submitted_at: string | null;
   approved_at: string | null;
@@ -301,6 +314,12 @@ export type PublicSitterRow = {
   headline: string | null;
   bio: string | null;
   routine_description: string | null;
+  schedule_description: string | null;
+  home_environment_description: string | null;
+  pet_care_notes: string | null;
+  skills: string[];
+  cat_bio: string | null;
+  cat_years_experience: number | null;
   years_experience: number | null;
   service_city: string | null;
   service_state: string | null;
@@ -328,6 +347,15 @@ export type PublicSitterRow = {
   comfortable_with_anxiety: boolean;
   comfortable_with_reactive: boolean;
   cancellation_policy: string;
+  allows_smoking: boolean;
+  dogs_on_furniture: boolean;
+  dogs_on_bed: boolean;
+  hosts_multiple_families: boolean;
+  accepts_not_crate_trained: boolean;
+  accepts_unfixed: boolean;
+  accepts_in_heat: boolean;
+  potty_break_frequency: PottyBreakFrequency | null;
+  available_days: DayOfWeek[];
   rating: number | null;
   review_count: number;
   completed_bookings: number;

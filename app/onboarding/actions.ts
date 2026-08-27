@@ -3,7 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 
-import type { EnergyLevel, HomeType, PetSize } from '@/lib/database.types';
+import type { EnergyLevel, HomeType, PetSize, Skill } from '@/lib/database.types';
 import { createClient } from '@/lib/supabase/server';
 import { bool, list, num, parseDollarsToCents, text } from '@/lib/utils';
 
@@ -233,6 +233,7 @@ export async function saveHavenerProfileAction(
   const homeType = text(formData, 'homeType');
   const acceptedSizes = list(formData, 'acceptedSizes') as PetSize[];
   const acceptedEnergy = list(formData, 'acceptedEnergyLevels') as EnergyLevel[];
+  const skills = list(formData, 'skills') as Skill[];
 
   const submitForReview = formData.get('intent') === 'submit';
 
@@ -244,6 +245,12 @@ export async function saveHavenerProfileAction(
         headline: text(formData, 'headline'),
         bio: text(formData, 'bio'),
         routine_description: text(formData, 'routineDescription'),
+        schedule_description: text(formData, 'scheduleDescription'),
+        home_environment_description: text(formData, 'homeEnvironmentDescription'),
+        pet_care_notes: text(formData, 'petCareNotes'),
+        skills,
+        cat_bio: text(formData, 'catBio'),
+        cat_years_experience: num(formData, 'catYearsExperience'),
         years_experience: num(formData, 'yearsExperience'),
 
         service_city: city,

@@ -218,6 +218,92 @@ export function HavenerForm({
           </Field>
         </Fieldset>
 
+        {/* --------------------------------------------------------- Skills */}
+        <Fieldset
+          legend="Skills"
+          hint="Can you provide any of the following?"
+        >
+          <div className="grid gap-2.5 sm:grid-cols-2">
+            <CheckboxCard
+              name="skills"
+              value="first_aid_cpr"
+              label="First aid and/or CPR"
+            />
+            <CheckboxCard
+              name="skills"
+              value="oral_medication"
+              label="Oral medication administration"
+            />
+            <CheckboxCard
+              name="skills"
+              value="injectable_medication"
+              label="Injectable medication administration"
+            />
+            <CheckboxCard name="skills" value="senior_care" label="Senior care" />
+            <CheckboxCard
+              name="skills"
+              value="special_needs_care"
+              label="Special needs care"
+            />
+            <CheckboxCard
+              name="skills"
+              value="daily_exercise_high_energy"
+              label="Daily exercise for high-energy dogs"
+            />
+          </div>
+        </Fieldset>
+
+        {/* ------------------------------------------------- What to expect */}
+        <Fieldset legend="What to expect">
+          <Field
+            label="Schedule"
+            htmlFor="scheduleDescription"
+            hint="How does pet care fit into your daily or weekly routine?"
+          >
+            <Textarea id="scheduleDescription" name="scheduleDescription" />
+          </Field>
+          <Field
+            label="Safety, trust & environment"
+            htmlFor="homeEnvironmentDescription"
+            hint="How do you care for pets in your home and/or your client’s home? This will vary depending on which service you offer."
+          >
+            <Textarea
+              id="homeEnvironmentDescription"
+              name="homeEnvironmentDescription"
+            />
+          </Field>
+          <Field
+            label="Important to know about their pets ahead of time"
+            htmlFor="petCareNotes"
+          >
+            <Textarea id="petCareNotes" name="petCareNotes" />
+          </Field>
+        </Fieldset>
+
+        {/* ------------------------------------------------- Cat experience */}
+        <Fieldset
+          legend="Cat experience"
+          hint="Optional — only shown to owners if you offer care for cats."
+        >
+          <Field label="Your experience with cats" htmlFor="catBio">
+            <Textarea
+              id="catBio"
+              name="catBio"
+              placeholder="I've taken care of cats of every kind since I was 10. Neighbors, friends, and family have relied on me to check in with, feed and play with their pets…"
+            />
+          </Field>
+          <Field label="Years of experience with cats" htmlFor="catYearsExperience">
+            <Input
+              id="catYearsExperience"
+              name="catYearsExperience"
+              type="number"
+              min="0"
+              max="60"
+              inputMode="numeric"
+            />
+          </Field>
+        </Fieldset>
+
         {/* ------------------------------------------------------ Location */}
         <Fieldset
           legend="Where you work"

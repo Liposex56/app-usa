@@ -21,6 +21,12 @@ export default async function HavenerSettingsPage() {
       </Link>
       <div className="mt-6 flex flex-wrap justify-end gap-x-5 gap-y-1">
         <Link
+          href={`/sitters/${profile.id}`}
+          className="text-sm font-medium text-gold-600 hover:text-gold-700"
+        >
+          View my public profile →
+        </Link>
+        <Link
           href="/dashboard/havener/services"
           className="text-sm font-medium text-gold-600 hover:text-gold-700"
         >
