@@ -237,7 +237,7 @@ export default async function DashboardPage({
               )}
 
               <ButtonLink
-                href="/dashboard/havener"
+                href="/dashboard/havener/edit"
                 variant="secondary"
                 size="sm"
                 className="mt-6"

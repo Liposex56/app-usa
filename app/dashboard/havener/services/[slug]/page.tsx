@@ -57,7 +57,7 @@ export default async function ServiceSettingsPage({
         .maybeSingle(),
     ]);
 
-  if (!sitterProfile) redirect('/dashboard/havener');
+  if (!sitterProfile) redirect('/dashboard/havener/edit');
 
   return (
     <div className="mx-auto max-w-2xl">
