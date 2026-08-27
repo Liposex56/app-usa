@@ -17,7 +17,7 @@ const body = Source_Sans_3({
 const display = Jost({
   subsets: ['latin'],
   display: 'swap',
-  weight: ['300', '400', '500'],
+  weight: ['300', '400', '500', '700', '800', '900'],
   variable: '--font-display',
 });
 
