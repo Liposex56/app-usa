@@ -120,7 +120,7 @@ export default function HomePage() {
       <ScrollReveal />
 
       {/* ---------------------------------------------------------------- Hero */}
-      <section className="relative overflow-hidden bg-sky-200">
+      <section className="relative overflow-hidden bg-night-band">
         <div
           className="animate-blob-move absolute -left-16 -top-16 h-64 w-64 bg-gold-200/60"
           style={{
@@ -142,31 +142,30 @@ export default function HomePage() {
           </span>
 
           <h1 className="mt-6 font-display font-black uppercase leading-[0.86] tracking-tight">
-            <span className="block text-[2.6rem] text-espresso-700 sm:text-6xl lg:text-7xl">
+            <span className="block text-[2.6rem] text-sand sm:text-6xl lg:text-7xl">
               Pet care you can
             </span>
-            <span className="block text-[3.4rem] text-gold-700 sm:text-[5.5rem] lg:text-[7.5rem]">
+            <span className="block text-[3.4rem] text-amber sm:text-[5.5rem] lg:text-[7.5rem]">
               Actually trust.
             </span>
           </h1>
 
-          <p className="mt-7 max-w-lg text-lg font-semibold leading-relaxed text-espresso-500">
+          <p className="mt-7 max-w-lg text-lg font-semibold leading-relaxed text-sand-soft">
             Boarding, daycare, house sitting, walks and drop-in visits with
             Haveners who earned their place. Every stay comes with photos,
             updates and a report — not a shrug.
           </p>
 
           <div className="mt-8 flex flex-wrap gap-4">
-            <ButtonLink
+            <Link
               href="/signup"
-              size="lg"
-              className="animate-pulse-btn !rounded-none border-2 border-espresso-700 shadow-poster transition-transform hover:translate-x-[2px] hover:translate-y-[2px]"
+              className="animate-pulse-btn inline-flex h-12 shrink-0 items-center justify-center whitespace-nowrap border-2 border-sand bg-amber px-7 font-display text-base font-bold uppercase text-amber-ink shadow-poster-light transition-transform hover:translate-x-[2px] hover:translate-y-[2px]"
             >
               Find a Havener
-            </ButtonLink>
+            </Link>
             <Link
               href="/become-a-havener"
-              className="shadow-poster inline-flex h-12 shrink-0 items-center justify-center whitespace-nowrap border-2 border-espresso-700 bg-bone px-7 text-base font-medium text-espresso-700 transition-transform hover:translate-x-[2px] hover:translate-y-[2px]"
+              className="shadow-poster-light inline-flex h-12 shrink-0 items-center justify-center whitespace-nowrap border-2 border-sand bg-night px-7 font-display text-base font-bold uppercase text-sand transition-transform hover:translate-x-[2px] hover:translate-y-[2px]"
             >
               Become a Havener
             </Link>
@@ -179,10 +178,10 @@ export default function HomePage() {
               [0, 'data sold', 'to advertisers, ever'],
             ].map(([count, noun, label]) => (
               <div key={noun as string}>
-                <dt className="font-display text-3xl font-black text-espresso-700">
+                <dt className="font-display text-3xl font-black text-sand">
                   <CountUp target={count as number} /> {noun}
                 </dt>
-                <dd className="mt-1 max-w-[10rem] text-xs font-bold uppercase tracking-wide text-espresso-500">
+                <dd className="mt-1 max-w-[10rem] text-xs font-bold uppercase tracking-wide text-sand-soft">
                   {label}
                 </dd>
               </div>
@@ -190,12 +189,12 @@ export default function HomePage() {
           </dl>
         </div>
 
-        <div className="relative z-[3] overflow-hidden border-y-[3px] border-espresso-700 bg-espresso-700 py-3.5">
+        <div className="relative z-[3] overflow-hidden border-y-[3px] border-sand bg-night-deep py-3.5">
           <div className="animate-marquee flex w-max">
             {[...MARQUEE_ITEMS, ...MARQUEE_ITEMS].map((item, i) => (
               <span
                 key={i}
-                className="flex items-center gap-3 whitespace-nowrap px-6 font-display text-lg font-bold uppercase tracking-wide text-cream after:content-['✦'] after:text-gold-500"
+                className="flex items-center gap-3 whitespace-nowrap px-6 font-display text-lg font-bold uppercase tracking-wide text-sand after:content-['✦'] after:text-amber"
               >
                 {item}
               </span>
@@ -204,7 +203,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      <div className="relative h-[100px] overflow-hidden bg-sky-200" aria-hidden>
+      <div className="relative h-[100px] overflow-hidden bg-night-band" aria-hidden>
         <svg
           viewBox="0 0 1440 100"
           preserveAspectRatio="none"
@@ -218,12 +217,12 @@ export default function HomePage() {
       </div>
 
       {/* ------------------------------------------------------------ Services */}
-      <section className="bg-bone py-20 sm:py-24">
+      <section className="bg-night py-20 sm:py-24">
         <div className="container-page" data-reveal>
-          <span className="font-display text-sm font-bold uppercase tracking-widest text-gold-500 after:ml-2 after:content-['•']">
+          <span className="font-display text-sm font-bold uppercase tracking-widest text-amber after:ml-2 after:content-['•']">
             What we offer
           </span>
-          <h2 className="mt-3 max-w-md font-display text-4xl font-black uppercase leading-[0.94] text-espresso-700 sm:text-5xl">
+          <h2 className="mt-3 max-w-md font-display text-4xl font-black uppercase leading-[0.94] text-sand sm:text-5xl">
             Five ways to get your pet cared for
           </h2>
         </div>
@@ -275,16 +274,16 @@ export default function HomePage() {
       </section>
 
       {/* --------------------------------------------------------------- Trust */}
-      <section className="bg-espresso-700 py-20 text-cream sm:py-24">
+      <section className="bg-night-deep py-20 text-sand sm:py-24">
         <div className="container-page grid gap-14 lg:grid-cols-[0.9fr_1.1fr]">
           <div data-reveal>
-            <span className="font-display text-sm font-bold uppercase tracking-widest text-gold-500 after:ml-2 after:content-['•']">
+            <span className="font-display text-sm font-bold uppercase tracking-widest text-amber after:ml-2 after:content-['•']">
               Trust &amp; safety
             </span>
-            <h2 className="mt-3 max-w-xs font-display text-4xl font-black uppercase leading-[0.94] text-cream sm:text-5xl">
+            <h2 className="mt-3 max-w-xs font-display text-4xl font-black uppercase leading-[0.94] text-sand sm:text-5xl">
               Four checks. No exceptions.
             </h2>
-            <p className="mt-4 max-w-sm text-[15px] leading-relaxed text-[#E9DFC8]">
+            <p className="mt-4 max-w-sm text-[15px] leading-relaxed text-sand-soft">
               Being nearby and cheap is not enough to care for someone’s dog.
               A Havener clears all four steps before a single booking reaches
               them.
@@ -297,15 +296,15 @@ export default function HomePage() {
                 key={item.title}
                 data-reveal
                 style={{ transitionDelay: `${(index + 1) * 90}ms` }}
-                className="border-2 border-cream p-6"
+                className="border-2 border-sand p-6"
               >
-                <span className="font-display text-2xl font-black text-gold-500">
+                <span className="font-display text-2xl font-black text-amber">
                   0{index + 1}
                 </span>
-                <h3 className="mt-3 font-display text-lg font-bold uppercase text-cream">
+                <h3 className="mt-3 font-display text-lg font-bold uppercase text-sand">
                   {item.title}
                 </h3>
-                <p className="mt-2 text-sm leading-relaxed text-[#E9DFC8]">
+                <p className="mt-2 text-sm leading-relaxed text-sand-soft">
                   {item.body}
                 </p>
               </div>
@@ -315,18 +314,18 @@ export default function HomePage() {
 
         <div
           data-reveal
-          className="container-page mt-12 flex flex-wrap items-center gap-4 border-2 border-cream p-6"
+          className="container-page mt-12 flex flex-wrap items-center gap-4 border-2 border-sand p-6"
         >
-          <IconShield className="shrink-0 text-gold-500" width={24} height={24} />
-          <p className="flex-1 text-sm leading-relaxed text-[#E9DFC8]">
+          <IconShield className="shrink-0 text-amber" width={24} height={24} />
+          <p className="flex-1 text-sm leading-relaxed text-sand-soft">
             A Havener who clears all four becomes a{' '}
-            <strong className="font-medium text-cream">Certified Havener</strong>
+            <strong className="font-medium text-sand">Certified Havener</strong>
             . You’ll see the badge on their profile — and you’ll never see their
             insurance document, because that stays private.
           </p>
           <Link
             href="/trust-and-safety"
-            className="inline-flex h-9 shrink-0 items-center justify-center whitespace-nowrap border-2 border-cream bg-cream/[0.06] px-4 text-sm font-medium text-cream transition-colors hover:bg-cream/10"
+            className="inline-flex h-9 shrink-0 items-center justify-center whitespace-nowrap border-2 border-sand bg-sand/[0.06] px-4 text-sm font-medium text-sand transition-colors hover:bg-sand/10"
           >
             How it works
           </Link>
@@ -334,12 +333,12 @@ export default function HomePage() {
       </section>
 
       {/* -------------------------------------------------------- How it works */}
-      <section className="bg-bone py-20 sm:py-24">
+      <section className="bg-night py-20 sm:py-24">
         <div className="container-page" data-reveal>
-          <span className="font-display text-sm font-bold uppercase tracking-widest text-gold-500 after:ml-2 after:content-['•']">
+          <span className="font-display text-sm font-bold uppercase tracking-widest text-amber after:ml-2 after:content-['•']">
             How it works
           </span>
-          <h2 className="mt-3 max-w-md font-display text-4xl font-black uppercase leading-[0.94] text-espresso-700 sm:text-5xl">
+          <h2 className="mt-3 max-w-md font-display text-4xl font-black uppercase leading-[0.94] text-sand sm:text-5xl">
             From “who can watch my dog?” to booked
           </h2>
         </div>
@@ -352,13 +351,13 @@ export default function HomePage() {
               style={{ transitionDelay: `${(index + 1) * 90}ms` }}
               className="relative"
             >
-              <span className="font-display text-5xl font-black text-gold-500">
+              <span className="font-display text-5xl font-black text-amber">
                 {item.step}
               </span>
-              <h3 className="mt-3 font-display text-lg font-bold uppercase text-espresso-700">
+              <h3 className="mt-3 font-display text-lg font-bold uppercase text-sand">
                 {item.title}
               </h3>
-              <p className="mt-2 text-sm leading-relaxed text-espresso-500">
+              <p className="mt-2 text-sm leading-relaxed text-sand-soft">
                 {item.body}
               </p>
             </li>
@@ -367,12 +366,12 @@ export default function HomePage() {
       </section>
 
       {/* ------------------------------------------------------------ Features */}
-      <section className="bg-bone py-20 sm:py-24">
+      <section className="bg-night py-20 sm:py-24">
         <div className="container-page" data-reveal>
-          <span className="font-display text-sm font-bold uppercase tracking-widest text-gold-500 after:ml-2 after:content-['•']">
+          <span className="font-display text-sm font-bold uppercase tracking-widest text-amber after:ml-2 after:content-['•']">
             Built in
           </span>
-          <h2 className="mt-3 max-w-md font-display text-4xl font-black uppercase leading-[0.94] text-espresso-700 sm:text-5xl">
+          <h2 className="mt-3 max-w-md font-display text-4xl font-black uppercase leading-[0.94] text-sand sm:text-5xl">
             The details that decide whether you sleep well
           </h2>
         </div>
@@ -400,13 +399,13 @@ export default function HomePage() {
       </section>
 
       {/* ----------------------------------------------------------------- CTA */}
-      <section className="bg-gold-500 py-20 text-center sm:py-24" data-reveal>
+      <section className="bg-amber py-20 text-center sm:py-24" data-reveal>
         <div className="container-page">
-          <h2 className="mx-auto max-w-2xl font-display text-4xl font-black uppercase leading-[0.92] text-white sm:text-5xl">
+          <h2 className="mx-auto max-w-2xl font-display text-4xl font-black uppercase leading-[0.92] text-amber-ink sm:text-5xl">
             Your pet already trusts you. Let’s find someone they can trust
             too.
           </h2>
-          <p className="mx-auto mt-5 max-w-xl text-[17px] font-semibold leading-relaxed text-white/85">
+          <p className="mx-auto mt-5 max-w-xl text-[17px] font-semibold leading-relaxed text-amber-ink/85">
             Creating an account is free. You only pay when you confirm a
             booking.
           </p>
@@ -415,13 +414,13 @@ export default function HomePage() {
               href="/signup"
               variant="dark"
               size="lg"
-              className="!rounded-none border-2 border-white"
+              className="shadow-poster-light !rounded-none border-2 border-amber-ink !transition-all hover:translate-x-[2px] hover:translate-y-[2px]"
             >
               Create your account
             </ButtonLink>
             <Link
               href="/how-it-works"
-              className="inline-flex h-12 shrink-0 items-center justify-center whitespace-nowrap border-2 border-espresso-700 bg-white px-7 text-base font-medium text-gold-500 transition-colors"
+              className="shadow-poster-light inline-flex h-12 shrink-0 items-center justify-center whitespace-nowrap border-2 border-sand bg-amber-ink px-7 text-base font-medium text-amber transition-transform hover:translate-x-[2px] hover:translate-y-[2px]"
             >
               See how it works
             </Link>

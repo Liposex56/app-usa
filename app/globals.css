@@ -150,6 +150,18 @@
   box-shadow: 3px 3px 0 var(--brand-espresso);
 }
 
+/* Same poster-shadow effect, but light — for buttons sitting on the dark
+   night-band/night sections, where a dark shadow would be invisible. */
+.shadow-poster-light {
+  box-shadow: 5px 5px 0 #f6eedd;
+  transition:
+    box-shadow 0.15s ease,
+    transform 0.15s ease;
+}
+.shadow-poster-light:hover {
+  box-shadow: 3px 3px 0 #f6eedd;
+}
+
 [data-reveal] {
   opacity: 0;
   transform: translateY(44px);

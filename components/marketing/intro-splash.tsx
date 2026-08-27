@@ -24,12 +24,12 @@ export function IntroSplash() {
   return (
     <div
       onClick={leave}
-      className={`bone-cursor fixed inset-0 z-[999] flex items-center justify-center bg-sky-200 transition-all duration-500 ${
+      className={`bone-cursor fixed inset-0 z-[999] flex items-center justify-center bg-night-band transition-all duration-500 ${
         leaving ? 'pointer-events-none -translate-y-[6%] opacity-0' : ''
       }`}
     >
       <div className="text-center">
-        <div className="flex justify-center gap-0.5 font-display text-6xl font-black uppercase tracking-tight text-espresso-700 sm:text-7xl lg:text-8xl">
+        <div className="flex justify-center gap-0.5 font-display text-6xl font-black uppercase tracking-tight text-sand sm:text-7xl lg:text-8xl">
           {LETTERS.map((letter, index) => (
             <span
               key={index}
@@ -51,7 +51,7 @@ export function IntroSplash() {
           viewBox="0 0 30 30"
           fill="none"
         >
-          <g fill="#BE8210" stroke="#26100B" strokeWidth="1.6">
+          <g fill="#E4A93B" stroke="#F6EEDD" strokeWidth="1.6">
             <rect
               x="9"
               y="12.5"

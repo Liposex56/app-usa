@@ -53,6 +53,23 @@ const config: Config = {
           700: '#26100B', // brand near-black
           800: '#1A0A07',
         },
+        // Dark hero palette — the approved look for the homepage: near-black
+        // grounds with cream text and a lighter amber accent, so gold/cream
+        // stay legible on a dark field instead of the light espresso-on-bone
+        // pairing used elsewhere on the site.
+        night: {
+          DEFAULT: '#1A0F09', // section ground
+          band: '#2C2013', // hero background
+          deep: '#120A06', // trust band / marquee, darkest
+        },
+        sand: {
+          DEFAULT: '#F6EEDD', // primary text on night backgrounds
+          soft: '#CBB99A', // secondary text on night backgrounds
+        },
+        amber: {
+          DEFAULT: '#E4A93B', // accent on night backgrounds
+          ink: '#26150E', // dark text on an amber fill
+        },
       },
       fontFamily: {
         sans: ['var(--font-body)', 'ui-sans-serif', 'system-ui', 'sans-serif'],
