@@ -150,7 +150,7 @@ export default function HomePage() {
             </span>
           </h1>
 
-          <p className="mt-7 max-w-lg text-lg font-semibold leading-relaxed text-espresso-600/80">
+          <p className="mt-7 max-w-lg text-lg font-semibold leading-relaxed text-espresso-500">
             Boarding, daycare, house sitting, walks and drop-in visits with
             Haveners who earned their place. Every stay comes with photos,
             updates and a report — not a shrug.
@@ -160,18 +160,16 @@ export default function HomePage() {
             <ButtonLink
               href="/signup"
               size="lg"
-              className="animate-pulse-btn !rounded-none border-2 border-espresso-700 shadow-poster"
+              className="animate-pulse-btn !rounded-none border-2 border-espresso-700 shadow-poster transition-transform hover:translate-x-[2px] hover:translate-y-[2px]"
             >
               Find a Havener
             </ButtonLink>
-            <ButtonLink
+            <Link
               href="/become-a-havener"
-              variant="secondary"
-              size="lg"
-              className="!rounded-none border-espresso-700 shadow-poster"
+              className="shadow-poster inline-flex h-12 shrink-0 items-center justify-center whitespace-nowrap border-2 border-espresso-700 bg-bone px-7 text-base font-medium text-espresso-700 transition-transform hover:translate-x-[2px] hover:translate-y-[2px]"
             >
               Become a Havener
-            </ButtonLink>
+            </Link>
           </div>
 
           <dl className="mt-12 flex max-w-lg flex-wrap gap-x-10 gap-y-6">
@@ -184,7 +182,7 @@ export default function HomePage() {
                 <dt className="font-display text-3xl font-black text-espresso-700">
                   <CountUp target={count as number} /> {noun}
                 </dt>
-                <dd className="mt-1 max-w-[10rem] text-xs font-bold uppercase tracking-wide text-espresso-600/70">
+                <dd className="mt-1 max-w-[10rem] text-xs font-bold uppercase tracking-wide text-espresso-500">
                   {label}
                 </dd>
               </div>
@@ -197,7 +195,7 @@ export default function HomePage() {
             {[...MARQUEE_ITEMS, ...MARQUEE_ITEMS].map((item, i) => (
               <span
                 key={i}
-                className="flex items-center gap-3 whitespace-nowrap px-6 font-display text-lg font-bold uppercase tracking-wide text-cream after:content-['✦'] after:text-gold-400"
+                className="flex items-center gap-3 whitespace-nowrap px-6 font-display text-lg font-bold uppercase tracking-wide text-cream after:content-['✦'] after:text-gold-500"
               >
                 {item}
               </span>
@@ -222,7 +220,7 @@ export default function HomePage() {
       {/* ------------------------------------------------------------ Services */}
       <section className="bg-bone py-20 sm:py-24">
         <div className="container-page" data-reveal>
-          <span className="font-display text-sm font-bold uppercase tracking-widest text-gold-600 after:ml-2 after:content-['•']">
+          <span className="font-display text-sm font-bold uppercase tracking-widest text-gold-500 after:ml-2 after:content-['•']">
             What we offer
           </span>
           <h2 className="mt-3 max-w-md font-display text-4xl font-black uppercase leading-[0.94] text-espresso-700 sm:text-5xl">
@@ -242,13 +240,13 @@ export default function HomePage() {
               <h3 className="font-display text-2xl font-black uppercase">
                 {service.name}
               </h3>
-              <p className="mt-2 text-sm font-bold text-gold-700">
+              <p className="mt-2 text-sm font-bold text-espresso-500">
                 {service.tagline}
               </p>
-              <p className="mt-4 flex-1 text-sm leading-relaxed text-espresso-600">
+              <p className="mt-4 flex-1 text-sm leading-relaxed text-espresso-500">
                 {service.description}
               </p>
-              <p className="mt-6 inline-flex items-center gap-1.5 font-display text-sm font-bold uppercase text-espresso-700 transition-colors group-hover:text-gold-600">
+              <p className="mt-6 inline-flex items-center gap-1.5 font-display text-sm font-bold uppercase text-espresso-700 transition-colors group-hover:text-gold-500">
                 Learn more
                 <span
                   aria-hidden
@@ -268,17 +266,10 @@ export default function HomePage() {
             <h3 className="font-display text-2xl font-black uppercase text-cream">
               Not sure which one?
             </h3>
-            <p className="mt-3 text-sm leading-relaxed text-cream/70">
+            <p className="mt-3 text-sm leading-relaxed text-cream">
               Tell us about your pet and your dates. We’ll only show you
               Haveners who can genuinely take them.
             </p>
-            <ButtonLink
-              href="/signup"
-              size="sm"
-              className="!rounded-none mt-6 self-start border-2 border-cream !shadow-none"
-            >
-              Get matched
-            </ButtonLink>
           </div>
         </div>
       </section>
@@ -287,13 +278,13 @@ export default function HomePage() {
       <section className="bg-espresso-700 py-20 text-cream sm:py-24">
         <div className="container-page grid gap-14 lg:grid-cols-[0.9fr_1.1fr]">
           <div data-reveal>
-            <span className="font-display text-sm font-bold uppercase tracking-widest text-gold-400 after:ml-2 after:content-['•']">
+            <span className="font-display text-sm font-bold uppercase tracking-widest text-gold-500 after:ml-2 after:content-['•']">
               Trust &amp; safety
             </span>
             <h2 className="mt-3 max-w-xs font-display text-4xl font-black uppercase leading-[0.94] text-cream sm:text-5xl">
               Four checks. No exceptions.
             </h2>
-            <p className="mt-4 max-w-sm text-[15px] leading-relaxed text-cream/70">
+            <p className="mt-4 max-w-sm text-[15px] leading-relaxed text-[#E9DFC8]">
               Being nearby and cheap is not enough to care for someone’s dog.
               A Havener clears all four steps before a single booking reaches
               them.
@@ -306,15 +297,15 @@ export default function HomePage() {
                 key={item.title}
                 data-reveal
                 style={{ transitionDelay: `${(index + 1) * 90}ms` }}
-                className="border-2 border-cream/25 p-6 transition-transform hover:-translate-y-1.5"
+                className="border-2 border-cream p-6"
               >
-                <span className="font-display text-2xl font-black text-gold-400">
+                <span className="font-display text-2xl font-black text-gold-500">
                   0{index + 1}
                 </span>
                 <h3 className="mt-3 font-display text-lg font-bold uppercase text-cream">
                   {item.title}
                 </h3>
-                <p className="mt-2 text-sm leading-relaxed text-cream/65">
+                <p className="mt-2 text-sm leading-relaxed text-[#E9DFC8]">
                   {item.body}
                 </p>
               </div>
@@ -324,10 +315,10 @@ export default function HomePage() {
 
         <div
           data-reveal
-          className="container-page mt-12 flex flex-wrap items-center gap-4 border-2 border-cream/25 p-6"
+          className="container-page mt-12 flex flex-wrap items-center gap-4 border-2 border-cream p-6"
         >
-          <IconShield className="shrink-0 text-gold-400" width={24} height={24} />
-          <p className="flex-1 text-sm leading-relaxed text-cream/70">
+          <IconShield className="shrink-0 text-gold-500" width={24} height={24} />
+          <p className="flex-1 text-sm leading-relaxed text-[#E9DFC8]">
             A Havener who clears all four becomes a{' '}
             <strong className="font-medium text-cream">Certified Havener</strong>
             . You’ll see the badge on their profile — and you’ll never see their
@@ -345,7 +336,7 @@ export default function HomePage() {
       {/* -------------------------------------------------------- How it works */}
       <section className="bg-bone py-20 sm:py-24">
         <div className="container-page" data-reveal>
-          <span className="font-display text-sm font-bold uppercase tracking-widest text-gold-600 after:ml-2 after:content-['•']">
+          <span className="font-display text-sm font-bold uppercase tracking-widest text-gold-500 after:ml-2 after:content-['•']">
             How it works
           </span>
           <h2 className="mt-3 max-w-md font-display text-4xl font-black uppercase leading-[0.94] text-espresso-700 sm:text-5xl">
@@ -361,7 +352,7 @@ export default function HomePage() {
               style={{ transitionDelay: `${(index + 1) * 90}ms` }}
               className="relative"
             >
-              <span className="font-display text-5xl font-black text-sky-300">
+              <span className="font-display text-5xl font-black text-gold-500">
                 {item.step}
               </span>
               <h3 className="mt-3 font-display text-lg font-bold uppercase text-espresso-700">
@@ -378,7 +369,7 @@ export default function HomePage() {
       {/* ------------------------------------------------------------ Features */}
       <section className="bg-white py-20 sm:py-24">
         <div className="container-page" data-reveal>
-          <span className="font-display text-sm font-bold uppercase tracking-widest text-gold-600 after:ml-2 after:content-['•']">
+          <span className="font-display text-sm font-bold uppercase tracking-widest text-gold-500 after:ml-2 after:content-['•']">
             Built in
           </span>
           <h2 className="mt-3 max-w-md font-display text-4xl font-black uppercase leading-[0.94] text-espresso-700 sm:text-5xl">
@@ -400,7 +391,7 @@ export default function HomePage() {
               <h3 className="mt-5 font-display text-lg font-bold uppercase text-espresso-700">
                 {feature.title}
               </h3>
-              <p className="mt-2 text-sm leading-relaxed text-espresso-600">
+              <p className="mt-2 text-sm leading-relaxed text-espresso-500">
                 {feature.body}
               </p>
             </div>
@@ -424,13 +415,13 @@ export default function HomePage() {
               href="/signup"
               variant="dark"
               size="lg"
-              className="!rounded-none border-2 border-espresso-700"
+              className="!rounded-none border-2 border-white"
             >
               Create your account
             </ButtonLink>
             <Link
               href="/how-it-works"
-              className="inline-flex h-12 shrink-0 items-center justify-center whitespace-nowrap border-2 border-white bg-white px-7 text-base font-medium text-gold-600 transition-colors hover:bg-cream"
+              className="inline-flex h-12 shrink-0 items-center justify-center whitespace-nowrap border-2 border-espresso-700 bg-white px-7 text-base font-medium text-gold-500 transition-colors"
             >
               See how it works
             </Link>
