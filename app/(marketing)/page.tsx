@@ -367,7 +367,7 @@ export default function HomePage() {
       </section>
 
       {/* ------------------------------------------------------------ Features */}
-      <section className="bg-white py-20 sm:py-24">
+      <section className="bg-bone py-20 sm:py-24">
         <div className="container-page" data-reveal>
           <span className="font-display text-sm font-bold uppercase tracking-widest text-gold-500 after:ml-2 after:content-['•']">
             Built in
