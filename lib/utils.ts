@@ -42,6 +42,14 @@ export function num(form: FormData, key: string): number | null {
   return Number.isFinite(parsed) ? parsed : null;
 }
 
+/** Yes / No / Unsure radio group -> true / false / null. */
+export function triState(form: FormData, key: string): boolean | null {
+  const value = form.get(key);
+  if (value === 'yes') return true;
+  if (value === 'no') return false;
+  return null;
+}
+
 /** Multi-select / checkbox-group helper. */
 export function list(form: FormData, key: string): string[] {
   return form.getAll(key).filter((v): v is string => typeof v === 'string');

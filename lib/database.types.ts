@@ -61,6 +61,7 @@ export type ServiceCancellationPolicy =
   | 'three_day'
   | 'seven_day';
 export type DayOfWeek = 'sun' | 'mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat';
+export type AloneTimeHours = '0-1h' | '1-4h' | '4-8h' | '8+h';
 export type Skill =
   | 'first_aid_cpr'
   | 'oral_medication'
@@ -144,6 +145,12 @@ export type PetRow = {
   good_with_strangers: boolean | null;
   special_needs: string | null;
   private_notes: string | null;
+  house_trained: boolean | null;
+  potty_instructions: string | null;
+  alone_time_hours: AloneTimeHours | null;
+  is_microchipped: boolean | null;
+  adopted_at: string | null;
+  insurance_provider: string | null;
   created_at: string;
   updated_at: string;
 };

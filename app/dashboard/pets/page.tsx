@@ -2,12 +2,18 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 
-import { IconAlert } from '@/components/icons';
+import { IconArrowRight, IconPaw } from '@/components/icons';
 import { ButtonLink } from '@/components/ui/button';
 import type { PetRow } from '@/lib/database.types';
 import { requireProfile } from '@/lib/auth';
 import { createClient } from '@/lib/supabase/server';
-import { formatDate, petAge } from '@/lib/utils';
+import { petAge } from '@/lib/utils';
+
+function friendlyTag(subject: string, value: boolean | null): string | null {
+  if (value === true) return subject;
+  if (value === null) return `${subject} (Unsure)`;
+  return null;
+}
 
 export const metadata: Metadata = { title: 'My pets' };
 
@@ -50,69 +56,95 @@ export default async function PetsPage() {
           You haven’t added a pet yet.
         </p>
       ) : (
-        <div className="mt-8 space-y-4">
-          {pets.map((pet) => (
-            <article
-              key={pet.id}
-              className="rounded-3xl border border-espresso-700/8 bg-white p-7 shadow-card"
-            >
-              <div className="flex flex-wrap items-start justify-between gap-3">
-                <div>
+        <div className="mt-8 space-y-6">
+          {pets.map((pet) => {
+            const tags = [
+              friendlyTag('Dogs', pet.good_with_dogs),
+              friendlyTag('Cats', pet.good_with_cats),
+              friendlyTag('Children', pet.good_with_kids),
+            ].filter((tag): tag is string => Boolean(tag));
+
+            return (
+              <article
+                key={pet.id}
+                className="overflow-hidden rounded-3xl border border-espresso-700/8 bg-white shadow-card"
+              >
+                <div className="h-48 w-full bg-sky-100">
+                  {pet.photo_url ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={pet.photo_url}
+                      alt={pet.name}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center">
+                      <IconPaw className="h-9 w-9 text-espresso-500/30" />
+                    </div>
+                  )}
+                </div>
+
+                <div className="p-7">
                   <h2 className="text-xl text-espresso-700">{pet.name}</h2>
                   <p className="mt-1 text-sm text-espresso-500">
-                    {[
-                      pet.species === 'dog' ? 'Dog' : 'Cat',
-                      pet.breed,
-                      petAge(pet.birthdate),
-                      pet.size,
-                      pet.weight_lb ? `${pet.weight_lb} lb` : null,
-                    ]
+                    {[pet.species === 'dog' ? 'Dog' : 'Cat', pet.breed]
                       .filter(Boolean)
                       .join(' · ')}
                   </p>
-                </div>
-                <span className="text-xs text-espresso-500/70">
-                  Added {formatDate(pet.created_at)}
-                </span>
-              </div>
+                  <p className="text-sm text-espresso-500">
+                    {[
+                      pet.sex === 'female'
+                        ? 'Female'
+                        : pet.sex === 'male'
+                          ? 'Male'
+                          : null,
+                      petAge(pet.birthdate),
+                      pet.weight_lb ? `${pet.weight_lb} lb` : null,
+                    ]
+                      .filter(Boolean)
+                      .join(', ')}
+                  </p>
+                  <p className="text-sm text-espresso-500">
+                    {pet.is_fixed ? 'Spayed/neutered' : 'Not spayed/neutered'}
+                  </p>
 
-              <dl className="mt-6 grid gap-5 border-t border-espresso-700/8 pt-5 text-sm sm:grid-cols-3">
-                <div>
-                  <dt className="text-xs uppercase tracking-wider text-espresso-500/60">
-                    Medications
-                  </dt>
-                  <dd className="mt-1 text-espresso-700">
-                    {pet.medications ?? 'None'}
-                  </dd>
-                </div>
-                <div>
-                  <dt className="text-xs uppercase tracking-wider text-espresso-500/60">
-                    Energy
-                  </dt>
-                  <dd className="mt-1 capitalize text-espresso-700">
-                    {pet.energy_level ?? '—'}
-                  </dd>
-                </div>
-                <div>
-                  <dt className="text-xs uppercase tracking-wider text-espresso-500/60">
-                    Vaccines valid through
-                  </dt>
-                  <dd className="mt-1 text-espresso-700">
-                    {pet.vaccinated_through
-                      ? formatDate(pet.vaccinated_through)
-                      : 'Not on file'}
-                  </dd>
-                </div>
-              </dl>
+                  {tags.length > 0 && (
+                    <div className="mt-4">
+                      <p className="text-sm font-medium text-espresso-700">
+                        Friendly with
+                      </p>
+                      <div className="mt-1.5 flex flex-wrap gap-x-4 gap-y-1">
+                        {tags.map((tag) => (
+                          <span
+                            key={tag}
+                            className="inline-flex items-center gap-1.5 text-sm text-espresso-600"
+                          >
+                            <IconPaw className="h-3.5 w-3.5 text-olive-500" />
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
 
-              {!pet.vaccinated_through && (
-                <p className="mt-5 flex items-start gap-2 rounded-xl bg-cream p-4 text-xs leading-relaxed text-olive-600">
-                  <IconAlert width={15} height={15} className="mt-px shrink-0" />
-                  Vaccination records are required before your first booking.
-                </p>
-              )}
-            </article>
-          ))}
+                  {!pet.vaccinated_through && (
+                    <p className="mt-4 rounded-xl bg-cream px-4 py-3 text-xs leading-relaxed text-olive-600">
+                      Vaccination records are required before your first
+                      booking.
+                    </p>
+                  )}
+
+                  <Link
+                    href={`/dashboard/pets/${pet.id}`}
+                    className="mt-5 flex items-center justify-between rounded-xl bg-bone px-4 py-3 text-sm font-medium text-espresso-700 transition-colors hover:bg-cream"
+                  >
+                    View full profile
+                    <IconArrowRight className="h-4 w-4" />
+                  </Link>
+                </div>
+              </article>
+            );
+          })}
         </div>
       )}
     </div>

@@ -3,9 +3,15 @@
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 
-import type { EnergyLevel, HomeType, PetSize, Skill } from '@/lib/database.types';
+import type {
+  AloneTimeHours,
+  EnergyLevel,
+  HomeType,
+  PetSize,
+  Skill,
+} from '@/lib/database.types';
 import { createClient } from '@/lib/supabase/server';
-import { bool, list, num, parseDollarsToCents, text } from '@/lib/utils';
+import { bool, list, num, parseDollarsToCents, text, triState } from '@/lib/utils';
 
 export type ActionState = { error: string | null };
 
@@ -157,10 +163,17 @@ export async function savePetAction(
     requires_muzzle: bool(formData, 'requiresMuzzle'),
     behavior_notes: text(formData, 'behaviorNotes'),
 
-    good_with_dogs: bool(formData, 'goodWithDogs'),
-    good_with_cats: bool(formData, 'goodWithCats'),
-    good_with_kids: bool(formData, 'goodWithKids'),
-    good_with_strangers: bool(formData, 'goodWithStrangers'),
+    good_with_dogs: triState(formData, 'goodWithDogs'),
+    good_with_cats: triState(formData, 'goodWithCats'),
+    good_with_kids: triState(formData, 'goodWithKids'),
+    good_with_strangers: triState(formData, 'goodWithStrangers'),
+
+    house_trained: bool(formData, 'houseTrained'),
+    potty_instructions: text(formData, 'pottyInstructions'),
+    alone_time_hours: text(formData, 'aloneTimeHours') as AloneTimeHours | null,
+    is_microchipped: bool(formData, 'isMicrochipped'),
+    adopted_at: text(formData, 'adoptedAt'),
+    insurance_provider: text(formData, 'insuranceProvider'),
 
     special_needs: text(formData, 'specialNeeds'),
     private_notes: text(formData, 'privateNotes'),
@@ -195,6 +208,86 @@ export async function savePetAction(
     .eq('id', userId);
 
   redirect(nextStep === 'havener' ? '/onboarding/havener' : '/dashboard?welcome=1');
+}
+
+export async function updatePetAction(
+  _prev: ActionState,
+  formData: FormData
+): Promise<ActionState> {
+  const { supabase, userId } = await currentUserId();
+
+  const petId = text(formData, 'petId');
+  if (!petId) return { error: 'Missing pet.' };
+
+  const name = text(formData, 'name');
+  const species = text(formData, 'species');
+  if (!name) return { error: 'Please tell us your pet’s name.' };
+  if (species !== 'dog' && species !== 'cat') {
+    return { error: 'Please choose whether this is a dog or a cat.' };
+  }
+
+  const sex = text(formData, 'sex');
+  const size = text(formData, 'size');
+  const energy = text(formData, 'energyLevel');
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { error } = await (supabase.from('pets') as any)
+    .update({
+      name,
+      species,
+      breed: text(formData, 'breed'),
+      birthdate: text(formData, 'birthdate'),
+      sex: sex === 'male' || sex === 'female' ? sex : null,
+      weight_lb: num(formData, 'weightLb'),
+      size: (size as PetSize | null) ?? null,
+      energy_level: (energy as EnergyLevel | null) ?? null,
+
+      is_fixed: bool(formData, 'isFixed'),
+      is_in_heat: bool(formData, 'isInHeat'),
+      vaccinated_through: text(formData, 'vaccinatedThrough'),
+      allergies: text(formData, 'allergies'),
+      medical_conditions: text(formData, 'medicalConditions'),
+      medications: text(formData, 'medications'),
+      vet_name: text(formData, 'vetName'),
+      vet_phone: text(formData, 'vetPhone'),
+
+      food_type: text(formData, 'foodType'),
+      feeding_schedule: text(formData, 'feedingSchedule'),
+      feeding_notes: text(formData, 'feedingNotes'),
+
+      is_crate_trained: bool(formData, 'isCrateTrained'),
+      has_anxiety: bool(formData, 'hasAnxiety'),
+      has_bitten: bool(formData, 'hasBitten'),
+      is_reactive: bool(formData, 'isReactive'),
+      is_escape_risk: bool(formData, 'isEscapeRisk'),
+      guards_resources: bool(formData, 'guardsResources'),
+      requires_muzzle: bool(formData, 'requiresMuzzle'),
+      behavior_notes: text(formData, 'behaviorNotes'),
+
+      good_with_dogs: triState(formData, 'goodWithDogs'),
+      good_with_cats: triState(formData, 'goodWithCats'),
+      good_with_kids: triState(formData, 'goodWithKids'),
+      good_with_strangers: triState(formData, 'goodWithStrangers'),
+
+      house_trained: bool(formData, 'houseTrained'),
+      potty_instructions: text(formData, 'pottyInstructions'),
+      alone_time_hours: text(formData, 'aloneTimeHours') as AloneTimeHours | null,
+      is_microchipped: bool(formData, 'isMicrochipped'),
+      adopted_at: text(formData, 'adoptedAt'),
+      insurance_provider: text(formData, 'insuranceProvider'),
+
+      special_needs: text(formData, 'specialNeeds'),
+      private_notes: text(formData, 'privateNotes'),
+    })
+    .eq('id', petId)
+    .eq('owner_id', userId);
+
+  if (error) return { error: error.message };
+
+  revalidatePath('/dashboard');
+  revalidatePath('/dashboard/pets');
+  revalidatePath(`/dashboard/pets/${petId}`);
+  redirect(`/dashboard/pets/${petId}`);
 }
 
 /* -------------------------------------------------------------------------- */
