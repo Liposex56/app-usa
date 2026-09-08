@@ -10,6 +10,7 @@ import { ButtonLink } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
 const NAV = [
+  { href: '/search', label: 'Find a Havener' },
   { href: '/services', label: 'Services' },
   { href: '/how-it-works', label: 'How it works' },
   { href: '/trust-and-safety', label: 'Trust & safety' },

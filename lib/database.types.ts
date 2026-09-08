@@ -77,6 +77,18 @@ export type OnboardingStep =
   | 'havener'
   | 'done';
 
+export type BookingStatus =
+  | 'requested'
+  | 'confirmed'
+  | 'in_progress'
+  | 'completed'
+  | 'pending_payout'
+  | 'paid_out'
+  | 'cancelled'
+  | 'declined'
+  | 'disputed'
+  | 'refunded';
+
 export type ProfileRow = {
   id: string;
   email: string | null;
@@ -291,6 +303,81 @@ export type FavoriteRow = {
   created_at: string;
 };
 
+export type BookingRow = {
+  id: string;
+  owner_id: string;
+  sitter_id: string;
+  service_type: ServiceType;
+  status: BookingStatus;
+
+  start_date: string;
+  end_date: string | null;
+  start_time: string | null;
+  end_time: string | null;
+
+  owner_notes: string | null;
+  decline_reason: string | null;
+  cancellation_reason: string | null;
+  cancelled_by: string | null;
+
+  base_rate_cents: number;
+  additional_pet_rate_cents: number;
+  extra_fees_cents: number;
+  tip_cents: number;
+  commission_percent: number;
+  platform_fee_cents: number;
+  sitter_payout_cents: number;
+  total_cents: number;
+
+  requested_at: string;
+  confirmed_at: string | null;
+  started_at: string | null;
+  completed_at: string | null;
+  paid_out_at: string | null;
+  cancelled_at: string | null;
+
+  created_at: string;
+  updated_at: string;
+};
+
+export type BookingPetRow = {
+  booking_id: string;
+  pet_id: string;
+};
+
+/** What `booking_counterparty()` returns — never legal name, phone or address. */
+export type BookingCounterparty = {
+  id: string;
+  display_name: string | null;
+  avatar_url: string | null;
+};
+
+export type MessageRow = {
+  id: string;
+  booking_id: string;
+  sender_id: string;
+  recipient_id: string;
+  body: string;
+  flagged: boolean;
+  flagged_reason: string | null;
+  read_at: string | null;
+  created_at: string;
+};
+
+export type ReviewRow = {
+  id: string;
+  booking_id: string;
+  reviewer_id: string;
+  reviewee_id: string;
+  rating: number;
+  punctuality: number | null;
+  communication: number | null;
+  pet_care: number | null;
+  body: string | null;
+  published_at: string | null;
+  created_at: string;
+};
+
 export type StaffMemberRow = {
   user_id: string;
   role: StaffRole;
@@ -395,6 +482,10 @@ export type Database = {
       staff_members: Table<StaffMemberRow, 'user_id'>;
       waitlist: Table<WaitlistRow, 'email'>;
       platform_settings: Table<PlatformSettingsRow, never>;
+      bookings: Table<BookingRow, 'owner_id' | 'sitter_id' | 'service_type' | 'start_date'>;
+      booking_pets: Table<BookingPetRow, 'booking_id' | 'pet_id'>;
+      messages: Table<MessageRow, 'booking_id' | 'sender_id' | 'recipient_id' | 'body'>;
+      reviews: Table<ReviewRow, 'booking_id' | 'reviewer_id' | 'reviewee_id' | 'rating'>;
     };
     Views: {
       public_sitters: {
@@ -402,7 +493,12 @@ export type Database = {
         Relationships: [];
       };
     };
-    Functions: Record<string, never>;
+    Functions: {
+      booking_counterparty: {
+        Args: { p_booking_id: string };
+        Returns: { id: string; display_name: string | null; avatar_url: string | null }[];
+      };
+    };
     Enums: {
       species: Species;
       pet_sex: PetSex;
@@ -414,6 +510,7 @@ export type Database = {
       check_status: CheckStatus;
       staff_role: StaffRole;
       badge_type: BadgeType;
+      booking_status: BookingStatus;
     };
     CompositeTypes: Record<string, never>;
   };

@@ -40,12 +40,28 @@ export default async function DashboardLayout({
                 My pets
               </Link>
             )}
+            {profile.is_owner && (
+              <Link
+                href="/dashboard/bookings"
+                className="text-sm text-espresso-500 hover:text-espresso-700"
+              >
+                My bookings
+              </Link>
+            )}
             {profile.is_havener && (
               <Link
                 href="/dashboard/havener"
                 className="text-sm text-espresso-500 hover:text-espresso-700"
               >
                 Havener profile
+              </Link>
+            )}
+            {profile.is_havener && (
+              <Link
+                href="/dashboard/havener/bookings"
+                className="text-sm text-espresso-500 hover:text-espresso-700"
+              >
+                Booking requests
               </Link>
             )}
             {isStaff && (

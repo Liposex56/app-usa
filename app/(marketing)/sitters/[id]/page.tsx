@@ -33,13 +33,14 @@ export default async function SitterProfilePage({
   const { id } = await params;
   const supabase = await createClient();
 
-  const [{ data: sitter }, { data: services }] = await Promise.all([
+  const [{ data: sitter }, { data: services }, { data: { user } }] = await Promise.all([
     supabase.from('public_sitters').select('*').eq('id', id).maybeSingle(),
     supabase
       .from('sitter_services')
       .select('*')
       .eq('sitter_id', id)
       .eq('is_active', true),
+    supabase.auth.getUser(),
   ]);
 
   if (!sitter) notFound();
@@ -48,6 +49,7 @@ export default async function SitterProfilePage({
     <SitterProfileTabs
       sitter={sitter as PublicSitterRow}
       services={(services ?? []) as SitterServiceRow[]}
+      isOwnProfile={user?.id === id}
     />
   );
 }

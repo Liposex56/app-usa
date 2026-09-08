@@ -158,7 +158,7 @@ export default function HomePage() {
 
           <div className="mt-8 flex flex-wrap gap-4">
             <Link
-              href="/signup"
+              href="/search"
               className="animate-pulse-btn inline-flex h-12 shrink-0 items-center justify-center whitespace-nowrap border-2 border-sand bg-amber px-7 font-display text-base font-bold uppercase text-amber-ink shadow-poster-light transition-transform hover:translate-x-[2px] hover:translate-y-[2px]"
             >
               Find a Havener

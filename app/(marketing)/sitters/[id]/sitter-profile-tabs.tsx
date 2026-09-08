@@ -9,6 +9,7 @@ import {
   IconShield,
   IconStar,
 } from '@/components/icons';
+import { ButtonLink } from '@/components/ui/button';
 import type { PublicSitterRow, Skill, SitterServiceRow } from '@/lib/database.types';
 import { serviceName } from '@/lib/services';
 import { cn, formatCents } from '@/lib/utils';
@@ -88,9 +89,11 @@ function RateLine({ label, cents }: { label: string; cents: number | null }) {
 export function SitterProfileTabs({
   sitter,
   services,
+  isOwnProfile = false,
 }: {
   sitter: PublicSitterRow;
   services: SitterServiceRow[];
+  isOwnProfile?: boolean;
 }) {
   const [tab, setTab] = useState<'info' | 'reviews' | 'services'>('info');
   const skills = (sitter.skills ?? []) as Skill[];
@@ -154,6 +157,13 @@ export function SitterProfileTabs({
                 </span>
               )}
             </div>
+            {!isOwnProfile && (
+              <div className="mt-5">
+                <ButtonLink href={`/sitters/${sitter.id}/book`} size="md">
+                  Request a booking
+                </ButtonLink>
+              </div>
+            )}
           </div>
         </div>
 
