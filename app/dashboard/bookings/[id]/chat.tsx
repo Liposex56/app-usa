@@ -40,6 +40,8 @@ export function Chat({
     // eslint-disable-next-line no-console
     console.log('[chat-debug] mounting channel for booking', bookingId, 'viewer', viewerId);
     supabase.auth.getSession().then(({ data, error }) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const realtimeToken = (supabase as any).realtime?.accessToken;
       // eslint-disable-next-line no-console
       console.log(
         '[chat-debug] getSession at mount',
@@ -51,9 +53,8 @@ export function Chat({
         data.session?.expires_at,
         'error',
         error,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         'realtime.accessToken',
-        (supabase as any).realtime?.accessToken
+        realtimeToken
       );
     });
     const channel = supabase
