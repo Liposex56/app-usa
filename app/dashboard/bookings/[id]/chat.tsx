@@ -37,6 +37,8 @@ export function Chat({
 
   useEffect(() => {
     const supabase = createClient();
+    // eslint-disable-next-line no-console
+    console.log('[chat-debug] mounting channel for booking', bookingId, 'viewer', viewerId);
     const channel = supabase
       .channel(`booking-messages-${bookingId}`)
       .on(
@@ -48,6 +50,8 @@ export function Chat({
           filter: `booking_id=eq.${bookingId}`,
         },
         (payload) => {
+          // eslint-disable-next-line no-console
+          console.log('[chat-debug] postgres_changes payload', payload);
           const row = payload.new as MessageRow;
           // Our own messages are already added the moment sendAction
           // confirms them — only messages from the other side arrive here.
@@ -57,9 +61,14 @@ export function Chat({
           );
         }
       )
-      .subscribe();
+      .subscribe((status, err) => {
+        // eslint-disable-next-line no-console
+        console.log('[chat-debug] subscribe status', status, err);
+      });
 
     return () => {
+      // eslint-disable-next-line no-console
+      console.log('[chat-debug] unmounting channel for booking', bookingId);
       supabase.removeChannel(channel);
     };
   }, [bookingId, viewerId]);
