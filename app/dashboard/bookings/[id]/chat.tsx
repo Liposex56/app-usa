@@ -39,6 +39,23 @@ export function Chat({
     const supabase = createClient();
     // eslint-disable-next-line no-console
     console.log('[chat-debug] mounting channel for booking', bookingId, 'viewer', viewerId);
+    supabase.auth.getSession().then(({ data, error }) => {
+      // eslint-disable-next-line no-console
+      console.log(
+        '[chat-debug] getSession at mount',
+        'hasSession',
+        !!data.session,
+        'userId',
+        data.session?.user?.id,
+        'expiresAt',
+        data.session?.expires_at,
+        'error',
+        error,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        'realtime.accessToken',
+        (supabase as any).realtime?.accessToken
+      );
+    });
     const channel = supabase
       .channel(`booking-messages-${bookingId}`)
       .on(
