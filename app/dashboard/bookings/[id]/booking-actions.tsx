@@ -78,7 +78,11 @@ export function BookingActions({
         <Button
           size="sm"
           disabled={isPending}
-          onClick={() => startTransition(() => acceptBookingAction(bookingId))}
+          onClick={() =>
+            startTransition(() => {
+              void acceptBookingAction(bookingId);
+            })
+          }
         >
           Accept
         </Button>
@@ -97,7 +101,11 @@ export function BookingActions({
         <Button
           size="sm"
           disabled={isPending}
-          onClick={() => startTransition(() => startServiceAction(bookingId))}
+          onClick={() =>
+            startTransition(() => {
+              void startServiceAction(bookingId);
+            })
+          }
         >
           Start service
         </Button>
@@ -115,7 +123,11 @@ export function BookingActions({
       <Button
         size="sm"
         disabled={isPending}
-        onClick={() => startTransition(() => completeServiceAction(bookingId))}
+        onClick={() =>
+          startTransition(() => {
+            void completeServiceAction(bookingId);
+          })
+        }
       >
         Mark completed
       </Button>
