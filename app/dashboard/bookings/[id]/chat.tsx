@@ -8,6 +8,8 @@ import type { MessageRow } from '@/lib/database.types';
 import { createClient } from '@/lib/supabase/client';
 import { cn } from '@/lib/utils';
 
+import type { SendMessageState } from '../actions';
+
 function SendButton() {
   const { pending } = useFormStatus();
   return (
@@ -26,9 +28,10 @@ export function Chat({
   bookingId: string;
   viewerId: string;
   initialMessages: MessageRow[];
-  sendAction: (formData: FormData) => void;
+  sendAction: (formData: FormData) => Promise<SendMessageState>;
 }) {
   const [messages, setMessages] = useState(initialMessages);
+  const [sendError, setSendError] = useState<string | null>(null);
   const listRef = useRef<HTMLDivElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
 
@@ -46,6 +49,9 @@ export function Chat({
         },
         (payload) => {
           const row = payload.new as MessageRow;
+          // Our own messages are already added the moment sendAction
+          // confirms them — only messages from the other side arrive here.
+          if (row.sender_id === viewerId) return;
           setMessages((current) =>
             current.some((m) => m.id === row.id) ? current : [...current, row]
           );
@@ -56,11 +62,24 @@ export function Chat({
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [bookingId]);
+  }, [bookingId, viewerId]);
 
   useEffect(() => {
     listRef.current?.scrollTo({ top: listRef.current.scrollHeight });
   }, [messages.length]);
+
+  async function handleSubmit(formData: FormData) {
+    setSendError(null);
+    const result = await sendAction(formData);
+    if (result.error) {
+      setSendError(result.error);
+      return;
+    }
+    if (result.message) {
+      setMessages((current) => [...current, result.message as MessageRow]);
+    }
+    formRef.current?.reset();
+  }
 
   return (
     <div className="rounded-3xl border border-espresso-700/8 bg-white shadow-card">
@@ -95,12 +114,14 @@ export function Chat({
           })
         )}
       </div>
+      {sendError && (
+        <p className="border-t border-espresso-700/8 bg-red-50 px-4 py-2 text-xs text-red-800">
+          {sendError}
+        </p>
+      )}
       <form
         ref={formRef}
-        action={(formData) => {
-          sendAction(formData);
-          formRef.current?.reset();
-        }}
+        action={handleSubmit}
         className="flex items-center gap-2 border-t border-espresso-700/8 p-3"
       >
         <input

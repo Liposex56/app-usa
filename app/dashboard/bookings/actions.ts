@@ -2,11 +2,14 @@
 
 import { revalidatePath } from 'next/cache';
 
+import type { MessageRow } from '@/lib/database.types';
 import { requireProfile } from '@/lib/auth';
+import { filterChatMessage } from '@/lib/chat-filter';
 import { createClient } from '@/lib/supabase/server';
 import { text } from '@/lib/utils';
 
 export type ActionState = { error: string | null };
+export type SendMessageState = { error: string | null; message: MessageRow | null };
 
 async function updateBooking(
   bookingId: string,
@@ -71,24 +74,34 @@ export async function sendMessageAction(
   bookingId: string,
   recipientId: string,
   formData: FormData
-): Promise<ActionState> {
+): Promise<SendMessageState> {
   const profile = await requireProfile();
-  const body = text(formData, 'body');
-  if (!body) return { error: null };
+  const rawBody = text(formData, 'body');
+  if (!rawBody) return { error: null, message: null };
+
+  const filtered = filterChatMessage(rawBody);
+  if (filtered.blocked) {
+    return { error: filtered.blockedReason, message: null };
+  }
 
   const supabase = await createClient();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { error } = await (supabase.from('messages') as any).insert({
-    booking_id: bookingId,
-    sender_id: profile.id,
-    recipient_id: recipientId,
-    body,
-  });
+  const { data, error } = await (supabase.from('messages') as any)
+    .insert({
+      booking_id: bookingId,
+      sender_id: profile.id,
+      recipient_id: recipientId,
+      body: filtered.body,
+      flagged: filtered.flagged,
+      flagged_reason: filtered.flaggedReason,
+    })
+    .select('*')
+    .single();
 
-  if (error) return { error: error.message };
+  if (error) return { error: error.message, message: null };
 
   revalidatePath(`/dashboard/bookings/${bookingId}`);
-  return { error: null };
+  return { error: null, message: data as MessageRow };
 }
 
 export async function submitReviewAction(

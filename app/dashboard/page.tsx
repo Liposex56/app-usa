@@ -77,8 +77,8 @@ export default async function DashboardPage({
           <div>
             <h2 className="text-lg text-espresso-700">You’re all set up</h2>
             <p className="mt-1 text-sm leading-relaxed text-espresso-600">
-              Search and booking are coming next. In the meantime you can keep
-              your pets and your profile up to date here.
+              You can now search for a Havener, request a booking, and chat
+              once it’s confirmed — right from here.
             </p>
           </div>
         </div>
@@ -294,10 +294,30 @@ export default async function DashboardPage({
       <section className="rounded-3xl border border-sky-200 bg-sky-50 p-7">
         <h2 className="text-lg text-espresso-700">Coming next</h2>
         <p className="mt-2 text-sm leading-relaxed text-espresso-600">
-          Search with compatibility filters, the booking flow, in-app chat,
-          payments, GPS-tracked walks and service reports are the next phases of
-          the build.
+          Search, bookings, in-app chat and reviews are live. Payments through
+          Havenr and GPS-tracked walks with service reports are next.
         </p>
+        <div className="mt-4 flex flex-wrap gap-3">
+          {profile.is_owner && (
+            <ButtonLink href="/search" variant="secondary" size="sm">
+              Find a Havener
+            </ButtonLink>
+          )}
+          {profile.is_owner && (
+            <ButtonLink href="/dashboard/bookings" variant="secondary" size="sm">
+              My bookings
+            </ButtonLink>
+          )}
+          {profile.is_havener && (
+            <ButtonLink
+              href="/dashboard/havener/bookings"
+              variant="secondary"
+              size="sm"
+            >
+              Booking requests
+            </ButtonLink>
+          )}
+        </div>
       </section>
     </div>
   );
