@@ -37,57 +37,52 @@ export function Chat({
 
   useEffect(() => {
     const supabase = createClient();
-    // eslint-disable-next-line no-console
-    console.log('[chat-debug] mounting channel for booking', bookingId, 'viewer', viewerId);
-    supabase.auth.getSession().then(({ data, error }) => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const realtimeToken = (supabase as any).realtime?.accessToken;
-      // eslint-disable-next-line no-console
-      console.log(
-        '[chat-debug] getSession at mount',
-        'hasSession',
-        !!data.session,
-        'userId',
-        data.session?.user?.id,
-        'expiresAt',
-        data.session?.expires_at,
-        'error',
-        error,
-        'realtime.accessToken',
-        realtimeToken
-      );
-    });
-    const channel = supabase
-      .channel(`booking-messages-${bookingId}`)
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'messages',
-          filter: `booking_id=eq.${bookingId}`,
-        },
-        (payload) => {
-          // eslint-disable-next-line no-console
-          console.log('[chat-debug] postgres_changes payload', payload);
-          const row = payload.new as MessageRow;
-          // Our own messages are already added the moment sendAction
-          // confirms them — only messages from the other side arrive here.
-          if (row.sender_id === viewerId) return;
-          setMessages((current) =>
-            current.some((m) => m.id === row.id) ? current : [...current, row]
-          );
-        }
-      )
-      .subscribe((status, err) => {
-        // eslint-disable-next-line no-console
-        console.log('[chat-debug] subscribe status', status, err);
-      });
+    let cancelled = false;
+    let channel: ReturnType<typeof supabase.channel> | null = null;
+
+    async function start() {
+      // The realtime socket authorizes postgres_changes per-connection using
+      // whatever JWT it was given. supabase-js propagates the signed-in
+      // user's token to it asynchronously (via onAuthStateChange), which
+      // loses a race against channel.subscribe() firing immediately after
+      // createClient() — the channel would join authenticated as anon, and
+      // RLS would then silently drop every row for both participants. Wait
+      // for the real session and hand its token to realtime explicitly
+      // before subscribing, so the join always carries the right identity.
+      const { data } = await supabase.auth.getSession();
+      if (cancelled) return;
+      if (data.session) {
+        supabase.realtime.setAuth(data.session.access_token);
+      }
+
+      channel = supabase
+        .channel(`booking-messages-${bookingId}`)
+        .on(
+          'postgres_changes',
+          {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'messages',
+            filter: `booking_id=eq.${bookingId}`,
+          },
+          (payload) => {
+            const row = payload.new as MessageRow;
+            // Our own messages are already added the moment sendAction
+            // confirms them — only messages from the other side arrive here.
+            if (row.sender_id === viewerId) return;
+            setMessages((current) =>
+              current.some((m) => m.id === row.id) ? current : [...current, row]
+            );
+          }
+        )
+        .subscribe();
+    }
+
+    start();
 
     return () => {
-      // eslint-disable-next-line no-console
-      console.log('[chat-debug] unmounting channel for booking', bookingId);
-      supabase.removeChannel(channel);
+      cancelled = true;
+      if (channel) supabase.removeChannel(channel);
     };
   }, [bookingId, viewerId]);
 
