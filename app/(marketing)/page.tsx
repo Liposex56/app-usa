@@ -190,10 +190,7 @@ export default function HomePage() {
       {/* ------------------------------------------------------- A day in their haven */}
       <section className="pb-20 sm:pb-28">
         <div className="container-page" data-reveal>
-          <span className="font-display text-sm font-bold uppercase tracking-widest text-gold-500 after:ml-2 after:content-['•']">
-            A day in their haven
-          </span>
-          <h2 className="mt-3 max-w-lg font-display text-3xl font-black uppercase leading-[0.98] text-espresso-700 sm:text-5xl">
+          <h2 className="max-w-lg font-display text-3xl font-black uppercase leading-[0.98] text-espresso-700 sm:text-5xl">
             Every pet deserves a place that feels like home.
           </h2>
         </div>
@@ -477,30 +474,31 @@ export default function HomePage() {
           ))}
         </div>
 
-        <div className="container-page mt-20 text-center sm:mt-28" data-reveal>
-          <h2 className="mx-auto max-w-2xl font-display text-4xl font-black uppercase leading-[0.92] text-cream sm:text-5xl">
-            Your pet already trusts you. Let’s find someone they can trust
-            too.
-          </h2>
-          <p className="mx-auto mt-5 max-w-xl text-[17px] font-semibold leading-relaxed text-cream/70">
-            Creating an account is free. You only pay when you confirm a
-            booking.
-          </p>
-          <div className="mt-9 flex flex-wrap justify-center gap-4">
-            <Link
-              href="/search"
-              className="bone-cursor shadow-poster-light inline-flex h-12 shrink-0 items-center justify-center whitespace-nowrap rounded-full bg-sky-200 px-7 font-display text-sm font-bold uppercase text-espresso-700 transition-transform hover:-translate-y-0.5"
-            >
-              Find a Havener
-            </Link>
-            <Link
-              href="/become-a-havener"
-              className="bone-cursor inline-flex h-12 shrink-0 items-center justify-center whitespace-nowrap rounded-full border-2 border-sky-200 px-7 font-display text-sm font-bold uppercase text-sky-200 transition-transform hover:-translate-y-0.5"
-            >
-              Become a Havener
-            </Link>
-          </div>
+        <div className="container-page mt-16 flex justify-end gap-4 sm:mt-20" data-reveal>
+          <Link
+            href="/search"
+            className="bone-cursor shadow-poster-light inline-flex h-12 shrink-0 items-center justify-center whitespace-nowrap rounded-full bg-sky-200 px-7 font-display text-sm font-bold uppercase text-espresso-700 transition-transform hover:-translate-y-0.5"
+          >
+            Find a Havener
+          </Link>
+          <Link
+            href="/become-a-havener"
+            className="bone-cursor inline-flex h-12 shrink-0 items-center justify-center whitespace-nowrap rounded-full border-2 border-sky-200 px-7 font-display text-sm font-bold uppercase text-sky-200 transition-transform hover:-translate-y-0.5"
+          >
+            Become a Havener
+          </Link>
         </div>
+
+        <p
+          className="container-page mt-24 max-w-3xl text-lg leading-relaxed text-cream sm:mt-32 sm:text-xl"
+          data-reveal
+        >
+          Your pet already trusts you. Let’s find someone they can trust too.
+          Creating an account is free.{' '}
+          <strong className="font-bold">
+            You only pay when you confirm a booking.
+          </strong>
+        </p>
       </section>
     </div>
   );
