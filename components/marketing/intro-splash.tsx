@@ -34,11 +34,11 @@ export function IntroSplash() {
         leaving ? 'pointer-events-none -translate-y-[6%] opacity-0' : ''
       }`}
     >
-      <div className="text-center">
-        <div className="flex justify-center gap-x-3 font-display text-5xl font-black uppercase leading-[0.95] tracking-tight text-espresso-700 sm:text-6xl lg:text-7xl">
+      <div className="px-4 text-center">
+        <div className="flex flex-wrap justify-center gap-x-1 font-display text-3xl font-black uppercase leading-[0.95] tracking-tight text-espresso-700 sm:gap-x-3 sm:text-6xl lg:text-7xl">
           {LETTERS.map((letter, index) =>
             letter === ' ' ? (
-              <span key={index} className="w-2 sm:w-4" />
+              <span key={index} className="w-1.5 sm:w-4" />
             ) : (
               <span
                 key={index}
@@ -55,12 +55,12 @@ export function IntroSplash() {
           className="relative mx-auto mt-1 flex items-center justify-center opacity-0"
           style={{ animation: 'letter-in 0.5s ease 0.45s forwards' }}
         >
-          <span className="font-display text-5xl font-black uppercase leading-[0.95] tracking-tight text-gold-500 sm:text-6xl lg:text-7xl">
+          <span className="font-display text-3xl font-black uppercase leading-[0.95] tracking-tight text-gold-500 sm:text-6xl lg:text-7xl">
             HAV
             <span className="relative inline-block">
               e
               <svg
-                className="animate-sway absolute -top-7 left-1/2 -translate-x-1/2 sm:-top-9"
+                className="animate-sway absolute -top-4 left-1/2 -translate-x-1/2 scale-[0.6] sm:-top-9 sm:scale-100"
                 width="30"
                 height="22"
                 viewBox="0 0 30 22"
