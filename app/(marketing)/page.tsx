@@ -331,14 +331,6 @@ export default function HomePage() {
                 key={index}
                 className={`relative flex h-full w-[22rem] shrink-0 flex-col justify-end overflow-hidden rounded-2xl p-5 sm:w-[30rem] sm:p-7 ${item.bg}`}
               >
-                <svg
-                  aria-hidden
-                  className={`absolute right-4 top-4 h-6 w-6 opacity-20 ${item.fg}`}
-                  viewBox="0 0 24 24"
-                  fill="currentColor"
-                >
-                  <path d="M7 8.5C7 6.6 5.7 5 4.2 5S1.4 6.6 1.4 8.5 2.7 12 4.2 12 7 10.4 7 8.5Zm12 0c0-1.9-1.3-3.5-2.8-3.5s-2.8 1.6-2.8 3.5S14.7 12 16.2 12 19 10.4 19 8.5Zm-5.8 3C13.2 9.7 12.7 8 12 8s-1.2 1.7-1.2 3.5c-2 .5-3.4 2.2-3.4 4.2 0 2.3 2 3.8 4.6 3.8s4.6-1.5 4.6-3.8c0-2-1.4-3.7-3.4-4.2Z" />
-                </svg>
                 <span className={`font-display text-3xl font-black sm:text-4xl ${item.fg}`}>
                   0{(index % TRUST_STEPS.length) + 1}
                 </span>
