@@ -490,12 +490,12 @@ export default function HomePage() {
         </div>
 
         <p
-          className="container-page mt-24 max-w-3xl text-lg leading-relaxed text-cream sm:mt-32 sm:text-xl"
+          className="container-page mt-24 max-w-4xl font-display text-2xl font-medium uppercase leading-snug text-cream sm:mt-32 sm:text-4xl"
           data-reveal
         >
           Your pet already trusts you. Let’s find someone they can trust too.
           Creating an account is free.{' '}
-          <strong className="font-bold">
+          <strong className="font-black">
             You only pay when you confirm a booking.
           </strong>
         </p>
