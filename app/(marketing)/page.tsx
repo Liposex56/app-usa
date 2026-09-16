@@ -402,24 +402,24 @@ export default function HomePage() {
 
         {/* Desktop: an overlapping, hand-scattered fan of cards, like a hand of
             playing cards — matching the master file instead of a plain grid. */}
-        <div className="container-page relative mt-16 hidden h-[30rem] sm:block">
+        <div className="container-page relative mt-16 hidden h-[36rem] sm:block">
           {HOW_IT_WORKS.map((item, index) => (
             <div
               key={item.step}
               data-reveal
               style={{
-                transitionDelay: `${(index + 1) * 110}ms`,
+                transitionDelay: `${(index + 1) * 450}ms`,
                 ...HOW_IT_WORKS_LAYOUT[index],
               }}
-              className="absolute w-[46%] max-w-sm rounded-3xl bg-white p-6 shadow-lift transition-transform hover:z-10 hover:-translate-y-1 lg:w-[28%]"
+              className="absolute w-[52%] max-w-md rounded-3xl bg-white p-7 shadow-lift transition-transform hover:z-10 hover:-translate-y-1 lg:w-[34%]"
             >
-              <span className="font-display text-5xl font-black text-sky-300">
+              <span className="font-display text-6xl font-black text-sky-300">
                 {item.step}
               </span>
-              <h3 className="mt-2 font-display text-base font-black uppercase leading-tight text-espresso-700">
+              <h3 className="mt-3 font-display text-xl font-black uppercase leading-tight text-espresso-700">
                 {item.title}
               </h3>
-              <p className="mt-2 text-xs leading-relaxed text-espresso-500">
+              <p className="mt-2 text-sm leading-relaxed text-espresso-500">
                 {item.body}
               </p>
             </div>
