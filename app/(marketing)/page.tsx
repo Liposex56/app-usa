@@ -1,16 +1,6 @@
 import Link from 'next/link';
 
-import {
-  IconCamera,
-  IconCard,
-  IconChat,
-  IconClipboard,
-  IconHome,
-  IconLock,
-  IconPaw,
-  IconRoute,
-  IconShield,
-} from '@/components/icons';
+import { IconShield } from '@/components/icons';
 import { CountUp } from '@/components/marketing/count-up';
 import { IntroSplash } from '@/components/marketing/intro-splash';
 import { ScrollReveal } from '@/components/marketing/scroll-reveal';
@@ -20,7 +10,6 @@ const TRUST_STEPS = [
   {
     title: 'Background checked',
     body: 'A third-party criminal and identity check clears before anything else.',
-    icon: IconShield,
     bg: 'bg-espresso-700',
     fg: 'text-cream',
     sub: 'text-cream/65',
@@ -28,7 +17,6 @@ const TRUST_STEPS = [
   {
     title: 'Interviewed',
     body: 'A real conversation with our team about experience and judgment.',
-    icon: IconChat,
     bg: 'bg-gold-500',
     fg: 'text-espresso-700',
     sub: 'text-espresso-700/70',
@@ -36,7 +24,6 @@ const TRUST_STEPS = [
   {
     title: 'Home verified',
     body: 'We visit and review the home for pets who will stay overnight.',
-    icon: IconHome,
     bg: 'bg-sky-200',
     fg: 'text-espresso-700',
     sub: 'text-espresso-700/70',
@@ -44,7 +31,6 @@ const TRUST_STEPS = [
   {
     title: 'Insured',
     body: 'Active coverage on file, tracked and re-checked before it expires.',
-    icon: IconLock,
     bg: 'bg-olive-500',
     fg: 'text-cream',
     sub: 'text-cream/65',
@@ -80,32 +66,38 @@ const HOW_IT_WORKS = [
 
 const FEATURES = [
   {
-    icon: IconChat,
+    wordmark: '/brand/homepage/tile-everything-in-app.svg',
+    ratio: 372 / 28,
     title: 'Everything stays in the app',
     body: 'Messages, agreements and evidence live in one thread, so support can see exactly what was promised if anything goes wrong.',
   },
   {
-    icon: IconCamera,
+    wordmark: '/brand/homepage/tile-updates.svg',
+    ratio: 454 / 28,
     title: 'Updates you don’t have to ask for',
     body: 'Boarding and daycare Haveners are reminded to send photos and videos during the day. If nothing has arrived, we remind them again.',
   },
   {
-    icon: IconRoute,
+    wordmark: '/brand/homepage/tile-walks-verify.svg',
+    ratio: 416 / 28,
     title: 'Walks you can actually verify',
     body: 'GPS route, distance, duration, potty log and required photos before a walk can be marked complete.',
   },
   {
-    icon: IconLock,
+    wordmark: '/brand/homepage/tile-private-by-design.svg',
+    ratio: 229 / 28,
     title: 'Private by design',
     body: 'Your address is hidden until a booking is confirmed. We never sell your location or conversations to advertisers.',
   },
   {
-    icon: IconClipboard,
+    wordmark: '/brand/homepage/tile-visits-checklist.svg',
+    ratio: 239 / 68,
     title: 'Visits with a real checklist',
     body: 'Litter, food, water, play, medication, wellbeing check. Every task is ticked off and timestamped.',
   },
   {
-    icon: IconCard,
+    wordmark: '/brand/homepage/tile-one-clear-total.svg',
+    ratio: 264 / 68,
     title: 'One clear total, no surprises',
     body: 'Service rate, add-ons, taxes and tip are itemized before you confirm. Nothing is added later without your approval.',
   },
@@ -217,16 +209,6 @@ export default function HomePage() {
           className="container-page relative mt-10 aspect-video overflow-hidden rounded-[2rem] bg-gradient-to-br from-olive-500 via-gold-500 to-espresso-700"
           data-reveal
         >
-          <IconPaw
-            className="absolute -left-6 -top-8 h-40 w-40 text-cream/10"
-            fill="currentColor"
-            stroke="none"
-          />
-          <IconPaw
-            className="absolute -bottom-10 right-4 h-52 w-52 text-cream/10"
-            fill="currentColor"
-            stroke="none"
-          />
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 px-6 text-center">
             <span className="flex h-16 w-16 items-center justify-center rounded-full border-2 border-cream/70 bg-cream/10 backdrop-blur-sm">
               <svg width="22" height="26" viewBox="0 0 22 26" fill="none">
@@ -247,25 +229,32 @@ export default function HomePage() {
       {/* ------------------------------------------------------------ Services */}
       <section className="relative overflow-hidden bg-bone pb-20 pt-4 sm:pb-24">
         <div className="container-page" data-reveal>
-          <svg
-            viewBox="0 0 1578 330"
-            className="pointer-events-none absolute left-1/2 top-4 hidden w-[110%] max-w-none -translate-x-1/2 opacity-90 sm:block"
-            fill="none"
-            aria-hidden
-          >
-            <path
-              d="M69.8035 75.8231C174.803 64.8229 246.803 81.8234 280.803 96.8231C311.382 110.313 416.803 163.822 400.803 219.822C384.803 275.822 338.803 274.822 338.803 246.822C338.803 207.427 417.235 136.507 554.803 96.8231C606.803 81.8228 672.803 59.8227 922.803 64.8227C1170.75 69.7818 1464.8 208.823 1534.8 291.823"
-              stroke="#C2DCF4"
-              strokeWidth="26"
-            />
-          </svg>
+          <h2 className="sr-only">5 ways to get your pet cared for</h2>
 
-          <span className="relative font-display text-sm font-bold uppercase tracking-widest text-gold-500">
-            What we offer?…
-          </span>
-          <h2 className="relative mt-3 max-w-md -rotate-1 font-display text-4xl font-black uppercase leading-[0.94] text-espresso-700 sm:text-5xl">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/brand/homepage/ribbon-5-ways.svg"
+            alt="What we offer?… 5 ways to get your pet cared for"
+            aria-hidden
+            width={1578}
+            height={330}
+            className="hidden h-auto w-full sm:block"
+          />
+          <span
+            aria-hidden
+            className="block font-display text-3xl font-black uppercase leading-[0.94] text-espresso-700 sm:hidden"
+          >
             5 ways to get your pet cared for
-          </h2>
+          </span>
+
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/brand/homepage/tag-boarding-daycare-housesitting-walks.svg"
+            alt="Boarding · Daycare · House Sitting · Walks"
+            width={334}
+            height={23}
+            className="mt-4 h-auto w-56 sm:mt-2"
+          />
         </div>
 
         <div className="container-page relative mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
@@ -338,9 +327,8 @@ export default function HomePage() {
                 key={item.title}
                 data-reveal
                 style={{ transitionDelay: `${(index + 1) * 120}ms` }}
-                className={`relative flex min-h-[15rem] flex-col justify-between p-5 sm:min-h-[19rem] sm:p-6 ${item.bg}`}
+                className={`relative flex min-h-[15rem] flex-col justify-end p-5 sm:min-h-[19rem] sm:p-6 ${item.bg}`}
               >
-                <item.icon className={item.fg} width={22} height={22} />
                 <div>
                   <span className={`font-display text-xs font-black uppercase tracking-[0.14em] ${item.fg}`}>
                     0{index + 1}
@@ -407,9 +395,20 @@ export default function HomePage() {
                 <h3 className="mt-2 font-display text-base font-black uppercase leading-tight text-espresso-700">
                   {item.title}
                 </h3>
-                <p className="mt-2 text-xs leading-relaxed text-espresso-500">
-                  {item.body}
-                </p>
+                {item.step === '3' ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src="/brand/homepage/caption-message-book-pay.svg"
+                    alt={item.body}
+                    width={297}
+                    height={55}
+                    className="mt-2 h-auto w-40"
+                  />
+                ) : (
+                  <p className="mt-2 text-xs leading-relaxed text-espresso-500">
+                    {item.body}
+                  </p>
+                )}
               </div>
             </div>
           ))}
@@ -435,13 +434,17 @@ export default function HomePage() {
               style={{ transitionDelay: `${(index + 1) * 90}ms` }}
               className="rounded-3xl bg-white p-6 shadow-lift"
             >
-              <span className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-gold-50 text-gold-600">
-                <feature.icon />
-              </span>
-              <h3 className="mt-5 font-display text-lg font-bold uppercase text-espresso-700">
-                {feature.title}
+              <h3>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={feature.wordmark}
+                  alt={feature.title}
+                  width={200}
+                  height={Math.round(200 / feature.ratio)}
+                  className="h-auto w-full max-w-[13rem]"
+                />
               </h3>
-              <p className="mt-2 text-sm leading-relaxed text-espresso-500">
+              <p className="mt-4 text-sm leading-relaxed text-espresso-500">
                 {feature.body}
               </p>
             </div>
