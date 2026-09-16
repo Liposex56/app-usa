@@ -5,113 +5,113 @@ import {
   IconCard,
   IconChat,
   IconClipboard,
+  IconHome,
   IconLock,
+  IconPaw,
   IconRoute,
   IconShield,
 } from '@/components/icons';
 import { CountUp } from '@/components/marketing/count-up';
 import { IntroSplash } from '@/components/marketing/intro-splash';
 import { ScrollReveal } from '@/components/marketing/scroll-reveal';
-import { ButtonLink } from '@/components/ui/button';
 import { SERVICES } from '@/lib/services';
 
 const TRUST_STEPS = [
   {
-    title: 'Background check',
+    title: 'Background checked',
     body: 'A third-party criminal and identity check clears before anything else.',
+    icon: IconShield,
+    bg: 'bg-espresso-700',
+    fg: 'text-cream',
+    sub: 'text-cream/65',
   },
   {
-    title: 'Interview',
+    title: 'Interviewed',
     body: 'A real conversation with our team about experience and judgment.',
+    icon: IconChat,
+    bg: 'bg-gold-500',
+    fg: 'text-espresso-700',
+    sub: 'text-espresso-700/70',
   },
   {
-    title: 'Home verification',
+    title: 'Home verified',
     body: 'We visit and review the home for pets who will stay overnight.',
+    icon: IconHome,
+    bg: 'bg-sky-200',
+    fg: 'text-espresso-700',
+    sub: 'text-espresso-700/70',
   },
   {
     title: 'Insured',
     body: 'Active coverage on file, tracked and re-checked before it expires.',
+    icon: IconLock,
+    bg: 'bg-olive-500',
+    fg: 'text-cream',
+    sub: 'text-cream/65',
   },
 ];
 
 const HOW_IT_WORKS = [
   {
-    step: '01',
+    step: '1',
     title: 'Tell us about your pet',
-    body: 'Breed, size, energy, medications, what scares them, what calms them. The more we know, the better the match.',
+    body: 'Breed, size, energy, medications, what scares them, what calms them.',
+    rotate: '-rotate-3',
   },
   {
-    step: '02',
+    step: '2',
     title: 'See only Haveners who fit',
-    body: 'We hide anyone who does not accept your pet’s requirements — even if they are nearby and highly rated. Compatibility comes before popularity.',
+    body: 'We hide anyone who does not accept your pet’s requirements — even if they are nearby and highly rated.',
+    rotate: 'rotate-2',
   },
   {
-    step: '03',
+    step: '3',
     title: 'Message, book and pay in one place',
-    body: 'Agree the details in Havenr chat, send the request, and pay through the platform. Your Havener is paid after the service is complete.',
+    body: 'Agree the details in Havenr chat, send the request, and pay through the platform.',
+    rotate: '-rotate-2',
   },
   {
-    step: '04',
+    step: '4',
     title: 'Follow along, then get the report',
-    body: 'Photos, videos, GPS routes and activity logs as they happen — and a full summary when the service ends.',
+    body: 'Photos, updates and activity logs as they happen — and a full summary when the service ends.',
+    rotate: 'rotate-3',
   },
 ];
 
 const FEATURES = [
   {
+    icon: IconChat,
+    title: 'Everything stays in the app',
+    body: 'Messages, agreements and evidence live in one thread, so support can see exactly what was promised if anything goes wrong.',
+  },
+  {
     icon: IconCamera,
     title: 'Updates you don’t have to ask for',
     body: 'Boarding and daycare Haveners are reminded to send photos and videos during the day. If nothing has arrived, we remind them again.',
-    swatch: 'bg-cream',
   },
   {
     icon: IconRoute,
     title: 'Walks you can actually verify',
-    body: 'GPS route, distance, duration, potty log and required photos. A walk cannot be marked complete until the report is filled in.',
-    swatch: 'bg-sky-100',
+    body: 'GPS route, distance, duration, potty log and required photos before a walk can be marked complete.',
+  },
+  {
+    icon: IconLock,
+    title: 'Private by design',
+    body: 'Your address is hidden until a booking is confirmed. We never sell your location or conversations to advertisers.',
   },
   {
     icon: IconClipboard,
     title: 'Visits with a real checklist',
     body: 'Litter, food, water, play, medication, wellbeing check. Every task is ticked off and timestamped.',
-    swatch: 'bg-gold-50',
-  },
-  {
-    icon: IconChat,
-    title: 'Everything stays in the app',
-    body: 'Messages, agreements and evidence live in one thread, so support can see exactly what was promised if anything goes wrong.',
-    swatch: 'bg-white',
   },
   {
     icon: IconCard,
     title: 'One clear total, no surprises',
-    body: 'Service rate, add-ons, taxes and tip are itemized before you confirm. Any charge added later needs your approval first.',
-    swatch: 'bg-sky-200',
-  },
-  {
-    icon: IconLock,
-    title: 'Private by design',
-    body: 'Your address is hidden until a booking is confirmed. We never send your location, bookings or conversations to advertising platforms.',
-    swatch: 'bg-cream',
+    body: 'Service rate, add-ons, taxes and tip are itemized before you confirm. Nothing is added later without your approval.',
   },
 ];
 
-const SERVICE_SWATCHES = [
-  'bg-cream',
-  'bg-sky-100',
-  'bg-gold-50',
-  'bg-white',
-  'bg-sky-200',
-];
-
-const MARQUEE_ITEMS = [
-  'Background checked',
-  'Interviewed',
-  'Home verified',
-  'Insured',
-  'GPS-tracked walks',
-  'Photo updates every visit',
-];
+const SERVICE_SWATCHES = ['bg-cream', 'bg-sky-100', 'bg-gold-50', 'bg-white', 'bg-sky-200'];
 
 export default function HomePage() {
   return (
@@ -120,37 +120,49 @@ export default function HomePage() {
       <ScrollReveal />
 
       {/* ---------------------------------------------------------------- Hero */}
-      <section className="relative overflow-hidden bg-night-band">
+      <section className="relative overflow-hidden bg-bone">
         <div
-          className="animate-blob-move absolute -left-16 -top-16 h-64 w-64 bg-gold-200/60"
-          style={{
-            borderRadius: '44% 56% 62% 38% / 48% 42% 58% 52%',
-          }}
+          className="animate-blob-move absolute -left-20 -top-20 h-72 w-72 bg-gold-100/70"
+          style={{ borderRadius: '44% 56% 62% 38% / 48% 42% 58% 52%' }}
         />
         <div
-          className="animate-blob-move absolute right-[-4%] top-[10%] h-52 w-52 bg-cream/75"
+          className="animate-blob-move absolute -right-10 top-10 h-56 w-56 bg-sky-100/80"
           style={{
             borderRadius: '44% 56% 62% 38% / 48% 42% 58% 52%',
             animationDelay: '-4s',
           }}
         />
 
-        <div className="container-page relative z-[2] pb-10 pt-14 sm:pt-16">
-          <span className="animate-bob inline-flex -rotate-2 items-center gap-2 border-2 border-espresso-700 bg-espresso-700 px-4 py-2 font-display text-xs font-bold uppercase tracking-wide text-cream">
-            <IconShield width={14} height={14} />
-            Background checked · Interviewed · Home verified · Insured
-          </span>
-
-          <h1 className="mt-6 font-display font-black uppercase leading-[0.86] tracking-tight">
-            <span className="block text-[2.6rem] text-sand sm:text-6xl lg:text-7xl">
-              Pet care you can
+        <div className="container-page relative z-[2] pb-16 pt-14 sm:pt-16">
+          <div className="flex items-start justify-between gap-4">
+            <span className="animate-bob inline-flex -rotate-2 items-center gap-2 border-2 border-espresso-700 bg-espresso-700 px-4 py-2 font-display text-xs font-bold uppercase tracking-wide text-cream">
+              <IconShield width={14} height={14} />
+              Background checked · Interviewed · Home verified · Insured
             </span>
-            <span className="block text-[3.4rem] text-amber sm:text-[5.5rem] lg:text-[7.5rem]">
-              Actually trust.
+
+            <Link
+              href="/search"
+              className="hidden shrink-0 text-right text-xs font-bold uppercase leading-snug tracking-wide text-olive-500 underline decoration-gold-500 decoration-2 underline-offset-4 transition-colors hover:text-espresso-700 sm:block"
+            >
+              Pet care near you
+              <br />
+              actually vetted
+            </Link>
+          </div>
+
+          <h1 className="mt-7 font-display font-black uppercase leading-[0.86] tracking-tight">
+            <span className="block text-[2.6rem] text-espresso-700 sm:text-6xl lg:text-7xl">
+              Pet <span className="text-sky-500">care</span>
+            </span>
+            <span className="block text-[2.6rem] text-espresso-700 sm:text-6xl lg:text-7xl">
+              you can trust,
+            </span>
+            <span className="block text-[3rem] text-gold-500 sm:text-[4.6rem] lg:text-[6rem]">
+              booked in minutes.
             </span>
           </h1>
 
-          <p className="mt-7 max-w-lg text-lg font-semibold leading-relaxed text-sand-soft">
+          <p className="mt-7 max-w-lg text-lg font-semibold leading-relaxed text-espresso-500">
             Boarding, daycare, house sitting, walks and drop-in visits with
             Haveners who earned their place. Every stay comes with photos,
             updates and a report — not a shrug.
@@ -159,13 +171,13 @@ export default function HomePage() {
           <div className="mt-8 flex flex-wrap gap-4">
             <Link
               href="/search"
-              className="animate-pulse-btn inline-flex h-12 shrink-0 items-center justify-center whitespace-nowrap border-2 border-sand bg-amber px-7 font-display text-base font-bold uppercase text-amber-ink shadow-poster-light transition-transform hover:translate-x-[2px] hover:translate-y-[2px]"
+              className="bone-cursor animate-pulse-btn inline-flex h-12 shrink-0 items-center justify-center whitespace-nowrap rounded-full bg-espresso-700 px-7 font-display text-base font-bold uppercase text-cream shadow-poster transition-transform hover:-translate-y-0.5"
             >
               Find a Havener
             </Link>
             <Link
               href="/become-a-havener"
-              className="shadow-poster-light inline-flex h-12 shrink-0 items-center justify-center whitespace-nowrap border-2 border-sand bg-night px-7 font-display text-base font-bold uppercase text-sand transition-transform hover:translate-x-[2px] hover:translate-y-[2px]"
+              className="bone-cursor inline-flex h-12 shrink-0 items-center justify-center whitespace-nowrap rounded-full border-2 border-espresso-700 bg-transparent px-7 font-display text-base font-bold uppercase text-espresso-700 transition-transform hover:-translate-y-0.5"
             >
               Become a Havener
             </Link>
@@ -178,63 +190,92 @@ export default function HomePage() {
               [0, 'data sold', 'to advertisers, ever'],
             ].map(([count, noun, label]) => (
               <div key={noun as string}>
-                <dt className="font-display text-3xl font-black text-sand">
+                <dt className="font-display text-3xl font-black text-espresso-700">
                   <CountUp target={count as number} /> {noun}
                 </dt>
-                <dd className="mt-1 max-w-[10rem] text-xs font-bold uppercase tracking-wide text-sand-soft">
+                <dd className="mt-1 max-w-[10rem] text-xs font-bold uppercase tracking-wide text-olive-500">
                   {label}
                 </dd>
               </div>
             ))}
           </dl>
         </div>
+      </section>
 
-        <div className="relative z-[3] overflow-hidden border-y-[3px] border-sand bg-night-deep py-3.5">
-          <div className="animate-marquee flex w-max">
-            {[...MARQUEE_ITEMS, ...MARQUEE_ITEMS].map((item, i) => (
-              <span
-                key={i}
-                className="flex items-center gap-3 whitespace-nowrap px-6 font-display text-lg font-bold uppercase tracking-wide text-sand after:content-['✦'] after:text-amber"
-              >
-                {item}
-              </span>
-            ))}
+      {/* ------------------------------------------------------- A day in their haven */}
+      <section className="bg-bone pb-20 sm:pb-28">
+        <div className="container-page" data-reveal>
+          <span className="font-display text-sm font-bold uppercase tracking-widest text-gold-500 after:ml-2 after:content-['•']">
+            A day in their haven
+          </span>
+          <h2 className="mt-3 max-w-lg font-display text-3xl font-black uppercase leading-[0.98] text-espresso-700 sm:text-5xl">
+            Every pet deserves a place that feels like home.
+          </h2>
+        </div>
+
+        <div
+          className="container-page relative mt-10 aspect-video overflow-hidden rounded-[2rem] bg-gradient-to-br from-olive-500 via-gold-500 to-espresso-700"
+          data-reveal
+        >
+          <IconPaw
+            className="absolute -left-6 -top-8 h-40 w-40 text-cream/10"
+            fill="currentColor"
+            stroke="none"
+          />
+          <IconPaw
+            className="absolute -bottom-10 right-4 h-52 w-52 text-cream/10"
+            fill="currentColor"
+            stroke="none"
+          />
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 px-6 text-center">
+            <span className="flex h-16 w-16 items-center justify-center rounded-full border-2 border-cream/70 bg-cream/10 backdrop-blur-sm">
+              <svg width="22" height="26" viewBox="0 0 22 26" fill="none">
+                <path d="M2 2.5C2 1.34 3.26 0.62 4.26 1.2L20.26 11.7C21.25 12.28 21.25 13.72 20.26 14.3L4.26 24.8C3.26 25.38 2 24.66 2 23.5V2.5Z" fill="#FFF8CD" />
+              </svg>
+            </span>
+            <p className="font-display text-lg font-bold uppercase tracking-wide text-cream sm:text-2xl">
+              A day in their haven
+            </p>
+            <p className="max-w-sm text-sm font-medium text-cream/75">
+              Real homes. Real care. Real connection. Our hero film is in
+              production — check back soon.
+            </p>
           </div>
         </div>
       </section>
 
-      <div className="relative h-[100px] overflow-hidden bg-night-band" aria-hidden>
-        <svg
-          viewBox="0 0 1440 100"
-          preserveAspectRatio="none"
-          className="absolute bottom-[-1px] left-0 h-full w-full"
-        >
-          <path
-            d="M0,0 L1440,0 L1440,50 C1200,100 1000,15 760,46 C520,75 320,8 0,58 Z"
-            className="fill-bone"
-          />
-        </svg>
-      </div>
-
       {/* ------------------------------------------------------------ Services */}
-      <section className="bg-night py-20 sm:py-24">
+      <section className="relative overflow-hidden bg-bone pb-20 pt-4 sm:pb-24">
         <div className="container-page" data-reveal>
-          <span className="font-display text-sm font-bold uppercase tracking-widest text-amber after:ml-2 after:content-['•']">
-            What we offer
+          <svg
+            viewBox="0 0 1578 330"
+            className="pointer-events-none absolute left-1/2 top-4 hidden w-[110%] max-w-none -translate-x-1/2 opacity-90 sm:block"
+            fill="none"
+            aria-hidden
+          >
+            <path
+              d="M69.8035 75.8231C174.803 64.8229 246.803 81.8234 280.803 96.8231C311.382 110.313 416.803 163.822 400.803 219.822C384.803 275.822 338.803 274.822 338.803 246.822C338.803 207.427 417.235 136.507 554.803 96.8231C606.803 81.8228 672.803 59.8227 922.803 64.8227C1170.75 69.7818 1464.8 208.823 1534.8 291.823"
+              stroke="#C2DCF4"
+              strokeWidth="26"
+            />
+          </svg>
+
+          <span className="relative font-display text-sm font-bold uppercase tracking-widest text-gold-500">
+            What we offer?…
           </span>
-          <h2 className="mt-3 max-w-md font-display text-4xl font-black uppercase leading-[0.94] text-sand sm:text-5xl">
-            Five ways to get your pet cared for
+          <h2 className="relative mt-3 max-w-md -rotate-1 font-display text-4xl font-black uppercase leading-[0.94] text-espresso-700 sm:text-5xl">
+            5 ways to get your pet cared for
           </h2>
         </div>
 
-        <div className="container-page mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="container-page relative mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {SERVICES.map((service, i) => (
             <Link
               key={service.slug}
               href={`/services/${service.slug}`}
               data-reveal
               style={{ transitionDelay: `${(i + 1) * 90}ms` }}
-              className={`group flex flex-col border-[3px] border-espresso-700 p-7 text-espresso-700 shadow-poster transition-transform hover:translate-x-[3px] hover:translate-y-[3px] ${SERVICE_SWATCHES[i % SERVICE_SWATCHES.length]}`}
+              className={`bone-cursor group flex flex-col rounded-3xl border-2 border-espresso-700/10 p-7 text-espresso-700 shadow-card transition-transform hover:-translate-y-1 ${SERVICE_SWATCHES[i % SERVICE_SWATCHES.length]}`}
             >
               <h3 className="font-display text-2xl font-black uppercase">
                 {service.name}
@@ -245,7 +286,7 @@ export default function HomePage() {
               <p className="mt-4 flex-1 text-sm leading-relaxed text-espresso-500">
                 {service.description}
               </p>
-              <p className="mt-6 inline-flex items-center gap-1.5 font-display text-sm font-bold uppercase text-espresso-700 transition-colors group-hover:text-gold-500">
+              <p className="mt-6 inline-flex items-center gap-1.5 font-display text-sm font-bold uppercase text-espresso-700 transition-colors group-hover:text-gold-600">
                 Learn more
                 <span
                   aria-hidden
@@ -257,56 +298,60 @@ export default function HomePage() {
             </Link>
           ))}
 
-          <div
+          <Link
+            href="/services"
             data-reveal
             style={{ transitionDelay: `${(SERVICES.length + 1) * 90}ms` }}
-            className="flex flex-col justify-center border-[3px] border-espresso-700 bg-espresso-700 p-7 text-cream shadow-poster"
+            className="bone-cursor flex flex-col justify-center rounded-3xl bg-espresso-700 p-7 text-cream shadow-card transition-transform hover:-translate-y-1"
           >
             <h3 className="font-display text-2xl font-black uppercase text-cream">
               Not sure which one?
             </h3>
-            <p className="mt-3 text-sm leading-relaxed text-cream">
+            <p className="mt-3 text-sm leading-relaxed text-cream/70">
               Tell us about your pet and your dates. We’ll only show you
               Haveners who can genuinely take them.
             </p>
-          </div>
+          </Link>
         </div>
       </section>
 
       {/* --------------------------------------------------------------- Trust */}
-      <section className="bg-night-deep py-20 text-sand sm:py-24">
-        <div className="container-page grid gap-14 lg:grid-cols-[0.9fr_1.1fr]">
-          <div data-reveal>
-            <span className="font-display text-sm font-bold uppercase tracking-widest text-amber after:ml-2 after:content-['•']">
-              Trust &amp; safety
-            </span>
-            <h2 className="mt-3 max-w-xs font-display text-4xl font-black uppercase leading-[0.94] text-sand sm:text-5xl">
-              Four checks. No exceptions.
-            </h2>
-            <p className="mt-4 max-w-sm text-[15px] leading-relaxed text-sand-soft">
-              Being nearby and cheap is not enough to care for someone’s dog.
-              A Havener clears all four steps before a single booking reaches
-              them.
-            </p>
-          </div>
+      <section className="bg-bone pb-20 pt-4 sm:pb-24">
+        <div className="container-page" data-reveal>
+          <span className="font-display text-sm font-bold uppercase tracking-widest text-gold-500 after:ml-2 after:content-['•']">
+            Trust &amp; safety
+          </span>
+          <h2 className="mt-3 max-w-lg font-display text-4xl font-black uppercase leading-[0.94] text-espresso-700 sm:text-5xl">
+            Four checks. <span className="text-gold-500">No exceptions.</span>
+          </h2>
+          <p className="mt-4 max-w-md text-[15px] leading-relaxed text-espresso-500">
+            Being nearby and cheap is not enough to care for someone’s pet. A
+            Havener clears all four steps before a single booking reaches
+            them.
+          </p>
+        </div>
 
-          <div className="grid gap-4 sm:grid-cols-2">
+        <div className="container-page mt-10 overflow-hidden rounded-[2rem] shadow-lift">
+          <div className="grid grid-cols-2 sm:grid-cols-4">
             {TRUST_STEPS.map((item, index) => (
               <div
                 key={item.title}
                 data-reveal
-                style={{ transitionDelay: `${(index + 1) * 90}ms` }}
-                className="border-2 border-sand p-6"
+                style={{ transitionDelay: `${(index + 1) * 120}ms` }}
+                className={`relative flex min-h-[15rem] flex-col justify-between p-5 sm:min-h-[19rem] sm:p-6 ${item.bg}`}
               >
-                <span className="font-display text-2xl font-black text-amber">
-                  0{index + 1}
-                </span>
-                <h3 className="mt-3 font-display text-lg font-bold uppercase text-sand">
-                  {item.title}
-                </h3>
-                <p className="mt-2 text-sm leading-relaxed text-sand-soft">
-                  {item.body}
-                </p>
+                <item.icon className={item.fg} width={22} height={22} />
+                <div>
+                  <span className={`font-display text-xs font-black uppercase tracking-[0.14em] ${item.fg}`}>
+                    0{index + 1}
+                  </span>
+                  <h3 className={`mt-1 font-display text-lg font-black uppercase leading-tight ${item.fg}`}>
+                    {item.title}
+                  </h3>
+                  <p className={`mt-2 hidden text-xs leading-relaxed sm:block ${item.sub}`}>
+                    {item.body}
+                  </p>
+                </div>
               </div>
             ))}
           </div>
@@ -314,18 +359,20 @@ export default function HomePage() {
 
         <div
           data-reveal
-          className="container-page mt-12 flex flex-wrap items-center gap-4 border-2 border-sand p-6"
+          className="container-page mt-8 flex flex-wrap items-center gap-4 rounded-2xl border-2 border-espresso-700/10 bg-white p-6"
         >
-          <IconShield className="shrink-0 text-amber" width={24} height={24} />
-          <p className="flex-1 text-sm leading-relaxed text-sand-soft">
+          <IconShield className="shrink-0 text-gold-500" width={24} height={24} />
+          <p className="flex-1 text-sm leading-relaxed text-espresso-500">
             A Havener who clears all four becomes a{' '}
-            <strong className="font-medium text-sand">Certified Havener</strong>
-            . You’ll see the badge on their profile — and you’ll never see their
-            insurance document, because that stays private.
+            <strong className="font-semibold text-espresso-700">
+              Certified Havener
+            </strong>
+            . You’ll see the badge on their profile — and you’ll never see
+            their insurance document, because that stays private.
           </p>
           <Link
             href="/trust-and-safety"
-            className="inline-flex h-9 shrink-0 items-center justify-center whitespace-nowrap border-2 border-sand bg-sand/[0.06] px-4 text-sm font-medium text-sand transition-colors hover:bg-sand/10"
+            className="bone-cursor inline-flex h-9 shrink-0 items-center justify-center whitespace-nowrap rounded-full border-2 border-espresso-700 px-4 text-sm font-medium text-espresso-700 transition-colors hover:bg-espresso-700 hover:text-cream"
           >
             How it works
           </Link>
@@ -333,58 +380,62 @@ export default function HomePage() {
       </section>
 
       {/* -------------------------------------------------------- How it works */}
-      <section className="bg-night py-20 sm:py-24">
+      <section className="overflow-hidden bg-gradient-to-b from-bone via-sky-100 to-sky-200 pb-24 pt-4 sm:pb-28">
         <div className="container-page" data-reveal>
-          <span className="font-display text-sm font-bold uppercase tracking-widest text-amber after:ml-2 after:content-['•']">
-            How it works
+          <span className="font-display text-sm font-bold uppercase tracking-widest text-espresso-700/60">
+            What we offer
           </span>
-          <h2 className="mt-3 max-w-md font-display text-4xl font-black uppercase leading-[0.94] text-sand sm:text-5xl">
-            From “who can watch my dog?” to booked
+          <h2 className="mt-3 max-w-lg font-display text-3xl font-black uppercase leading-[0.98] text-espresso-700 sm:text-5xl">
+            From “who can watch my dog?” to booked.
           </h2>
         </div>
 
-        <ol className="container-page mt-12 grid gap-9 md:grid-cols-2 lg:grid-cols-4">
+        <div className="container-page relative mt-16 grid gap-x-6 gap-y-14 sm:grid-cols-2 sm:gap-y-6 lg:grid-cols-4">
           {HOW_IT_WORKS.map((item, index) => (
-            <li
+            <div
               key={item.step}
               data-reveal
-              style={{ transitionDelay: `${(index + 1) * 90}ms` }}
-              className="relative"
+              style={{ transitionDelay: `${(index + 1) * 110}ms` }}
+              className={index % 2 === 1 ? 'sm:mt-10' : ''}
             >
-              <span className="font-display text-5xl font-black text-amber">
-                {item.step}
-              </span>
-              <h3 className="mt-3 font-display text-lg font-bold uppercase text-sand">
-                {item.title}
-              </h3>
-              <p className="mt-2 text-sm leading-relaxed text-sand-soft">
-                {item.body}
-              </p>
-            </li>
+              <div
+                className={`relative rounded-3xl bg-white p-6 shadow-lift transition-transform hover:-translate-y-1 ${item.rotate}`}
+              >
+                <span className="font-display text-5xl font-black text-sky-300">
+                  {item.step}
+                </span>
+                <h3 className="mt-2 font-display text-base font-black uppercase leading-tight text-espresso-700">
+                  {item.title}
+                </h3>
+                <p className="mt-2 text-xs leading-relaxed text-espresso-500">
+                  {item.body}
+                </p>
+              </div>
+            </div>
           ))}
-        </ol>
-      </section>
-
-      {/* ------------------------------------------------------------ Features */}
-      <section className="bg-night py-20 sm:py-24">
-        <div className="container-page" data-reveal>
-          <span className="font-display text-sm font-bold uppercase tracking-widest text-amber after:ml-2 after:content-['•']">
-            Built in
-          </span>
-          <h2 className="mt-3 max-w-md font-display text-4xl font-black uppercase leading-[0.94] text-sand sm:text-5xl">
-            The details that decide whether you sleep well
-          </h2>
         </div>
 
-        <div className="container-page mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="container-page mt-20 text-center sm:mt-24" data-reveal>
+          <p className="font-display text-3xl font-black uppercase leading-[0.95] text-espresso-700 sm:text-5xl">
+            The details that decide whether
+          </p>
+          <p className="mt-1 font-display text-3xl font-black uppercase leading-[0.95] text-white drop-shadow-sm sm:text-5xl">
+            you sleep well.
+          </p>
+        </div>
+      </section>
+
+      {/* --------------------------------------------------- Features + Final CTA */}
+      <section className="bg-gradient-to-b from-sky-200 via-gold-800 to-espresso-700 pb-20 pt-16 sm:pb-28 sm:pt-20">
+        <div className="container-page grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {FEATURES.map((feature, index) => (
             <div
               key={feature.title}
               data-reveal
               style={{ transitionDelay: `${(index + 1) * 90}ms` }}
-              className={`border-[3px] border-espresso-700 p-7 shadow-poster ${feature.swatch}`}
+              className="rounded-3xl bg-white p-6 shadow-lift"
             >
-              <span className="inline-flex h-11 w-11 items-center justify-center border-2 border-espresso-700 bg-white text-espresso-700">
+              <span className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-gold-50 text-gold-600">
                 <feature.icon />
               </span>
               <h3 className="mt-5 font-display text-lg font-bold uppercase text-espresso-700">
@@ -396,33 +447,28 @@ export default function HomePage() {
             </div>
           ))}
         </div>
-      </section>
 
-      {/* ----------------------------------------------------------------- CTA */}
-      <section className="bg-amber py-20 text-center sm:py-24" data-reveal>
-        <div className="container-page">
-          <h2 className="mx-auto max-w-2xl font-display text-4xl font-black uppercase leading-[0.92] text-amber-ink sm:text-5xl">
+        <div className="container-page mt-20 text-center sm:mt-28" data-reveal>
+          <h2 className="mx-auto max-w-2xl font-display text-4xl font-black uppercase leading-[0.92] text-cream sm:text-5xl">
             Your pet already trusts you. Let’s find someone they can trust
             too.
           </h2>
-          <p className="mx-auto mt-5 max-w-xl text-[17px] font-semibold leading-relaxed text-amber-ink/85">
+          <p className="mx-auto mt-5 max-w-xl text-[17px] font-semibold leading-relaxed text-cream/70">
             Creating an account is free. You only pay when you confirm a
             booking.
           </p>
           <div className="mt-9 flex flex-wrap justify-center gap-4">
-            <ButtonLink
-              href="/signup"
-              variant="dark"
-              size="lg"
-              className="shadow-poster-light !rounded-none border-2 border-amber-ink !transition-all hover:translate-x-[2px] hover:translate-y-[2px]"
-            >
-              Create your account
-            </ButtonLink>
             <Link
-              href="/how-it-works"
-              className="shadow-poster-light inline-flex h-12 shrink-0 items-center justify-center whitespace-nowrap border-2 border-sand bg-amber-ink px-7 text-base font-medium text-amber transition-transform hover:translate-x-[2px] hover:translate-y-[2px]"
+              href="/search"
+              className="bone-cursor shadow-poster-light inline-flex h-12 shrink-0 items-center justify-center whitespace-nowrap rounded-full bg-sky-200 px-7 font-display text-sm font-bold uppercase text-espresso-700 transition-transform hover:-translate-y-0.5"
             >
-              See how it works
+              Find a Havener
+            </Link>
+            <Link
+              href="/become-a-havener"
+              className="bone-cursor inline-flex h-12 shrink-0 items-center justify-center whitespace-nowrap rounded-full border-2 border-sky-200 px-7 font-display text-sm font-bold uppercase text-sky-200 transition-transform hover:-translate-y-0.5"
+            >
+              Become a Havener
             </Link>
           </div>
         </div>

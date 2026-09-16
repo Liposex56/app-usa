@@ -58,9 +58,9 @@
 }
 
 /* ------------------------------------------------------------------------
- * Homepage hero motion — splash intro, marquee, floating blobs, poster
- * shadows and scroll reveals. Scoped as plain global CSS (not @layer) so
- * the keyframes and [data-reveal] base state always win regardless of
+ * Homepage motion — splash intro, marquee, floating blobs, poster shadows
+ * and scroll reveals. Scoped as plain global CSS (not @layer) so the
+ * keyframes and [data-reveal] base state always win regardless of
  * Tailwind's layer ordering.
  * ---------------------------------------------------------------------- */
 
@@ -73,14 +73,6 @@
   50% {
     border-radius: 58% 42% 40% 60% / 55% 60% 40% 45%;
     transform: translateY(-16px) rotate(4deg);
-  }
-}
-@keyframes marquee-scroll {
-  from {
-    transform: translateX(0);
-  }
-  to {
-    transform: translateX(-50%);
   }
 }
 @keyframes bob {
@@ -124,9 +116,6 @@
 .animate-blob-move {
   animation: blob-move 10s ease-in-out infinite;
 }
-.animate-marquee {
-  animation: marquee-scroll 18s linear infinite;
-}
 .animate-bob {
   animation: bob 3.2s ease-in-out infinite;
 }
@@ -150,16 +139,16 @@
   box-shadow: 3px 3px 0 var(--brand-espresso);
 }
 
-/* Same poster-shadow effect, but light — for buttons sitting on the dark
-   night-band/night sections, where a dark shadow would be invisible. */
+/* Same poster-shadow effect, but light — for buttons sitting on a dark
+   (espresso) section, where a dark shadow would be invisible. */
 .shadow-poster-light {
-  box-shadow: 5px 5px 0 #f6eedd;
+  box-shadow: 5px 5px 0 var(--brand-cream);
   transition:
     box-shadow 0.15s ease,
     transform 0.15s ease;
 }
 .shadow-poster-light:hover {
-  box-shadow: 3px 3px 0 #f6eedd;
+  box-shadow: 3px 3px 0 var(--brand-cream);
 }
 
 [data-reveal] {
@@ -188,7 +177,6 @@
     transition: none !important;
   }
   .animate-blob-move,
-  .animate-marquee,
   .animate-bob,
   .animate-sway,
   .animate-pulse-btn,
