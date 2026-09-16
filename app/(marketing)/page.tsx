@@ -325,19 +325,27 @@ export default function HomePage() {
           />
           {/* Continuous right-to-left card scroll, duplicated once for a
               seamless loop. */}
-          <div className="animate-marquee absolute inset-y-0 flex w-max items-center gap-4 py-4 pl-4">
+          <div className="animate-marquee-slow absolute inset-y-0 flex w-max items-center gap-5 py-4 pl-4">
             {[...TRUST_STEPS, ...TRUST_STEPS].map((item, index) => (
               <div
                 key={index}
-                className={`flex h-full w-[15rem] shrink-0 flex-col justify-end rounded-2xl p-5 sm:w-[19rem] sm:p-6 ${item.bg}`}
+                className={`relative flex h-full w-[22rem] shrink-0 flex-col justify-end overflow-hidden rounded-2xl p-5 sm:w-[30rem] sm:p-7 ${item.bg}`}
               >
+                <svg
+                  aria-hidden
+                  className={`absolute right-4 top-4 h-6 w-6 opacity-20 ${item.fg}`}
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                >
+                  <path d="M7 8.5C7 6.6 5.7 5 4.2 5S1.4 6.6 1.4 8.5 2.7 12 4.2 12 7 10.4 7 8.5Zm12 0c0-1.9-1.3-3.5-2.8-3.5s-2.8 1.6-2.8 3.5S14.7 12 16.2 12 19 10.4 19 8.5Zm-5.8 3C13.2 9.7 12.7 8 12 8s-1.2 1.7-1.2 3.5c-2 .5-3.4 2.2-3.4 4.2 0 2.3 2 3.8 4.6 3.8s4.6-1.5 4.6-3.8c0-2-1.4-3.7-3.4-4.2Z" />
+                </svg>
                 <span className={`font-display text-3xl font-black sm:text-4xl ${item.fg}`}>
                   0{(index % TRUST_STEPS.length) + 1}
                 </span>
                 <h3 className={`mt-1 font-display text-lg font-black uppercase leading-tight sm:text-2xl ${item.fg}`}>
                   {item.title}
                 </h3>
-                <p className={`mt-1 text-xs leading-relaxed sm:text-sm ${item.fg} opacity-70`}>
+                <p className={`mt-1 max-w-xs text-xs leading-relaxed sm:text-sm ${item.fg} opacity-70`}>
                   {item.body}
                 </p>
               </div>
@@ -419,20 +427,9 @@ export default function HomePage() {
               <h3 className="mt-2 font-display text-base font-black uppercase leading-tight text-espresso-700">
                 {item.title}
               </h3>
-              {item.step === '3' ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src="/brand/homepage/caption-message-book-pay.svg"
-                  alt={item.body}
-                  width={297}
-                  height={55}
-                  className="mt-2 h-auto w-40"
-                />
-              ) : (
-                <p className="mt-2 text-xs leading-relaxed text-espresso-500">
-                  {item.body}
-                </p>
-              )}
+              <p className="mt-2 text-xs leading-relaxed text-espresso-500">
+                {item.body}
+              </p>
             </div>
           ))}
         </div>

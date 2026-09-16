@@ -112,6 +112,9 @@
 .animate-marquee {
   animation: marquee-scroll 22s linear infinite;
 }
+.animate-marquee-slow {
+  animation: marquee-scroll 55s linear infinite;
+}
 .animate-bob {
   animation: bob 3.2s ease-in-out infinite;
 }
@@ -168,6 +171,7 @@
   }
   .animate-blob-move,
   .animate-marquee,
+  .animate-marquee-slow,
   .animate-bob,
   .animate-pulse-btn {
     animation: none !important;
