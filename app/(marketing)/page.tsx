@@ -1,7 +1,6 @@
 import Link from 'next/link';
 
 import { IconShield } from '@/components/icons';
-import { CountUp } from '@/components/marketing/count-up';
 import { IntroSplash } from '@/components/marketing/intro-splash';
 import { ScrollReveal } from '@/components/marketing/scroll-reveal';
 import { SERVICES } from '@/lib/services';
@@ -12,28 +11,24 @@ const TRUST_STEPS = [
     body: 'A third-party criminal and identity check clears before anything else.',
     bg: 'bg-espresso-700',
     fg: 'text-cream',
-    sub: 'text-cream/65',
   },
   {
     title: 'Interviewed',
     body: 'A real conversation with our team about experience and judgment.',
-    bg: 'bg-gold-500',
+    image: '/brand/homepage/check-panel-1-gold.svg',
     fg: 'text-espresso-700',
-    sub: 'text-espresso-700/70',
   },
   {
     title: 'Home verified',
     body: 'We visit and review the home for pets who will stay overnight.',
-    bg: 'bg-sky-200',
+    image: '/brand/homepage/check-panel-2-sky.svg',
     fg: 'text-espresso-700',
-    sub: 'text-espresso-700/70',
   },
   {
     title: 'Insured',
     body: 'Active coverage on file, tracked and re-checked before it expires.',
-    bg: 'bg-olive-500',
+    image: '/brand/homepage/check-panel-3-olive.svg',
     fg: 'text-cream',
-    sub: 'text-cream/65',
   },
 ];
 
@@ -125,18 +120,13 @@ export default function HomePage() {
           }}
         />
 
-        <div className="container-page relative z-[2] pb-16 pt-14 sm:pt-16">
-          <div className="flex items-start justify-between gap-4">
-            <span className="animate-bob inline-flex -rotate-2 items-center gap-2 border-2 border-espresso-700 bg-espresso-700 px-4 py-2 font-display text-xs font-bold uppercase tracking-wide text-cream">
-              <IconShield width={14} height={14} />
-              Background checked · Interviewed · Home verified · Insured
-            </span>
-
+        <div className="container-page relative z-[2] pb-24 pt-14 sm:pt-16">
+          <div className="flex justify-end">
             <Link
               href="/search"
-              className="hidden shrink-0 text-right text-xs font-bold uppercase leading-snug tracking-wide text-olive-500 underline decoration-gold-500 decoration-2 underline-offset-4 transition-colors hover:text-espresso-700 sm:block"
+              className="shrink-0 text-right text-xs font-bold uppercase leading-snug tracking-wide text-olive-500 underline decoration-gold-500 decoration-2 underline-offset-4 transition-colors hover:text-espresso-700"
             >
-              Pet care near you
+              Boston-area pet care
               <br />
               actually vetted
             </Link>
@@ -154,43 +144,14 @@ export default function HomePage() {
             </span>
           </h1>
 
-          <p className="mt-7 max-w-lg text-lg font-semibold leading-relaxed text-espresso-500">
-            Boarding, daycare, house sitting, walks and drop-in visits with
-            Haveners who earned their place. Every stay comes with photos,
-            updates and a report — not a shrug.
-          </p>
-
-          <div className="mt-8 flex flex-wrap gap-4">
+          <div className="mt-16 flex justify-end sm:mt-24">
             <Link
               href="/search"
               className="bone-cursor animate-pulse-btn inline-flex h-12 shrink-0 items-center justify-center whitespace-nowrap rounded-full bg-espresso-700 px-7 font-display text-base font-bold uppercase text-cream shadow-poster transition-transform hover:-translate-y-0.5"
             >
-              Find a Havener
-            </Link>
-            <Link
-              href="/become-a-havener"
-              className="bone-cursor inline-flex h-12 shrink-0 items-center justify-center whitespace-nowrap rounded-full border-2 border-espresso-700 bg-transparent px-7 font-display text-base font-bold uppercase text-espresso-700 transition-transform hover:-translate-y-0.5"
-            >
-              Become a Havener
+              Find their haven
             </Link>
           </div>
-
-          <dl className="mt-12 flex max-w-lg flex-wrap gap-x-10 gap-y-6">
-            {[
-              [4, 'checks', 'before a Havener can take a booking'],
-              [5, 'services', 'from a 20-minute visit to a two-week stay'],
-              [0, 'data sold', 'to advertisers, ever'],
-            ].map(([count, noun, label]) => (
-              <div key={noun as string}>
-                <dt className="font-display text-3xl font-black text-espresso-700">
-                  <CountUp target={count as number} /> {noun}
-                </dt>
-                <dd className="mt-1 max-w-[10rem] text-xs font-bold uppercase tracking-wide text-olive-500">
-                  {label}
-                </dd>
-              </div>
-            ))}
-          </dl>
         </div>
       </section>
 
@@ -320,29 +281,42 @@ export default function HomePage() {
           </p>
         </div>
 
-        <div className="container-page mt-10 overflow-hidden rounded-[2rem] shadow-lift">
-          <div className="grid grid-cols-2 sm:grid-cols-4">
-            {TRUST_STEPS.map((item, index) => (
-              <div
-                key={item.title}
-                data-reveal
-                style={{ transitionDelay: `${(index + 1) * 120}ms` }}
-                className={`relative flex min-h-[15rem] flex-col justify-end p-5 sm:min-h-[19rem] sm:p-6 ${item.bg}`}
-              >
+        <div className="container-page mt-10 space-y-3">
+          {TRUST_STEPS.map((item, index) => (
+            <div
+              key={item.title}
+              data-reveal
+              style={{ transitionDelay: `${(index + 1) * 120}ms` }}
+              className={`relative flex aspect-[1440/436] items-center overflow-hidden rounded-3xl shadow-lift ${item.bg ?? ''}`}
+            >
+              {item.image && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={item.image}
+                  alt=""
+                  aria-hidden
+                  width={1440}
+                  height={436}
+                  className="absolute inset-0 h-full w-full object-cover"
+                />
+              )}
+              <div className="relative flex items-center gap-4 p-5 sm:p-8">
+                <span className={`font-display text-3xl font-black sm:text-4xl ${item.fg}`}>
+                  0{index + 1}
+                </span>
                 <div>
-                  <span className={`font-display text-xs font-black uppercase tracking-[0.14em] ${item.fg}`}>
-                    0{index + 1}
-                  </span>
-                  <h3 className={`mt-1 font-display text-lg font-black uppercase leading-tight ${item.fg}`}>
+                  <h3 className={`font-display text-lg font-black uppercase leading-tight sm:text-2xl ${item.fg}`}>
                     {item.title}
                   </h3>
-                  <p className={`mt-2 hidden text-xs leading-relaxed sm:block ${item.sub}`}>
+                  <p
+                    className={`mt-1 max-w-sm text-xs leading-relaxed sm:text-sm ${item.fg} opacity-70`}
+                  >
                     {item.body}
                   </p>
                 </div>
               </div>
-            ))}
-          </div>
+            </div>
+          ))}
         </div>
 
         <div
