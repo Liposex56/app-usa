@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 import { IconClose, IconMenu } from '@/components/icons';
-import { LogoLink } from '@/components/logo';
+import { Logo } from '@/components/logo';
 import { cn } from '@/lib/utils';
 
 const NAV = [
@@ -26,7 +26,18 @@ export function SiteHeader({ isSignedIn }: { isSignedIn: boolean }) {
     <header className="sticky top-0 z-50 px-3 pt-3 sm:px-5 sm:pt-4">
       <div className="container-page">
         <div className="flex h-16 items-center justify-between gap-6 rounded-full border border-espresso-700/8 bg-bone/90 px-5 shadow-card backdrop-blur sm:px-7">
-          <LogoLink width={124} />
+          <Link href="/" aria-label="Havenr — home" className="inline-flex shrink-0 items-center gap-2">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/brand/homepage/header-dog-icon.svg"
+              alt=""
+              aria-hidden
+              width={91}
+              height={43}
+              className="h-6 w-auto"
+            />
+            <Logo width={100} />
+          </Link>
 
           <nav className="hidden items-center gap-7 lg:flex">
             {NAV.map((item) => {

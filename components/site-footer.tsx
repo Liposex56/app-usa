@@ -28,7 +28,7 @@ const COLUMNS = [
 
 export function SiteFooter() {
   return (
-    <footer className="mt-24 bg-espresso-700 text-cream/80">
+    <footer className="bg-espresso-700 text-cream/80">
       <div className="container-page grid gap-12 py-16 md:grid-cols-[1.4fr_1fr_1fr_1fr]">
         <div className="max-w-xs">
           <Logo tone="cream" variant="full" width={150} />

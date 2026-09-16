@@ -9,7 +9,9 @@ const TRUST_STEPS = [
   {
     title: 'Background checked',
     body: 'A third-party criminal and identity check clears before anything else.',
-    bg: 'bg-espresso-700',
+    // A shade lighter than the band itself (bg-espresso-700) so this card
+    // still reads as a distinct card while scrolling past.
+    bg: 'bg-espresso-500',
     fg: 'text-cream',
   },
   {
@@ -311,42 +313,39 @@ export default function HomePage() {
           </p>
         </div>
 
-        <div className="container-page mt-10 space-y-3">
-          {TRUST_STEPS.map((item, index) => (
-            <div
-              key={item.title}
-              data-reveal
-              style={{ transitionDelay: `${(index + 1) * 120}ms` }}
-              className={`relative flex aspect-[1440/436] items-center overflow-hidden rounded-3xl shadow-lift ${item.bg}`}
-            >
-              {index === 0 && (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src="/brand/homepage/dachshund-mascot.png"
-                  alt=""
-                  aria-hidden
-                  width={2240}
-                  height={2429}
-                  className="pointer-events-none absolute -bottom-3 -right-2 h-16 w-auto sm:h-24"
-                />
-              )}
-              <div className="relative flex items-center gap-4 p-5 sm:p-8">
+        <div
+          data-reveal
+          className="container-page relative mt-10 aspect-[1440/436] overflow-hidden rounded-3xl bg-espresso-700 shadow-lift"
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/brand/homepage/dachshund-mascot.png"
+            alt=""
+            aria-hidden
+            width={2240}
+            height={2429}
+            className="pointer-events-none absolute -bottom-3 -right-2 z-10 h-16 w-auto sm:h-24"
+          />
+          {/* Continuous right-to-left card scroll, duplicated once for a
+              seamless loop. */}
+          <div className="animate-marquee absolute inset-y-0 flex w-max items-center gap-4 py-4 pl-4">
+            {[...TRUST_STEPS, ...TRUST_STEPS].map((item, index) => (
+              <div
+                key={index}
+                className={`flex h-full w-[15rem] shrink-0 flex-col justify-end rounded-2xl p-5 sm:w-[19rem] sm:p-6 ${item.bg}`}
+              >
                 <span className={`font-display text-3xl font-black sm:text-4xl ${item.fg}`}>
-                  0{index + 1}
+                  0{(index % TRUST_STEPS.length) + 1}
                 </span>
-                <div>
-                  <h3 className={`font-display text-lg font-black uppercase leading-tight sm:text-2xl ${item.fg}`}>
-                    {item.title}
-                  </h3>
-                  <p
-                    className={`mt-1 max-w-sm text-xs leading-relaxed sm:text-sm ${item.fg} opacity-70`}
-                  >
-                    {item.body}
-                  </p>
-                </div>
+                <h3 className={`mt-1 font-display text-lg font-black uppercase leading-tight sm:text-2xl ${item.fg}`}>
+                  {item.title}
+                </h3>
+                <p className={`mt-1 text-xs leading-relaxed sm:text-sm ${item.fg} opacity-70`}>
+                  {item.body}
+                </p>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
 
         <div
