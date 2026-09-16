@@ -15,19 +15,25 @@ const TRUST_STEPS = [
   {
     title: 'Interviewed',
     body: 'A real conversation with our team about experience and judgment.',
-    image: '/brand/homepage/check-panel-1-gold.svg',
+    // Exact color from the delivered check-panel-1-gold.svg (#BE8210 = gold-500).
+    // Used as a flat fill rather than the image itself: that file also bakes in
+    // a vertical "INTERVIEW" label baked into panels 2 and 3 too (an export
+    // mistake upstream), which would contradict their real titles.
+    bg: 'bg-gold-500',
     fg: 'text-espresso-700',
   },
   {
     title: 'Home verified',
     body: 'We visit and review the home for pets who will stay overnight.',
-    image: '/brand/homepage/check-panel-2-sky.svg',
+    // #C2DCF4 = sky-200, from check-panel-2-sky.svg.
+    bg: 'bg-sky-200',
     fg: 'text-espresso-700',
   },
   {
     title: 'Insured',
     body: 'Active coverage on file, tracked and re-checked before it expires.',
-    image: '/brand/homepage/check-panel-3-olive.svg',
+    // #69532A = olive-500, from check-panel-3-olive.svg.
+    bg: 'bg-olive-500',
     fg: 'text-cream',
   },
 ];
@@ -287,19 +293,8 @@ export default function HomePage() {
               key={item.title}
               data-reveal
               style={{ transitionDelay: `${(index + 1) * 120}ms` }}
-              className={`relative flex aspect-[1440/436] items-center overflow-hidden rounded-3xl shadow-lift ${item.bg ?? ''}`}
+              className={`relative flex aspect-[1440/436] items-center overflow-hidden rounded-3xl shadow-lift ${item.bg}`}
             >
-              {item.image && (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={item.image}
-                  alt=""
-                  aria-hidden
-                  width={1440}
-                  height={436}
-                  className="absolute inset-0 h-full w-full object-cover"
-                />
-              )}
               <div className="relative flex items-center gap-4 p-5 sm:p-8">
                 <span className={`font-display text-3xl font-black sm:text-4xl ${item.fg}`}>
                   0{index + 1}
