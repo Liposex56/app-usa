@@ -44,8 +44,12 @@
 }
 
 @layer components {
+  /* 1440px matches the width the actual designs were authored at (Figma
+     canvas) — using the same width here is why things looked shrunk
+     relative to the reference screenshots on any screen wider than
+     ~1152px (the old max-w-6xl). */
   .container-page {
-    @apply mx-auto w-full max-w-6xl px-5 sm:px-8;
+    @apply mx-auto w-full max-w-[1440px] px-5 sm:px-10 lg:px-16;
   }
 
   .eyebrow {
