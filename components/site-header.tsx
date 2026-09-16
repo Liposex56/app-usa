@@ -6,15 +6,13 @@ import { useEffect, useState } from 'react';
 
 import { IconClose, IconMenu } from '@/components/icons';
 import { LogoLink } from '@/components/logo';
-import { ButtonLink } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
 const NAV = [
-  { href: '/search', label: 'Find a Havener' },
   { href: '/services', label: 'Services' },
-  { href: '/how-it-works', label: 'How it works' },
-  { href: '/trust-and-safety', label: 'Trust & safety' },
-  { href: '/become-a-havener', label: 'Become a Havener' },
+  { href: '/how-it-works', label: 'How It Works' },
+  { href: '/trust-and-safety', label: 'Trust & Safety' },
+  { href: '/become-a-havener', label: 'Become A Havener' },
 ];
 
 export function SiteHeader({ isSignedIn }: { isSignedIn: boolean }) {
@@ -25,85 +23,109 @@ export function SiteHeader({ isSignedIn }: { isSignedIn: boolean }) {
   useEffect(() => setOpen(false), [pathname]);
 
   return (
-    <header className="sticky top-0 z-50 border-b border-espresso-700/8 bg-bone/85 backdrop-blur">
-      <div className="container-page flex h-16 items-center justify-between gap-6">
-        <LogoLink width={124} />
+    <header className="sticky top-0 z-50 px-3 pt-3 sm:px-5 sm:pt-4">
+      <div className="container-page">
+        <div className="flex h-16 items-center justify-between gap-6 rounded-full border border-espresso-700/8 bg-bone/90 px-5 shadow-card backdrop-blur sm:px-7">
+          <LogoLink width={124} />
 
-        <nav className="hidden items-center gap-7 lg:flex">
-          {NAV.map((item) => {
-            const active = pathname.startsWith(item.href);
-            return (
+          <nav className="hidden items-center gap-7 lg:flex">
+            {NAV.map((item) => {
+              const active = pathname.startsWith(item.href);
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={cn(
+                    'text-sm font-medium transition-colors',
+                    active
+                      ? 'text-espresso-700'
+                      : 'text-espresso-700/80 hover:text-espresso-700'
+                  )}
+                >
+                  {item.label}
+                </Link>
+              );
+            })}
+          </nav>
+
+          <div className="hidden items-center gap-4 lg:flex">
+            {isSignedIn ? (
               <Link
-                key={item.href}
-                href={item.href}
-                className={cn(
-                  'text-sm transition-colors',
-                  active
-                    ? 'font-medium text-espresso-700'
-                    : 'text-espresso-500 hover:text-espresso-700'
-                )}
+                href="/dashboard"
+                className="inline-flex h-9 items-center justify-center rounded-full bg-sky-200 px-5 text-sm font-bold text-espresso-700 transition-colors hover:bg-sky-300"
               >
-                {item.label}
+                Dashboard
               </Link>
-            );
-          })}
-        </nav>
+            ) : (
+              <>
+                <Link
+                  href="/login"
+                  className="inline-flex h-9 items-center justify-center rounded-full bg-sky-200 px-5 text-sm font-bold text-espresso-700 transition-colors hover:bg-sky-300"
+                >
+                  Log In
+                </Link>
+                <Link
+                  href="/signup"
+                  className="text-sm font-bold text-espresso-700 transition-colors hover:text-gold-600"
+                >
+                  Get Started
+                </Link>
+              </>
+            )}
+          </div>
 
-        <div className="hidden items-center gap-2.5 lg:flex">
-          {isSignedIn ? (
-            <ButtonLink href="/dashboard" size="sm">
-              Dashboard
-            </ButtonLink>
-          ) : (
-            <>
-              <ButtonLink href="/login" variant="ghost" size="sm">
-                Log in
-              </ButtonLink>
-              <ButtonLink href="/signup" size="sm">
-                Get started
-              </ButtonLink>
-            </>
-          )}
+          <button
+            type="button"
+            aria-label={open ? 'Close menu' : 'Open menu'}
+            aria-expanded={open}
+            onClick={() => setOpen((v) => !v)}
+            className="rounded-full p-2 text-espresso-700 transition-colors hover:bg-espresso-700/5 lg:hidden"
+          >
+            {open ? <IconClose /> : <IconMenu />}
+          </button>
         </div>
 
-        <button
-          type="button"
-          aria-label={open ? 'Close menu' : 'Open menu'}
-          aria-expanded={open}
-          onClick={() => setOpen((v) => !v)}
-          className="rounded-full p-2 text-espresso-700 transition-colors hover:bg-espresso-700/5 lg:hidden"
-        >
-          {open ? <IconClose /> : <IconMenu />}
-        </button>
-      </div>
-
-      {open && (
-        <div className="border-t border-espresso-700/8 bg-bone lg:hidden">
-          <div className="container-page flex flex-col gap-1 py-4">
-            {NAV.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className="rounded-lg px-3 py-2.5 text-[15px] text-espresso-700 hover:bg-espresso-700/5"
-              >
-                {item.label}
-              </Link>
-            ))}
-            <div className="mt-3 flex flex-col gap-2 border-t border-espresso-700/8 pt-4">
-              {isSignedIn ? (
-                <ButtonLink href="/dashboard">Dashboard</ButtonLink>
-              ) : (
-                <>
-                  <ButtonLink href="/signup">Get started</ButtonLink>
-                  <ButtonLink href="/login" variant="secondary">
-                    Log in
-                  </ButtonLink>
-                </>
-              )}
+        {open && (
+          <div className="mt-2 rounded-3xl border border-espresso-700/8 bg-bone shadow-card lg:hidden">
+            <div className="flex flex-col gap-1 p-4">
+              {NAV.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className="rounded-lg px-3 py-2.5 text-[15px] font-medium text-espresso-700 hover:bg-espresso-700/5"
+                >
+                  {item.label}
+                </Link>
+              ))}
+              <div className="mt-3 flex flex-col gap-2 border-t border-espresso-700/8 pt-4">
+                {isSignedIn ? (
+                  <Link
+                    href="/dashboard"
+                    className="inline-flex h-10 items-center justify-center rounded-full bg-sky-200 text-sm font-bold text-espresso-700"
+                  >
+                    Dashboard
+                  </Link>
+                ) : (
+                  <>
+                    <Link
+                      href="/login"
+                      className="inline-flex h-10 items-center justify-center rounded-full bg-sky-200 text-sm font-bold text-espresso-700"
+                    >
+                      Log In
+                    </Link>
+                    <Link
+                      href="/signup"
+                      className="inline-flex h-10 items-center justify-center text-sm font-bold text-espresso-700"
+                    >
+                      Get Started
+                    </Link>
+                  </>
+                )}
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </header>
   );
 }

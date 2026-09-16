@@ -43,26 +43,32 @@ const HOW_IT_WORKS = [
     step: '1',
     title: 'Tell us about your pet',
     body: 'Breed, size, energy, medications, what scares them, what calms them.',
-    rotate: '-rotate-3',
   },
   {
     step: '2',
     title: 'See only Haveners who fit',
     body: 'We hide anyone who does not accept your pet’s requirements — even if they are nearby and highly rated.',
-    rotate: 'rotate-2',
   },
   {
     step: '3',
     title: 'Message, book and pay in one place',
     body: 'Agree the details in Havenr chat, send the request, and pay through the platform.',
-    rotate: '-rotate-2',
   },
   {
     step: '4',
     title: 'Follow along, then get the report',
     body: 'Photos, updates and activity logs as they happen — and a full summary when the service ends.',
-    rotate: 'rotate-3',
   },
+];
+
+// Absolute position + rotation for each How-it-works card, aligned by array
+// index to HOW_IT_WORKS — an overlapping, hand-scattered fan (matching the
+// master file) instead of a plain grid.
+const HOW_IT_WORKS_LAYOUT: Array<{ left: string; top: string; transform: string }> = [
+  { left: '0%', top: '42%', transform: 'rotate(-8deg)' },
+  { left: '26%', top: '58%', transform: 'rotate(-5deg)' },
+  { left: '20%', top: '0%', transform: 'rotate(5deg)' },
+  { left: '52%', top: '18%', transform: 'rotate(9deg)' },
 ];
 
 const FEATURES = [
@@ -106,14 +112,32 @@ const FEATURES = [
 
 const SERVICE_SWATCHES = ['bg-cream', 'bg-sky-100', 'bg-gold-50', 'bg-white', 'bg-sky-200'];
 
+// Column spans (of 12) per feature tile, sized to each wordmark's own width
+// so the grid reads as the same uneven, bento-style rows as the master file
+// instead of six identical boxes.
+const FEATURE_SPANS = [
+  'sm:col-span-5',
+  'sm:col-span-7',
+  'sm:col-span-7',
+  'sm:col-span-5',
+  'sm:col-span-6',
+  'sm:col-span-6',
+];
+
 export default function HomePage() {
   return (
-    <>
+    <div
+      className="relative bg-bone bg-no-repeat"
+      style={{
+        backgroundImage: 'url(/brand/homepage/page-background-gradient.png)',
+        backgroundSize: '100% 100%',
+      }}
+    >
       <IntroSplash />
       <ScrollReveal />
 
       {/* ---------------------------------------------------------------- Hero */}
-      <section className="relative overflow-hidden bg-bone">
+      <section className="relative overflow-hidden">
         <div
           className="animate-blob-move absolute -left-20 -top-20 h-72 w-72 bg-gold-100/70"
           style={{ borderRadius: '44% 56% 62% 38% / 48% 42% 58% 52%' }}
@@ -162,7 +186,7 @@ export default function HomePage() {
       </section>
 
       {/* ------------------------------------------------------- A day in their haven */}
-      <section className="bg-bone pb-20 sm:pb-28">
+      <section className="pb-20 sm:pb-28">
         <div className="container-page" data-reveal>
           <span className="font-display text-sm font-bold uppercase tracking-widest text-gold-500 after:ml-2 after:content-['•']">
             A day in their haven
@@ -194,7 +218,7 @@ export default function HomePage() {
       </section>
 
       {/* ------------------------------------------------------------ Services */}
-      <section className="relative overflow-hidden bg-bone pb-20 pt-4 sm:pb-24">
+      <section className="relative overflow-hidden pb-20 pt-4 sm:pb-24">
         <div className="container-page" data-reveal>
           <h2 className="sr-only">5 ways to get your pet cared for</h2>
 
@@ -272,7 +296,7 @@ export default function HomePage() {
       </section>
 
       {/* --------------------------------------------------------------- Trust */}
-      <section className="bg-bone pb-20 pt-4 sm:pb-24">
+      <section className="pb-20 pt-4 sm:pb-24">
         <div className="container-page" data-reveal>
           <span className="font-display text-sm font-bold uppercase tracking-widest text-gold-500 after:ml-2 after:content-['•']">
             Trust &amp; safety
@@ -295,6 +319,17 @@ export default function HomePage() {
               style={{ transitionDelay: `${(index + 1) * 120}ms` }}
               className={`relative flex aspect-[1440/436] items-center overflow-hidden rounded-3xl shadow-lift ${item.bg}`}
             >
+              {index === 0 && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src="/brand/homepage/dachshund-mascot.png"
+                  alt=""
+                  aria-hidden
+                  width={2240}
+                  height={2429}
+                  className="pointer-events-none absolute -bottom-3 -right-2 h-16 w-auto sm:h-24"
+                />
+              )}
               <div className="relative flex items-center gap-4 p-5 sm:p-8">
                 <span className={`font-display text-3xl font-black sm:text-4xl ${item.fg}`}>
                   0{index + 1}
@@ -337,7 +372,7 @@ export default function HomePage() {
       </section>
 
       {/* -------------------------------------------------------- How it works */}
-      <section className="overflow-hidden bg-gradient-to-b from-bone via-sky-100 to-sky-200 pb-24 pt-4 sm:pb-28">
+      <section className="overflow-hidden pb-24 pt-4 sm:pb-28">
         <div className="container-page" data-reveal>
           <span className="font-display text-sm font-bold uppercase tracking-widest text-espresso-700/60">
             What we offer
@@ -347,43 +382,66 @@ export default function HomePage() {
           </h2>
         </div>
 
-        <div className="container-page relative mt-16 grid gap-x-6 gap-y-14 sm:grid-cols-2 sm:gap-y-6 lg:grid-cols-4">
+        {/* Mobile: a simple stacked list — the overlapping fan below is desktop-only. */}
+        <div className="container-page mt-12 space-y-5 sm:hidden">
           {HOW_IT_WORKS.map((item, index) => (
             <div
               key={item.step}
               data-reveal
               style={{ transitionDelay: `${(index + 1) * 110}ms` }}
-              className={index % 2 === 1 ? 'sm:mt-10' : ''}
+              className="rounded-3xl bg-white p-6 shadow-lift"
             >
-              <div
-                className={`relative rounded-3xl bg-white p-6 shadow-lift transition-transform hover:-translate-y-1 ${item.rotate}`}
-              >
-                <span className="font-display text-5xl font-black text-sky-300">
-                  {item.step}
-                </span>
-                <h3 className="mt-2 font-display text-base font-black uppercase leading-tight text-espresso-700">
-                  {item.title}
-                </h3>
-                {item.step === '3' ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src="/brand/homepage/caption-message-book-pay.svg"
-                    alt={item.body}
-                    width={297}
-                    height={55}
-                    className="mt-2 h-auto w-40"
-                  />
-                ) : (
-                  <p className="mt-2 text-xs leading-relaxed text-espresso-500">
-                    {item.body}
-                  </p>
-                )}
-              </div>
+              <span className="font-display text-4xl font-black text-sky-300">
+                {item.step}
+              </span>
+              <h3 className="mt-2 font-display text-base font-black uppercase leading-tight text-espresso-700">
+                {item.title}
+              </h3>
+              <p className="mt-2 text-xs leading-relaxed text-espresso-500">
+                {item.body}
+              </p>
             </div>
           ))}
         </div>
 
-        <div className="container-page mt-20 text-center sm:mt-24" data-reveal>
+        {/* Desktop: an overlapping, hand-scattered fan of cards, like a hand of
+            playing cards — matching the master file instead of a plain grid. */}
+        <div className="container-page relative mt-16 hidden h-[30rem] sm:block">
+          {HOW_IT_WORKS.map((item, index) => (
+            <div
+              key={item.step}
+              data-reveal
+              style={{
+                transitionDelay: `${(index + 1) * 110}ms`,
+                ...HOW_IT_WORKS_LAYOUT[index],
+              }}
+              className="absolute w-[46%] max-w-sm rounded-3xl bg-white p-6 shadow-lift transition-transform hover:z-10 hover:-translate-y-1 lg:w-[28%]"
+            >
+              <span className="font-display text-5xl font-black text-sky-300">
+                {item.step}
+              </span>
+              <h3 className="mt-2 font-display text-base font-black uppercase leading-tight text-espresso-700">
+                {item.title}
+              </h3>
+              {item.step === '3' ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src="/brand/homepage/caption-message-book-pay.svg"
+                  alt={item.body}
+                  width={297}
+                  height={55}
+                  className="mt-2 h-auto w-40"
+                />
+              ) : (
+                <p className="mt-2 text-xs leading-relaxed text-espresso-500">
+                  {item.body}
+                </p>
+              )}
+            </div>
+          ))}
+        </div>
+
+        <div className="container-page mt-20 sm:mt-24" data-reveal>
           <p className="font-display text-3xl font-black uppercase leading-[0.95] text-espresso-700 sm:text-5xl">
             The details that decide whether
           </p>
@@ -394,14 +452,14 @@ export default function HomePage() {
       </section>
 
       {/* --------------------------------------------------- Features + Final CTA */}
-      <section className="bg-gradient-to-b from-sky-200 via-gold-800 to-espresso-700 pb-20 pt-16 sm:pb-28 sm:pt-20">
-        <div className="container-page grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <section className="pb-20 pt-16 sm:pb-28 sm:pt-20">
+        <div className="container-page grid grid-cols-1 gap-4 sm:grid-cols-12">
           {FEATURES.map((feature, index) => (
             <div
               key={feature.title}
               data-reveal
               style={{ transitionDelay: `${(index + 1) * 90}ms` }}
-              className="rounded-3xl bg-white p-6 shadow-lift"
+              className={`rounded-3xl bg-white p-6 shadow-lift ${FEATURE_SPANS[index]}`}
             >
               <h3>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -445,6 +503,6 @@ export default function HomePage() {
           </div>
         </div>
       </section>
-    </>
+    </div>
   );
 }
