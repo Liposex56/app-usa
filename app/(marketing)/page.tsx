@@ -254,7 +254,7 @@ export default function HomePage() {
               href={`/services/${service.slug}`}
               data-reveal
               style={{ transitionDelay: `${(i + 1) * 90}ms` }}
-              className={`bone-cursor group flex flex-col rounded-3xl border-2 border-espresso-700/10 p-7 text-espresso-700 shadow-card transition-transform hover:-translate-y-1 ${SERVICE_SWATCHES[i % SERVICE_SWATCHES.length]}`}
+              className={`bone-cursor group flex h-72 flex-col rounded-3xl border-2 border-espresso-700/10 p-7 text-espresso-700 shadow-card transition-transform hover:-translate-y-1 ${SERVICE_SWATCHES[i % SERVICE_SWATCHES.length]}`}
             >
               <h3 className="font-display text-2xl font-black uppercase">
                 {service.name}
@@ -262,18 +262,9 @@ export default function HomePage() {
               <p className="mt-2 text-sm font-bold text-espresso-500">
                 {service.tagline}
               </p>
-              <p className="mt-4 flex-1 text-sm leading-relaxed text-espresso-500">
-                {service.description}
-              </p>
-              <p className="mt-6 inline-flex items-center gap-1.5 font-display text-sm font-bold uppercase text-espresso-700 transition-colors group-hover:text-gold-600">
-                Learn more
-                <span
-                  aria-hidden
-                  className="transition-transform group-hover:translate-x-0.5"
-                >
-                  →
-                </span>
-              </p>
+              {/* Photo goes here once it's ready — kept as reserved space
+                  rather than filling it with description copy. */}
+              <div className="mt-4 flex-1 rounded-2xl border-2 border-dashed border-espresso-700/15" />
             </Link>
           ))}
 
@@ -281,7 +272,7 @@ export default function HomePage() {
             href="/services"
             data-reveal
             style={{ transitionDelay: `${(SERVICES.length + 1) * 90}ms` }}
-            className="bone-cursor flex flex-col justify-center rounded-3xl bg-espresso-700 p-7 text-cream shadow-card transition-transform hover:-translate-y-1"
+            className="bone-cursor flex h-72 flex-col justify-center rounded-3xl bg-espresso-700 p-7 text-cream shadow-card transition-transform hover:-translate-y-1"
           >
             <h3 className="font-display text-2xl font-black uppercase text-cream">
               Not sure which one?
@@ -296,18 +287,13 @@ export default function HomePage() {
 
       {/* --------------------------------------------------------------- Trust */}
       <section className="pb-20 pt-4 sm:pb-24">
-        <div className="container-page" data-reveal>
+        <div className="container-page text-center" data-reveal>
           <span className="font-display text-sm font-bold uppercase tracking-widest text-gold-500 after:ml-2 after:content-['•']">
             Trust &amp; safety
           </span>
-          <h2 className="mt-3 max-w-lg font-display text-4xl font-black uppercase leading-[0.94] text-espresso-700 sm:text-5xl">
+          <h2 className="mx-auto mt-3 max-w-2xl font-display text-4xl font-black uppercase leading-[0.94] text-espresso-700 sm:text-6xl">
             Four checks. <span className="text-gold-500">No exceptions.</span>
           </h2>
-          <p className="mt-4 max-w-md text-[15px] leading-relaxed text-espresso-500">
-            Being nearby and cheap is not enough to care for someone’s pet. A
-            Havener clears all four steps before a single booking reaches
-            them.
-          </p>
         </div>
 
         <div
@@ -373,7 +359,7 @@ export default function HomePage() {
           <span className="font-display text-sm font-bold uppercase tracking-widest text-espresso-700/60">
             What we offer
           </span>
-          <h2 className="mt-3 max-w-lg font-display text-3xl font-black uppercase leading-[0.98] text-espresso-700 sm:text-5xl">
+          <h2 className="mt-3 max-w-md font-display text-2xl font-black uppercase leading-[0.98] text-espresso-700 sm:text-3xl">
             From “who can watch my dog?” to booked.
           </h2>
         </div>

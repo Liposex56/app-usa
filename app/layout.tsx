@@ -1,12 +1,14 @@
 import type { Metadata, Viewport } from 'next';
-import { Jost, Source_Sans_3 } from 'next/font/google';
+import { Barlow_Condensed, Source_Sans_3 } from 'next/font/google';
 
 import './globals.css';
 
 /**
  * Brand typography is Myriad Pro (body) + Better Vinegar (display), neither of
  * which is licensed for the web. Source Sans 3 is Adobe's open sibling to
- * Myriad, and Jost matches the geometric, wide-set lettering of the wordmark.
+ * Myriad. Barlow Condensed is confirmed directly from the Figma file (its
+ * text layers are set in Barlow Condensed) as the practical web substitute
+ * for Better Vinegar's tall, condensed display lettering.
  */
 const body = Source_Sans_3({
   subsets: ['latin'],
@@ -14,10 +16,10 @@ const body = Source_Sans_3({
   variable: '--font-body',
 });
 
-const display = Jost({
+const display = Barlow_Condensed({
   subsets: ['latin'],
   display: 'swap',
-  weight: ['300', '400', '500', '700', '800', '900'],
+  weight: ['400', '500', '600', '700', '800', '900'],
   variable: '--font-display',
 });
 
