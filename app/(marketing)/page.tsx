@@ -68,9 +68,9 @@ const HOW_IT_WORKS = [
 // master file) instead of a plain grid.
 const HOW_IT_WORKS_LAYOUT: Array<{ left: string; top: string; transform: string }> = [
   { left: '0%', top: '42%', transform: 'rotate(-8deg)' },
-  { left: '26%', top: '58%', transform: 'rotate(-5deg)' },
+  { left: '24%', top: '58%', transform: 'rotate(-5deg)' },
   { left: '20%', top: '0%', transform: 'rotate(5deg)' },
-  { left: '52%', top: '18%', transform: 'rotate(9deg)' },
+  { left: '58%', top: '18%', transform: 'rotate(9deg)' },
 ];
 
 const FEATURES = [
@@ -164,7 +164,11 @@ export default function HomePage() {
             </Link>
           </div>
 
-          <h1 className="mt-7 font-display font-black uppercase leading-[0.86] tracking-tight">
+          {/* Confirmed from the Figma frame: this heading block (789px of a
+              1440px frame) sits centered as a block, with its lines
+              left-aligned to each other inside that centered box — not
+              flush against the container's own left edge. */}
+          <h1 className="mt-7 font-display font-black uppercase leading-[0.86] tracking-tight sm:mx-auto sm:max-w-3xl">
             <span className="block text-[2.6rem] text-espresso-700 sm:text-6xl lg:text-7xl">
               Pet <span className="text-sky-500">care</span>
             </span>
@@ -397,7 +401,7 @@ export default function HomePage() {
                 transitionDelay: `${(index + 1) * 450}ms`,
                 ...HOW_IT_WORKS_LAYOUT[index],
               }}
-              className="absolute w-[52%] max-w-md rounded-3xl bg-white p-7 shadow-lift transition-transform hover:z-10 hover:-translate-y-1 lg:w-[34%]"
+              className="absolute w-[58%] max-w-lg rounded-3xl bg-white p-7 shadow-lift transition-transform hover:z-10 hover:-translate-y-1 lg:w-[38%]"
             >
               <span className="font-display text-6xl font-black text-sky-300">
                 {item.step}
