@@ -176,11 +176,11 @@ export default function HomePage() {
             </Link>
           </div>
 
-          {/* Confirmed from the Figma frame: this heading block (789px of a
-              1440px frame) sits centered as a block, with its lines
-              left-aligned to each other inside that centered box — not
-              flush against the container's own left edge. */}
-          <h1 className="mt-7 font-display font-black uppercase leading-[0.86] tracking-tight sm:mx-auto sm:max-w-3xl">
+          {/* Centered block, each line individually centered — confirmed
+              against the reference screenshot (varying left/right insets
+              per line, not a shared left edge). No trailing period after
+              "booked in minutes" either, per the same reference. */}
+          <h1 className="mt-7 text-center font-display font-black uppercase leading-[0.86] tracking-tight sm:mx-auto sm:max-w-3xl">
             <span className="block text-[2.6rem] text-espresso-700 sm:text-6xl lg:text-7xl">
               Pet <span className="text-sky-500">care</span>
             </span>
@@ -188,7 +188,7 @@ export default function HomePage() {
               you can trust,
             </span>
             <span className="block text-[3rem] text-gold-500 sm:text-[4.6rem] lg:text-[6rem]">
-              booked in minutes.
+              booked in minutes
             </span>
           </h1>
 
