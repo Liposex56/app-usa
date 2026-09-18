@@ -1,6 +1,7 @@
 import Link from 'next/link';
 
 import { IconShield } from '@/components/icons';
+import { HowItWorksFan } from '@/components/marketing/how-it-works-fan';
 import { IntroSplash } from '@/components/marketing/intro-splash';
 import { ScrollReveal } from '@/components/marketing/scroll-reveal';
 import { SERVICES } from '@/lib/services';
@@ -412,30 +413,10 @@ export default function HomePage() {
         </div>
 
         {/* Desktop: an overlapping, hand-scattered fan of cards, like a hand of
-            playing cards — matching the master file instead of a plain grid. */}
-        <div className="container-page relative mt-16 hidden h-[36rem] sm:block">
-          {HOW_IT_WORKS.map((item, index) => (
-            <div
-              key={item.step}
-              data-reveal
-              style={{
-                transitionDelay: `${(index + 1) * 450}ms`,
-                ...HOW_IT_WORKS_LAYOUT[index],
-              }}
-              className="absolute w-[58%] max-w-lg rounded-3xl bg-white p-7 shadow-lift transition-transform hover:z-10 hover:-translate-y-1 lg:w-[38%]"
-            >
-              <span className="font-display text-6xl font-black text-sky-300">
-                {item.step}
-              </span>
-              <h3 className="mt-3 font-display text-xl font-black uppercase leading-tight text-espresso-700">
-                {item.title}
-              </h3>
-              <p className="mt-2 text-sm leading-relaxed text-espresso-500">
-                {item.body}
-              </p>
-            </div>
-          ))}
-        </div>
+            playing cards — matching the master file instead of a plain grid.
+            Per the design file's own note, each card reveals one at a time
+            as the user keeps scrolling, rather than all at once. */}
+        <HowItWorksFan steps={HOW_IT_WORKS} layout={HOW_IT_WORKS_LAYOUT} />
 
         <div className="container-page mt-20 sm:mt-24" data-reveal>
           <p className="font-display text-3xl font-black uppercase leading-[0.95] text-espresso-700 sm:text-5xl">
