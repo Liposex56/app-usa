@@ -380,7 +380,9 @@ export default function HomePage() {
       </section>
 
       {/* -------------------------------------------------------- How it works */}
-      <section className="overflow-hidden pb-24 pt-4 sm:pb-28">
+      {/* No overflow-hidden here: it clips out position: sticky entirely
+          (the scroll-triggered fan below relies on it staying pinned). */}
+      <section className="pb-24 pt-4 sm:pb-28">
         <div className="container-page" data-reveal>
           <span className="font-display text-sm font-bold uppercase tracking-widest text-espresso-700/60">
             What we offer
