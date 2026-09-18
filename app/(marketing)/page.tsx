@@ -1,7 +1,6 @@
 import Link from 'next/link';
 
 import { IconShield } from '@/components/icons';
-import { HowItWorksFan } from '@/components/marketing/how-it-works-fan';
 import { IntroSplash } from '@/components/marketing/intro-splash';
 import { ScrollReveal } from '@/components/marketing/scroll-reveal';
 import { SERVICES } from '@/lib/services';
@@ -65,14 +64,13 @@ const HOW_IT_WORKS = [
 ];
 
 // Absolute position + rotation for each How-it-works card, aligned by array
-// index to HOW_IT_WORKS — a diagonal staircase/chain (1 top-left cascading
-// down to 4 bottom-right) so the scroll-triggered reveal reads in order and
-// each card keeps its own number visible instead of a scattered fan.
+// index to HOW_IT_WORKS — an overlapping, hand-scattered fan (matching the
+// master file) instead of a plain grid.
 const HOW_IT_WORKS_LAYOUT: Array<{ left: string; top: string; transform: string }> = [
-  { left: '2%', top: '2%', transform: 'rotate(-3deg)' },
-  { left: '20%', top: '20%', transform: 'rotate(-1deg)' },
-  { left: '38%', top: '38%', transform: 'rotate(1deg)' },
-  { left: '56%', top: '56%', transform: 'rotate(3deg)' },
+  { left: '0%', top: '42%', transform: 'rotate(-8deg)' },
+  { left: '24%', top: '58%', transform: 'rotate(-5deg)' },
+  { left: '20%', top: '0%', transform: 'rotate(5deg)' },
+  { left: '58%', top: '18%', transform: 'rotate(9deg)' },
 ];
 
 const FEATURES = [
@@ -381,9 +379,7 @@ export default function HomePage() {
       </section>
 
       {/* -------------------------------------------------------- How it works */}
-      {/* No overflow-hidden here: it clips out position: sticky entirely
-          (the scroll-triggered fan below relies on it staying pinned). */}
-      <section className="pb-24 pt-4 sm:pb-28">
+      <section className="overflow-hidden pb-24 pt-4 sm:pb-28">
         <div className="container-page" data-reveal>
           <span className="font-display text-sm font-bold uppercase tracking-widest text-espresso-700/60">
             What we offer
@@ -417,9 +413,28 @@ export default function HomePage() {
 
         {/* Desktop: an overlapping, hand-scattered fan of cards, like a hand of
             playing cards — matching the master file instead of a plain grid.
-            Per the design file's own note, each card reveals one at a time
-            as the user keeps scrolling, rather than all at once. */}
-        <HowItWorksFan steps={HOW_IT_WORKS} layout={HOW_IT_WORKS_LAYOUT} />
+            Per the design file's own note, each card reveals on its own —
+            one every 30 seconds — rather than all at once. */}
+        <div className="container-page relative mt-16 hidden h-[36rem] sm:block">
+          {HOW_IT_WORKS.map((item, index) => (
+            <div
+              key={item.step}
+              data-reveal
+              style={{
+                transitionDelay: `${index * 30}s`,
+                ...HOW_IT_WORKS_LAYOUT[index],
+              }}
+              className="absolute flex h-56 w-[58%] max-w-lg flex-col rounded-3xl bg-white p-7 shadow-lift transition-transform hover:z-10 hover:-translate-y-1 lg:w-[38%]"
+            >
+              <span className="font-display text-6xl font-black text-sky-300">
+                {item.step}
+              </span>
+              <h3 className="mt-3 font-display text-2xl font-black uppercase leading-tight text-espresso-700">
+                {item.title}
+              </h3>
+            </div>
+          ))}
+        </div>
 
         <div className="container-page mt-20 sm:mt-24" data-reveal>
           <p className="font-display text-3xl font-black uppercase leading-[0.95] text-espresso-700 sm:text-5xl">
