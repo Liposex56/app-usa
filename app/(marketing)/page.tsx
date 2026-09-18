@@ -414,14 +414,14 @@ export default function HomePage() {
         {/* Desktop: an overlapping, hand-scattered fan of cards, like a hand of
             playing cards — matching the master file instead of a plain grid.
             Per the design file's own note, each card reveals on its own —
-            one every 30 seconds — rather than all at once. */}
+            one every 5 seconds — rather than all at once. */}
         <div className="container-page relative mt-16 hidden h-[36rem] sm:block">
           {HOW_IT_WORKS.map((item, index) => (
             <div
               key={item.step}
               data-reveal
               style={{
-                transitionDelay: `${index * 30}s`,
+                transitionDelay: `${index * 5}s`,
                 ...HOW_IT_WORKS_LAYOUT[index],
               }}
               className="absolute flex h-56 w-[58%] max-w-lg flex-col rounded-3xl bg-white p-7 shadow-lift transition-transform hover:z-10 hover:-translate-y-1 lg:w-[38%]"
