@@ -422,6 +422,7 @@ export default function HomePage() {
               data-reveal
               style={{
                 transitionDelay: `${index * 5}s`,
+                zIndex: HOW_IT_WORKS.length - index,
                 ...HOW_IT_WORKS_LAYOUT[index],
               }}
               className="absolute flex h-56 w-[58%] max-w-lg flex-col rounded-3xl bg-white p-7 shadow-lift transition-transform hover:z-10 hover:-translate-y-1 lg:w-[38%]"
