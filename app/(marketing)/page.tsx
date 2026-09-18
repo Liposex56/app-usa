@@ -114,6 +114,18 @@ const FEATURES = [
 
 const SERVICE_SWATCHES = ['bg-cream', 'bg-sky-100', 'bg-gold-50', 'bg-white', 'bg-sky-200'];
 
+// Grid placement per service, aligned by index to SERVICES: Boarding and
+// Daycare stack in column 1, House Sitting spans the full height of column
+// 2 (photo on top, text pinned to the bottom), Dog Walking and Drop-In
+// Visits stack in column 3 — matching the reference layout exactly.
+const SERVICE_GRID_LAYOUT = [
+  'sm:col-start-1 sm:row-start-1',
+  'sm:col-start-1 sm:row-start-2',
+  'sm:col-start-2 sm:row-start-1 sm:row-span-2',
+  'sm:col-start-3 sm:row-start-1',
+  'sm:col-start-3 sm:row-start-2',
+];
+
 // Column spans (of 12) per feature tile, sized to each wordmark's own width
 // so the grid reads as the same uneven, bento-style rows as the master file
 // instead of six identical boxes.
@@ -251,37 +263,46 @@ export default function HomePage() {
           />
         </div>
 
-        <div className="container-page relative mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {SERVICES.map((service, i) => (
-            <Link
-              key={service.slug}
-              href={`/services/${service.slug}`}
-              data-reveal
-              style={{ transitionDelay: `${(i + 1) * 90}ms` }}
-              className={`bone-cursor group flex h-72 flex-col rounded-3xl border-2 border-espresso-700/10 p-7 text-espresso-700 shadow-card transition-transform hover:-translate-y-1 ${SERVICE_SWATCHES[i % SERVICE_SWATCHES.length]}`}
-            >
-              <h3 className="font-display text-2xl font-black uppercase">
-                {service.name}
-              </h3>
-              <p className="mt-2 text-sm font-bold text-espresso-500">
-                {service.tagline}
-              </p>
-              {/* Photo goes here once it's ready — kept as reserved space
-                  rather than filling it with description copy. */}
-              <div className="mt-4 flex-1 rounded-2xl border-2 border-dashed border-espresso-700/15" />
-            </Link>
-          ))}
+        <div className="container-page relative mt-14 grid gap-5 sm:grid-cols-3">
+          {SERVICES.map((service, i) => {
+            const isHouseSitting = i === 2;
+            return (
+              <Link
+                key={service.slug}
+                href={`/services/${service.slug}`}
+                data-reveal
+                style={{ transitionDelay: `${(i + 1) * 90}ms` }}
+                className={`bone-cursor group flex h-44 flex-col rounded-3xl border-2 border-espresso-700/10 p-7 text-espresso-700 shadow-card transition-transform hover:-translate-y-1 sm:h-auto ${SERVICE_GRID_LAYOUT[i]} ${SERVICE_SWATCHES[i % SERVICE_SWATCHES.length]}`}
+              >
+                {isHouseSitting && (
+                  // Photo goes here once it's ready — reserved space, image on
+                  // top with the title and tagline pinned below it.
+                  <div className="mb-4 flex-1 rounded-2xl border-2 border-dashed border-espresso-700/15" />
+                )}
+                <h3 className="font-display text-2xl font-black uppercase">
+                  {service.name}
+                </h3>
+                <p className="mt-2 text-sm font-bold text-espresso-500">
+                  {service.tagline}
+                </p>
+                {!isHouseSitting && (
+                  <div className="mt-4 flex-1 rounded-2xl border-2 border-dashed border-espresso-700/15" />
+                )}
+              </Link>
+            );
+          })}
+        </div>
 
+        <div className="container-page relative mt-5" data-reveal>
           <Link
             href="/services"
-            data-reveal
             style={{ transitionDelay: `${(SERVICES.length + 1) * 90}ms` }}
-            className="bone-cursor flex h-72 flex-col justify-center rounded-3xl bg-espresso-700 p-7 text-cream shadow-card transition-transform hover:-translate-y-1"
+            className="bone-cursor flex flex-col rounded-3xl bg-espresso-700 p-7 text-cream shadow-card transition-transform hover:-translate-y-1 sm:flex-row sm:items-center sm:justify-between"
           >
             <h3 className="font-display text-2xl font-black uppercase text-cream">
               Not sure which one?
             </h3>
-            <p className="mt-3 text-sm leading-relaxed text-cream/70">
+            <p className="mt-3 max-w-md text-sm leading-relaxed text-cream/70 sm:mt-0 sm:text-right">
               Tell us about your pet and your dates. We’ll only show you
               Haveners who can genuinely take them.
             </p>
