@@ -61,11 +61,11 @@ export function HowItWorksFan({
           data-hiw-trigger={index}
           aria-hidden
           className="pointer-events-none absolute h-px w-full"
-          style={{ top: `${(index / steps.length) * 100}%` }}
+          style={{ top: `${((index + 1) / steps.length) * 100}%` }}
         />
       ))}
 
-      <div className="container-page sticky top-28 h-[36rem]">
+      <div className="container-page sticky top-28 h-[42rem]">
         {steps.map((item, index) => {
           const isVisible = visible[index];
           return (
@@ -74,6 +74,7 @@ export function HowItWorksFan({
               style={{
                 left: layout[index].left,
                 top: layout[index].top,
+                zIndex: index + 1,
                 transform: isVisible
                   ? layout[index].transform
                   : `${layout[index].transform} translateY(2.5rem)`,

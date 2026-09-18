@@ -65,13 +65,14 @@ const HOW_IT_WORKS = [
 ];
 
 // Absolute position + rotation for each How-it-works card, aligned by array
-// index to HOW_IT_WORKS — an overlapping, hand-scattered fan (matching the
-// master file) instead of a plain grid.
+// index to HOW_IT_WORKS — a diagonal staircase/chain (1 top-left cascading
+// down to 4 bottom-right) so the scroll-triggered reveal reads in order and
+// each card keeps its own number visible instead of a scattered fan.
 const HOW_IT_WORKS_LAYOUT: Array<{ left: string; top: string; transform: string }> = [
-  { left: '0%', top: '42%', transform: 'rotate(-8deg)' },
-  { left: '24%', top: '58%', transform: 'rotate(-5deg)' },
-  { left: '20%', top: '0%', transform: 'rotate(5deg)' },
-  { left: '58%', top: '18%', transform: 'rotate(9deg)' },
+  { left: '2%', top: '2%', transform: 'rotate(-3deg)' },
+  { left: '20%', top: '20%', transform: 'rotate(-1deg)' },
+  { left: '38%', top: '38%', transform: 'rotate(1deg)' },
+  { left: '56%', top: '56%', transform: 'rotate(3deg)' },
 ];
 
 const FEATURES = [
