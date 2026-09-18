@@ -192,7 +192,16 @@ export default function HomePage() {
             </span>
           </h1>
 
-          <div className="mt-16 flex justify-end sm:mt-24">
+          {/* Reserved space for the door-opening / blue-flood interaction
+              from the spec, deferred until that illustration is finalized.
+              Dashed, background-colored notch marks it as a placeholder
+              rather than a finished block. */}
+          <div
+            aria-hidden
+            className="mt-10 h-40 rounded-3xl border-2 border-dashed border-espresso-700/15 sm:mt-14 sm:h-56"
+          />
+
+          <div className="mt-10 flex justify-end sm:mt-12">
             <Link
               href="/search"
               className="bone-cursor animate-pulse-btn inline-flex h-12 shrink-0 items-center justify-center whitespace-nowrap rounded-full bg-espresso-700 px-7 font-display text-base font-bold uppercase text-cream shadow-poster transition-transform hover:-translate-y-0.5"
@@ -234,18 +243,22 @@ export default function HomePage() {
 
       {/* ------------------------------------------------------------ Services */}
       <section className="relative overflow-hidden pb-20 pt-4 sm:pb-24">
-        <div className="container-page" data-reveal>
-          <h2 className="sr-only">5 ways to get your pet cared for</h2>
+        <h2 className="sr-only">5 ways to get your pet cared for</h2>
 
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="/brand/homepage/ribbon-5-ways.svg"
-            alt="What we offer?… 5 ways to get your pet cared for"
-            aria-hidden
-            width={1578}
-            height={330}
-            className="hidden h-auto w-full sm:block"
-          />
+        {/* Full-bleed on purpose — per the reference, this ribbon reaches
+            both edges of the page, not just the container. */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/brand/homepage/ribbon-5-ways.svg"
+          alt="What we offer?… 5 ways to get your pet cared for"
+          aria-hidden
+          width={1578}
+          height={330}
+          data-reveal
+          className="hidden h-auto w-full sm:block"
+        />
+
+        <div className="container-page" data-reveal>
           <span
             aria-hidden
             className="block font-display text-3xl font-black uppercase leading-[0.94] text-espresso-700 sm:hidden"
