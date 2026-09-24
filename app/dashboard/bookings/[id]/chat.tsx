@@ -24,11 +24,15 @@ export function Chat({
   viewerId,
   initialMessages,
   sendAction,
+  counterpartyName,
+  counterpartyAvatarUrl,
 }: {
   bookingId: string;
   viewerId: string;
   initialMessages: MessageRow[];
   sendAction: (formData: FormData) => Promise<SendMessageState>;
+  counterpartyName: string;
+  counterpartyAvatarUrl: string | null;
 }) {
   const [messages, setMessages] = useState(initialMessages);
   const [sendError, setSendError] = useState<string | null>(null);
@@ -105,6 +109,23 @@ export function Chat({
 
   return (
     <div className="rounded-3xl border border-espresso-700/8 bg-white shadow-card">
+      <div className="flex items-center gap-2.5 border-b border-espresso-700/8 px-5 py-3">
+        <div className="h-8 w-8 shrink-0 overflow-hidden rounded-full bg-sky-100">
+          {counterpartyAvatarUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={counterpartyAvatarUrl}
+              alt={counterpartyName}
+              className="h-full w-full object-cover"
+            />
+          ) : (
+            <div className="flex h-full w-full items-center justify-center text-xs font-medium text-espresso-500">
+              {counterpartyName.slice(0, 1)}
+            </div>
+          )}
+        </div>
+        <p className="text-sm font-medium text-espresso-700">{counterpartyName}</p>
+      </div>
       <div
         ref={listRef}
         className="max-h-96 min-h-[10rem] space-y-3 overflow-y-auto p-5"
@@ -114,13 +135,39 @@ export function Chat({
             No messages yet — say hello.
           </p>
         ) : (
-          messages.map((message) => {
+          messages.map((message, index) => {
             const mine = message.sender_id === viewerId;
+            // Only show the avatar on the last bubble of a consecutive run
+            // from the other person — same "grouped" pattern as
+            // Instagram/Messenger, instead of repeating it on every bubble.
+            const nextIsSameSender = messages[index + 1]?.sender_id === message.sender_id;
+            const showAvatar = !mine && !nextIsSameSender;
+
             return (
               <div
                 key={message.id}
-                className={cn('flex', mine ? 'justify-end' : 'justify-start')}
+                className={cn(
+                  'flex items-end gap-2',
+                  mine ? 'justify-end' : 'justify-start'
+                )}
               >
+                {!mine && (
+                  <div className="h-6 w-6 shrink-0 overflow-hidden rounded-full bg-sky-100">
+                    {showAvatar &&
+                      (counterpartyAvatarUrl ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={counterpartyAvatarUrl}
+                          alt={counterpartyName}
+                          className="h-full w-full object-cover"
+                        />
+                      ) : (
+                        <div className="flex h-full w-full items-center justify-center text-[10px] font-medium text-espresso-500">
+                          {counterpartyName.slice(0, 1)}
+                        </div>
+                      ))}
+                  </div>
+                )}
                 <p
                   className={cn(
                     'max-w-[75%] rounded-2xl px-4 py-2 text-sm leading-relaxed',

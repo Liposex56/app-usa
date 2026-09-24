@@ -114,116 +114,142 @@ export default async function BookingDetailPage({
         ← Back to bookings
       </Link>
 
-      <div className="mt-6 rounded-3xl border border-espresso-700/8 bg-white p-7 shadow-card">
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div>
-            <h1 className="text-xl text-espresso-700">
-              {serviceName(booking.service_type)}
-            </h1>
-            <p className="mt-1 text-sm text-espresso-500">
-              with{' '}
-              {viewerRole === 'sitter' ? (
-                <Link
-                  href={`/dashboard/bookings/${booking.id}/owner`}
-                  className="font-medium text-gold-600 hover:underline"
-                >
-                  {counterparty?.display_name ?? '—'}
-                </Link>
+      {/* Compact header — just who, what, and the status. All the "boarding
+          data" (dates, pets, price, payment, cancel/decline reasons) lives
+          behind the "View details" toggle below instead of dominating the
+          page above the chat. */}
+      <div className="mt-6 rounded-3xl border border-espresso-700/8 bg-white p-5 shadow-card">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="h-11 w-11 shrink-0 overflow-hidden rounded-full bg-sky-100">
+              {counterparty?.avatar_url ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={counterparty.avatar_url}
+                  alt={counterparty.display_name ?? ''}
+                  className="h-full w-full object-cover"
+                />
               ) : (
-                counterparty?.display_name ?? '—'
+                <div className="flex h-full w-full items-center justify-center text-base font-medium text-espresso-500">
+                  {(counterparty?.display_name ?? '—').slice(0, 1)}
+                </div>
               )}
-            </p>
+            </div>
+            <div>
+              <p className="font-medium text-espresso-700">
+                {viewerRole === 'sitter' ? (
+                  <Link
+                    href={`/dashboard/bookings/${booking.id}/owner`}
+                    className="hover:underline"
+                  >
+                    {counterparty?.display_name ?? '—'}
+                  </Link>
+                ) : (
+                  counterparty?.display_name ?? '—'
+                )}
+              </p>
+              <p className="text-xs text-espresso-500">
+                {serviceName(booking.service_type)}
+              </p>
+            </div>
           </div>
           <span className="rounded-full bg-cream px-3 py-1 text-xs font-medium text-olive-600">
             {STATUS_LABEL[booking.status] ?? booking.status}
           </span>
         </div>
 
-        <dl className="mt-5 grid gap-4 border-t border-espresso-700/8 pt-5 text-sm sm:grid-cols-2">
-          <div>
-            <dt className="text-xs uppercase tracking-wider text-espresso-500/60">
-              Dates
-            </dt>
-            <dd className="mt-1 text-espresso-700">
-              {formatDate(booking.start_date)}
-              {booking.end_date ? ` – ${formatDate(booking.end_date)}` : ''}
-            </dd>
-          </div>
-          <div>
-            <dt className="text-xs uppercase tracking-wider text-espresso-500/60">
-              Pets
-            </dt>
-            <dd className="mt-1 text-espresso-700">
-              {pets.map((p) => p.name).join(', ') || '—'}
-            </dd>
-          </div>
-          <div>
-            <dt className="text-xs uppercase tracking-wider text-espresso-500/60">
-              Total
-            </dt>
-            <dd className="mt-1 text-espresso-700">
-              {formatCents(booking.total_cents)}
-            </dd>
-          </div>
-          <div>
-            <dt className="text-xs uppercase tracking-wider text-espresso-500/60">
-              {viewerRole === 'sitter' ? 'You earn' : 'Platform fee'}
-            </dt>
-            <dd className="mt-1 text-espresso-700">
-              {viewerRole === 'sitter'
-                ? formatCents(booking.sitter_payout_cents)
-                : formatCents(booking.platform_fee_cents)}
-            </dd>
-          </div>
-        </dl>
+        <details className="group mt-4 border-t border-espresso-700/8 pt-3">
+          <summary className="cursor-pointer list-none text-sm font-medium text-gold-600 hover:text-gold-700">
+            <span className="group-open:hidden">View details</span>
+            <span className="hidden group-open:inline">Hide details</span>
+          </summary>
 
-        {booking.owner_notes && (
-          <p className="mt-4 rounded-xl bg-bone p-4 text-sm text-espresso-600">
-            &ldquo;{booking.owner_notes}&rdquo;
-          </p>
-        )}
-        {booking.decline_reason && (
-          <p className="mt-4 rounded-xl bg-red-50 p-4 text-sm text-red-800">
-            Declined: {booking.decline_reason}
-          </p>
-        )}
-        {booking.cancellation_reason && (
-          <p className="mt-4 rounded-xl bg-red-50 p-4 text-sm text-red-800">
-            Cancelled: {booking.cancellation_reason}
-          </p>
-        )}
-
-        {viewerRole === 'owner' &&
-          booking.payment_status !== 'paid' &&
-          ['confirmed', 'in_progress', 'completed'].includes(booking.status) && (
-            <div className="mt-4 rounded-xl border border-gold-500/30 bg-gold-50 p-4">
-              <p className="text-sm text-espresso-700">
-                {booking.payment_status === 'processing'
-                  ? 'Payment is processing…'
-                  : 'This booking is confirmed but not paid yet.'}
-              </p>
-              {booking.payment_status !== 'processing' && (
-                <div className="mt-3">
-                  <PayButton bookingId={booking.id} totalCents={booking.total_cents} />
-                </div>
-              )}
+          <dl className="mt-4 grid gap-4 text-sm sm:grid-cols-2">
+            <div>
+              <dt className="text-xs uppercase tracking-wider text-espresso-500/60">
+                Dates
+              </dt>
+              <dd className="mt-1 text-espresso-700">
+                {formatDate(booking.start_date)}
+                {booking.end_date ? ` – ${formatDate(booking.end_date)}` : ''}
+              </dd>
             </div>
+            <div>
+              <dt className="text-xs uppercase tracking-wider text-espresso-500/60">
+                Pets
+              </dt>
+              <dd className="mt-1 text-espresso-700">
+                {pets.map((p) => p.name).join(', ') || '—'}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-xs uppercase tracking-wider text-espresso-500/60">
+                Total
+              </dt>
+              <dd className="mt-1 text-espresso-700">
+                {formatCents(booking.total_cents)}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-xs uppercase tracking-wider text-espresso-500/60">
+                {viewerRole === 'sitter' ? 'You earn' : 'Platform fee'}
+              </dt>
+              <dd className="mt-1 text-espresso-700">
+                {viewerRole === 'sitter'
+                  ? formatCents(booking.sitter_payout_cents)
+                  : formatCents(booking.platform_fee_cents)}
+              </dd>
+            </div>
+          </dl>
+
+          {booking.owner_notes && (
+            <p className="mt-4 rounded-xl bg-bone p-4 text-sm text-espresso-600">
+              &ldquo;{booking.owner_notes}&rdquo;
+            </p>
           )}
-        {viewerRole === 'owner' && booking.payment_status === 'paid' && (
-          <p className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-800">
-            Paid
-          </p>
-        )}
+          {booking.decline_reason && (
+            <p className="mt-4 rounded-xl bg-red-50 p-4 text-sm text-red-800">
+              Declined: {booking.decline_reason}
+            </p>
+          )}
+          {booking.cancellation_reason && (
+            <p className="mt-4 rounded-xl bg-red-50 p-4 text-sm text-red-800">
+              Cancelled: {booking.cancellation_reason}
+            </p>
+          )}
 
-        <div className="mt-5 border-t border-espresso-700/8 pt-5">
-          <CallWindow
-            bookingId={booking.id}
-            counterpartyName={counterparty?.display_name ?? 'them'}
-            initialValue={booking.call_window}
-          />
-        </div>
+          {viewerRole === 'owner' &&
+            booking.payment_status !== 'paid' &&
+            ['confirmed', 'in_progress', 'completed'].includes(booking.status) && (
+              <div className="mt-4 rounded-xl border border-gold-500/30 bg-gold-50 p-4">
+                <p className="text-sm text-espresso-700">
+                  {booking.payment_status === 'processing'
+                    ? 'Payment is processing…'
+                    : 'This booking is confirmed but not paid yet.'}
+                </p>
+                {booking.payment_status !== 'processing' && (
+                  <div className="mt-3">
+                    <PayButton bookingId={booking.id} totalCents={booking.total_cents} />
+                  </div>
+                )}
+              </div>
+            )}
+          {viewerRole === 'owner' && booking.payment_status === 'paid' && (
+            <p className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-800">
+              Paid
+            </p>
+          )}
 
-        <div className="mt-5 border-t border-espresso-700/8 pt-5">
+          <div className="mt-5 border-t border-espresso-700/8 pt-5">
+            <CallWindow
+              bookingId={booking.id}
+              counterpartyName={counterparty?.display_name ?? 'them'}
+              initialValue={booking.call_window}
+            />
+          </div>
+        </details>
+
+        <div className="mt-4 border-t border-espresso-700/8 pt-4">
           <BookingActions
             bookingId={booking.id}
             status={booking.status}
@@ -247,13 +273,14 @@ export default async function BookingDetailPage({
           </div>
         )}
 
-      <h2 className="mt-8 text-lg text-espresso-700">Messages</h2>
-      <div className="mt-3">
+      <div className="mt-6">
         <Chat
           bookingId={booking.id}
           viewerId={profile.id}
           initialMessages={messages}
           sendAction={sendMessageAction.bind(null, booking.id, counterpartyId)}
+          counterpartyName={counterparty?.display_name ?? 'them'}
+          counterpartyAvatarUrl={counterparty?.avatar_url ?? null}
         />
       </div>
 
