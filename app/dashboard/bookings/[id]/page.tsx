@@ -20,6 +20,7 @@ import { BookingActions } from './booking-actions';
 import { CallWindow } from './call-window';
 import { Chat } from './chat';
 import { MeetGreetPanel } from './meet-greet';
+import { PayButton } from './pay-button';
 import { ReviewForm } from './review-form';
 
 export const metadata: Metadata = { title: 'Booking' };
@@ -177,6 +178,28 @@ export default async function BookingDetailPage({
         {booking.cancellation_reason && (
           <p className="mt-4 rounded-xl bg-red-50 p-4 text-sm text-red-800">
             Cancelled: {booking.cancellation_reason}
+          </p>
+        )}
+
+        {viewerRole === 'owner' &&
+          booking.payment_status !== 'paid' &&
+          ['confirmed', 'in_progress', 'completed'].includes(booking.status) && (
+            <div className="mt-4 rounded-xl border border-gold-500/30 bg-gold-50 p-4">
+              <p className="text-sm text-espresso-700">
+                {booking.payment_status === 'processing'
+                  ? 'Payment is processing…'
+                  : 'This booking is confirmed but not paid yet.'}
+              </p>
+              {booking.payment_status !== 'processing' && (
+                <div className="mt-3">
+                  <PayButton bookingId={booking.id} totalCents={booking.total_cents} />
+                </div>
+              )}
+            </div>
+          )}
+        {viewerRole === 'owner' && booking.payment_status === 'paid' && (
+          <p className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-800">
+            Paid
           </p>
         )}
 

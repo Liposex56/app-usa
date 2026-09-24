@@ -248,6 +248,12 @@ export type SitterProfileRow = {
   stripe_payouts_enabled: boolean;
   /** Stripe Identity verification session for the automated document check. */
   stripe_identity_session_id: string | null;
+  stripe_identity_status:
+    | 'not_started'
+    | 'processing'
+    | 'verified'
+    | 'requires_input'
+    | null;
 
   created_at: string;
   updated_at: string;

@@ -145,6 +145,10 @@ export default async function HavenerProfilePage() {
             <ActionLink href="/dashboard/havener/insurance">
               Gestionar mi seguro
             </ActionLink>
+            <ActionLink href="/dashboard/havener/verification">
+              Verificar mi identidad
+            </ActionLink>
+            <ActionLink href="/dashboard/havener/payments">Cobros y pagos</ActionLink>
           </div>
         </>
       )}
