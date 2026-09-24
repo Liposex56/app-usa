@@ -2,7 +2,7 @@
 
 import { revalidatePath } from 'next/cache';
 
-import type { MessageRow } from '@/lib/database.types';
+import type { MeetGreetRow, MessageRow } from '@/lib/database.types';
 import { requireProfile } from '@/lib/auth';
 import { filterChatMessage } from '@/lib/chat-filter';
 import { createClient } from '@/lib/supabase/server';
@@ -10,6 +10,7 @@ import { text } from '@/lib/utils';
 
 export type ActionState = { error: string | null };
 export type SendMessageState = { error: string | null; message: MessageRow | null };
+export type MeetGreetState = { error: string | null; meetGreet: MeetGreetRow | null };
 
 async function updateBooking(
   bookingId: string,
@@ -85,6 +86,77 @@ export async function sendMessageAction(
 
   revalidatePath(`/dashboard/bookings/${bookingId}`);
   return { error: null, message: data as MessageRow };
+}
+
+export async function proposeMeetGreetAction(
+  bookingId: string,
+  _prev: MeetGreetState,
+  formData: FormData
+): Promise<MeetGreetState> {
+  const profile = await requireProfile();
+  const date = text(formData, 'date');
+  const time = text(formData, 'time');
+  const locationNote = text(formData, 'locationNote');
+  if (!date || !time) {
+    return { error: 'Please choose a date and time.', meetGreet: null };
+  }
+
+  const startsAt = new Date(`${date}T${time}`);
+  if (Number.isNaN(startsAt.getTime()) || startsAt.getTime() < Date.now()) {
+    return { error: 'Please choose a time in the future.', meetGreet: null };
+  }
+
+  const supabase = await createClient();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data, error } = await (supabase.from('meet_greets') as any)
+    .insert({
+      booking_id: bookingId,
+      proposed_by: profile.id,
+      starts_at: startsAt.toISOString(),
+      location_note: locationNote || null,
+    })
+    .select('*')
+    .single();
+
+  if (error) return { error: error.message, meetGreet: null };
+
+  revalidatePath(`/dashboard/bookings/${bookingId}`);
+  return { error: null, meetGreet: data as MeetGreetRow };
+}
+
+export async function respondMeetGreetAction(
+  bookingId: string,
+  meetGreetId: string,
+  response: 'accepted' | 'declined'
+): Promise<ActionState> {
+  await requireProfile();
+  const supabase = await createClient();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { error } = await (supabase.from('meet_greets') as any)
+    .update({ status: response, responded_at: new Date().toISOString() })
+    .eq('id', meetGreetId);
+
+  if (error) return { error: error.message };
+
+  revalidatePath(`/dashboard/bookings/${bookingId}`);
+  return { error: null };
+}
+
+export async function cancelMeetGreetAction(
+  bookingId: string,
+  meetGreetId: string
+): Promise<ActionState> {
+  await requireProfile();
+  const supabase = await createClient();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { error } = await (supabase.from('meet_greets') as any)
+    .update({ status: 'cancelled', responded_at: new Date().toISOString() })
+    .eq('id', meetGreetId);
+
+  if (error) return { error: error.message };
+
+  revalidatePath(`/dashboard/bookings/${bookingId}`);
+  return { error: null };
 }
 
 export async function submitReviewAction(

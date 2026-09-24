@@ -5,6 +5,7 @@ import { notFound } from 'next/navigation';
 import type {
   BookingCounterparty,
   BookingRow,
+  MeetGreetRow,
   MessageRow,
   PetRow,
   ReviewRow,
@@ -17,6 +18,7 @@ import { formatCents, formatDate } from '@/lib/utils';
 import { sendMessageAction } from '../actions';
 import { BookingActions } from './booking-actions';
 import { Chat } from './chat';
+import { MeetGreetPanel } from './meet-greet';
 import { ReviewForm } from './review-form';
 
 export const metadata: Metadata = { title: 'Booking' };
@@ -55,17 +57,27 @@ export default async function BookingDetailPage({
   const viewerRole: 'owner' | 'sitter' =
     booking.owner_id === profile.id ? 'owner' : 'sitter';
 
-  const [{ data: counterpartyRows }, { data: petLinks }, { data: messageRows }, { data: reviewRows }] =
-    await Promise.all([
-      supabase.rpc('booking_counterparty', { p_booking_id: id }),
-      supabase.from('booking_pets').select('pet_id').eq('booking_id', id),
-      supabase
-        .from('messages')
-        .select('*')
-        .eq('booking_id', id)
-        .order('created_at', { ascending: true }),
-      supabase.from('reviews').select('*').eq('booking_id', id),
-    ]);
+  const [
+    { data: counterpartyRows },
+    { data: petLinks },
+    { data: messageRows },
+    { data: reviewRows },
+    { data: meetGreetRows },
+  ] = await Promise.all([
+    supabase.rpc('booking_counterparty', { p_booking_id: id }),
+    supabase.from('booking_pets').select('pet_id').eq('booking_id', id),
+    supabase
+      .from('messages')
+      .select('*')
+      .eq('booking_id', id)
+      .order('created_at', { ascending: true }),
+    supabase.from('reviews').select('*').eq('booking_id', id),
+    supabase
+      .from('meet_greets')
+      .select('*')
+      .eq('booking_id', id)
+      .order('created_at', { ascending: true }),
+  ]);
 
   const counterparty = (counterpartyRows as BookingCounterparty[] | null)?.[0] ?? null;
   const petIds = (petLinks ?? []).map((row) => row.pet_id as string);
@@ -75,6 +87,7 @@ export default async function BookingDetailPage({
   const pets = (petRows ?? []) as PetRow[];
   const messages = (messageRows ?? []) as MessageRow[];
   const reviews = (reviewRows ?? []) as ReviewRow[];
+  const meetGreets = (meetGreetRows ?? []) as MeetGreetRow[];
   const myReview = reviews.find((r) => r.reviewer_id === profile.id);
   const counterpartyId = viewerRole === 'owner' ? booking.sitter_id : booking.owner_id;
 
@@ -172,6 +185,14 @@ export default async function BookingDetailPage({
           viewerId={profile.id}
           initialMessages={messages}
           sendAction={sendMessageAction.bind(null, booking.id, counterpartyId)}
+        />
+      </div>
+
+      <div className="mt-3 rounded-3xl border border-espresso-700/8 bg-white shadow-card">
+        <MeetGreetPanel
+          bookingId={booking.id}
+          viewerId={profile.id}
+          initialMeetGreets={meetGreets}
         />
       </div>
 
