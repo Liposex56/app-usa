@@ -107,7 +107,17 @@ export default async function BookingDetailPage({
               {serviceName(booking.service_type)}
             </h1>
             <p className="mt-1 text-sm text-espresso-500">
-              with {counterparty?.display_name ?? '—'}
+              with{' '}
+              {viewerRole === 'sitter' ? (
+                <Link
+                  href={`/dashboard/bookings/${booking.id}/owner`}
+                  className="font-medium text-gold-600 hover:underline"
+                >
+                  {counterparty?.display_name ?? '—'}
+                </Link>
+              ) : (
+                counterparty?.display_name ?? '—'
+              )}
             </p>
           </div>
           <span className="rounded-full bg-cream px-3 py-1 text-xs font-medium text-olive-600">

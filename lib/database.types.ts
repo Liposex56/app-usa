@@ -427,6 +427,31 @@ export type PublicSitterReviewRow = {
   reviewer_avatar_url: string | null;
 };
 
+/** What `booking_owner_profile()` returns — never the owner's full `profiles` row. */
+export type BookingOwnerProfile = {
+  id: string;
+  display_name: string | null;
+  avatar_url: string | null;
+  city: string | null;
+  state: string | null;
+  joined_at: string;
+  phone_verified: boolean;
+  email_verified: boolean;
+  past_bookings_count: number;
+};
+
+/** What `booking_owner_feedback()` returns. */
+export type BookingOwnerFeedbackRow = {
+  id: string;
+  rating: number;
+  punctuality: number | null;
+  communication: number | null;
+  pet_care: number | null;
+  body: string | null;
+  created_at: string;
+  reviewer_first_name: string;
+};
+
 export type StaffMemberRow = {
   user_id: string;
   role: StaffRole;
@@ -551,6 +576,18 @@ export type Database = {
       public_sitter_reviews: {
         Args: { p_sitter_id: string };
         Returns: PublicSitterReviewRow[];
+      };
+      booking_owner_profile: {
+        Args: { p_booking_id: string };
+        Returns: BookingOwnerProfile[];
+      };
+      booking_owner_feedback: {
+        Args: { p_booking_id: string };
+        Returns: BookingOwnerFeedbackRow[];
+      };
+      booking_owner_pets: {
+        Args: { p_booking_id: string };
+        Returns: PetRow[];
       };
     };
     Enums: {
