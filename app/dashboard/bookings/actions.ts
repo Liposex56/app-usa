@@ -88,6 +88,15 @@ export async function sendMessageAction(
   return { error: null, message: data as MessageRow };
 }
 
+export async function setCallWindowAction(
+  bookingId: string,
+  _prev: ActionState,
+  formData: FormData
+): Promise<ActionState> {
+  await requireProfile();
+  return updateBooking(bookingId, { call_window: text(formData, 'callWindow') });
+}
+
 export async function proposeMeetGreetAction(
   bookingId: string,
   _prev: MeetGreetState,

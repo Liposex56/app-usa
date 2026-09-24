@@ -17,6 +17,7 @@ import { formatCents, formatDate } from '@/lib/utils';
 
 import { sendMessageAction } from '../actions';
 import { BookingActions } from './booking-actions';
+import { CallWindow } from './call-window';
 import { Chat } from './chat';
 import { MeetGreetPanel } from './meet-greet';
 import { ReviewForm } from './review-form';
@@ -178,6 +179,14 @@ export default async function BookingDetailPage({
             Cancelled: {booking.cancellation_reason}
           </p>
         )}
+
+        <div className="mt-5 border-t border-espresso-700/8 pt-5">
+          <CallWindow
+            bookingId={booking.id}
+            counterpartyName={counterparty?.display_name ?? 'them'}
+            initialValue={booking.call_window}
+          />
+        </div>
 
         <div className="mt-5 border-t border-espresso-700/8 pt-5">
           <BookingActions
