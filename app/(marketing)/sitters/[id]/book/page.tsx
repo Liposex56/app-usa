@@ -13,10 +13,13 @@ export const metadata: Metadata = { title: 'Request a booking' };
 
 export default async function BookSitterPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ startDate?: string; endDate?: string }>;
 }) {
   const { id } = await params;
+  const { startDate, endDate } = await searchParams;
   const profile = await requireProfile();
 
   if (profile.id === id) redirect(`/sitters/${id}`);
@@ -50,8 +53,8 @@ export default async function BookSitterPage({
         Request a booking with {(sitter as PublicSitterRow).display_name ?? 'this Havener'}
       </h1>
       <p className="mt-2 text-[15px] text-espresso-500">
-        Nothing is charged yet — the Havener will accept or decline before
-        anything is confirmed.
+        This Havener is already confirmed available for your dates — sending
+        this books them instantly, no waiting on a response.
       </p>
 
       {serviceRows.length === 0 ? (
@@ -75,6 +78,8 @@ export default async function BookSitterPage({
             additionalPetRateCents: s.additional_pet_rate_cents,
           }))}
           pets={petRows.map((p) => ({ id: p.id, name: p.name, species: p.species }))}
+          initialStartDate={startDate}
+          initialEndDate={endDate}
         />
       )}
     </div>

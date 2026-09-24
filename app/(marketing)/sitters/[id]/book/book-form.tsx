@@ -25,6 +25,8 @@ export function BookingForm({
   sitterId,
   services,
   pets,
+  initialStartDate,
+  initialEndDate,
 }: {
   sitterId: string;
   services: Array<{
@@ -34,6 +36,8 @@ export function BookingForm({
     additionalPetRateCents: number;
   }>;
   pets: Array<{ id: string; name: string; species: Species }>;
+  initialStartDate?: string;
+  initialEndDate?: string;
 }) {
   const action = requestBookingAction.bind(null, sitterId);
   const [state, formAction] = useActionState(action, INITIAL);
@@ -82,12 +86,24 @@ export function BookingForm({
 
       <div className="grid gap-5 sm:grid-cols-2">
         <Field label="Start date" htmlFor="startDate" required>
-          <Input id="startDate" name="startDate" type="date" required />
+          <Input
+            id="startDate"
+            name="startDate"
+            type="date"
+            required
+            defaultValue={initialStartDate}
+          />
         </Field>
         <Field label="End date" htmlFor="endDate" hint="Leave blank for a single day.">
-          <Input id="endDate" name="endDate" type="date" />
+          <Input id="endDate" name="endDate" type="date" defaultValue={initialEndDate} />
         </Field>
       </div>
+      {initialStartDate && (
+        <p className="-mt-3 text-xs text-espresso-500">
+          Carried over from your search — this Havener is confirmed free for
+          these dates. Change them and we&rsquo;ll double-check before booking.
+        </p>
+      )}
 
       <Field
         label="Anything the Havener should know?"

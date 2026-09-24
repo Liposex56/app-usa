@@ -90,13 +90,20 @@ export function SitterProfileTabs({
   sitter,
   services,
   isOwnProfile = false,
+  startDate,
+  endDate,
 }: {
   sitter: PublicSitterRow;
   services: SitterServiceRow[];
   isOwnProfile?: boolean;
+  startDate?: string;
+  endDate?: string;
 }) {
   const [tab, setTab] = useState<'info' | 'reviews' | 'services'>('info');
   const skills = (sitter.skills ?? []) as Skill[];
+  const bookHref = startDate
+    ? `/sitters/${sitter.id}/book?startDate=${startDate}&endDate=${endDate || startDate}`
+    : `/sitters/${sitter.id}/book`;
 
   return (
     <div className="container-page py-10 sm:py-14">
@@ -159,7 +166,7 @@ export function SitterProfileTabs({
             </div>
             {!isOwnProfile && (
               <div className="mt-5">
-                <ButtonLink href={`/sitters/${sitter.id}/book`} size="md">
+                <ButtonLink href={bookHref} size="md">
                   Request a booking
                 </ButtonLink>
               </div>

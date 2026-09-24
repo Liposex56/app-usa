@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation';
 
 import type { PlatformSettingsRow, ServiceType, SitterServiceRow } from '@/lib/database.types';
 import { requireProfile } from '@/lib/auth';
+import { sitterIdsWithConflict } from '@/lib/availability';
 import { commissionPercentFromSettings, computeFeeSplit } from '@/lib/payments';
 import { createClient } from '@/lib/supabase/server';
 import { list, num, text } from '@/lib/utils';
@@ -28,6 +29,20 @@ export async function requestBookingAction(
   if (!serviceType) return { error: 'Please choose a service.' };
   if (!startDate) return { error: 'Please choose a date.' };
   if (petIds.length === 0) return { error: 'Please select at least one pet.' };
+
+  // Bookings are confirmed the moment they're sent — never "requested" and
+  // left waiting — so this is the one place that has to actually check the
+  // Havener is free for the dates. A confirmed/in_progress booking of theirs
+  // that overlaps the requested range blocks it; anything else (declined,
+  // cancelled, a still-open request from someone else) does not.
+  const rangeEnd = endDate || startDate;
+  const conflicts = await sitterIdsWithConflict(supabase, startDate, rangeEnd, [sitterId]);
+  if (conflicts.has(sitterId)) {
+    return {
+      error:
+        'This Havener is no longer available for those dates — someone else just booked them. Please pick different dates or another Havener.',
+    };
+  }
 
   // Confirm every selected pet actually belongs to this owner — the RLS
   // policy on booking_pets would reject it anyway, but a clear message here
@@ -74,7 +89,10 @@ export async function requestBookingAction(
       owner_id: profile.id,
       sitter_id: sitterId,
       service_type: serviceType,
-      status: 'requested',
+      // No accept/decline step: the conflict check above is the only gate,
+      // so the booking is confirmed the instant it's created.
+      status: 'confirmed',
+      confirmed_at: new Date().toISOString(),
       start_date: startDate,
       end_date: endDate || null,
       owner_notes: notes,

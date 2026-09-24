@@ -11,6 +11,7 @@ import type {
   ServiceType,
   SitterServiceRow,
 } from '@/lib/database.types';
+import { sitterIdsWithConflict } from '@/lib/availability';
 import { SERVICES, serviceName } from '@/lib/services';
 import { createClient } from '@/lib/supabase/server';
 import { formatCents } from '@/lib/utils';
@@ -26,6 +27,8 @@ type SearchParams = {
   energy?: string;
   insured?: string;
   certified?: string;
+  startDate?: string;
+  endDate?: string;
 };
 
 export default async function SearchPage({
@@ -42,6 +45,8 @@ export default async function SearchPage({
   const energy = (params.energy ?? '') as EnergyLevel | '';
   const insuredOnly = params.insured === '1';
   const certifiedOnly = params.certified === '1';
+  const startDate = params.startDate?.trim() ?? '';
+  const endDate = params.endDate?.trim() ?? startDate;
 
   const supabase = await createClient();
 
@@ -85,11 +90,30 @@ export default async function SearchPage({
     .order('rating', { ascending: false, nullsFirst: false })
     .order('review_count', { ascending: false });
 
-  const sitters = (sitterRows ?? []) as PublicSitterRow[];
+  let sitters = (sitterRows ?? []) as PublicSitterRow[];
+
+  // Date range picked → only show Haveners who are actually free for it.
+  // No manual "accept" step exists anymore, so this filter is what makes a
+  // booking safe to confirm instantly: nobody with a schedule conflict is
+  // ever shown in the first place.
+  if (startDate) {
+    const conflicts = await sitterIdsWithConflict(
+      supabase,
+      startDate,
+      endDate,
+      sitters.map((s) => s.id)
+    );
+    sitters = sitters.filter((s) => !conflicts.has(s.id));
+  }
+
   const rateBySitter = new Map<string, number>();
   matchingServices?.forEach((row) => {
     rateBySitter.set(row.sitter_id, row.base_rate_cents);
   });
+
+  const dateQuery = startDate
+    ? `&startDate=${startDate}&endDate=${endDate || startDate}`
+    : '';
 
   return (
     <div className="container-page py-10 sm:py-14">
@@ -100,6 +124,21 @@ export default async function SearchPage({
       </p>
 
       <form className="mt-8 grid gap-4 rounded-3xl border border-espresso-700/8 bg-white p-6 shadow-card sm:grid-cols-2 lg:grid-cols-4">
+        <Field
+          label="Start date"
+          htmlFor="startDate"
+          hint="Only Haveners free for these dates are shown."
+        >
+          <Input id="startDate" name="startDate" type="date" defaultValue={startDate} />
+        </Field>
+        <Field label="End date" htmlFor="endDate" hint="Leave blank for a single day.">
+          <Input
+            id="endDate"
+            name="endDate"
+            type="date"
+            defaultValue={params.endDate?.trim() ?? ''}
+          />
+        </Field>
         <Field label="Service" htmlFor="service">
           <Select id="service" name="service" defaultValue={service}>
             <option value="">Any service</option>
@@ -172,18 +211,21 @@ export default async function SearchPage({
       <p className="mt-8 text-sm text-espresso-500">
         {sitters.length} Havener{sitters.length === 1 ? '' : 's'} found
         {service ? ` for ${serviceName(service)}` : ''}
+        {startDate ? ' · available for your dates' : ''}
       </p>
 
       {sitters.length === 0 ? (
         <p className="mt-6 rounded-3xl border border-dashed border-espresso-700/15 bg-white p-10 text-center text-sm text-espresso-500">
-          No Haveners match those filters yet. Try widening your search.
+          {startDate
+            ? 'No Haveners are free for those dates yet. Try a different range.'
+            : 'No Haveners match those filters yet. Try widening your search.'}
         </p>
       ) : (
         <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {sitters.map((sitter) => (
             <Link
               key={sitter.id}
-              href={`/sitters/${sitter.id}`}
+              href={`/sitters/${sitter.id}${dateQuery ? `?${dateQuery.slice(1)}` : ''}`}
               className="flex flex-col rounded-3xl border border-espresso-700/8 bg-white p-6 shadow-card transition-all hover:-translate-y-0.5 hover:border-gold-500/40 hover:shadow-lift"
             >
               <div className="flex items-center gap-3">

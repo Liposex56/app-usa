@@ -7,10 +7,8 @@ import { FormError } from '@/components/ui/field';
 import type { BookingStatus } from '@/lib/database.types';
 
 import {
-  acceptBookingAction,
   cancelBookingAction,
   completeServiceAction,
-  declineBookingAction,
   startServiceAction,
   type ActionState,
 } from '../actions';
@@ -69,31 +67,7 @@ export function BookingActions({
   viewerRole: 'owner' | 'sitter';
 }) {
   const [isPending, startTransition] = useTransition();
-  const decline = declineBookingAction.bind(null, bookingId);
   const cancel = cancelBookingAction.bind(null, bookingId);
-
-  if (viewerRole === 'sitter' && status === 'requested') {
-    return (
-      <div className="flex flex-wrap items-start gap-2">
-        <Button
-          size="sm"
-          disabled={isPending}
-          onClick={() =>
-            startTransition(() => {
-              void acceptBookingAction(bookingId);
-            })
-          }
-        >
-          Accept
-        </Button>
-        <ReasonForm
-          action={decline}
-          label="Decline"
-          placeholder="Let them know why (sent to the owner)."
-        />
-      </div>
-    );
-  }
 
   if (viewerRole === 'sitter' && status === 'confirmed') {
     return (

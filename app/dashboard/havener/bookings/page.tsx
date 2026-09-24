@@ -8,7 +8,7 @@ import { serviceName } from '@/lib/services';
 import { createClient } from '@/lib/supabase/server';
 import { formatCents, formatDate } from '@/lib/utils';
 
-export const metadata: Metadata = { title: 'Booking requests' };
+export const metadata: Metadata = { title: 'Bookings' };
 
 const STATUS_LABEL: Record<BookingStatus, { label: string; tone: string }> = {
   requested: { label: 'New request', tone: 'bg-cream text-olive-600' },
@@ -54,11 +54,12 @@ export default async function HavenerBookingsPage() {
       >
         ← Back to dashboard
       </Link>
-      <h1 className="mt-6 text-3xl">Booking requests</h1>
+      <h1 className="mt-6 text-3xl">Bookings</h1>
 
       {bookings.length === 0 ? (
         <p className="mt-8 rounded-3xl border border-dashed border-espresso-700/15 bg-white p-10 text-center text-sm text-espresso-500">
-          No booking requests yet.
+          No bookings yet — they&rsquo;ll show up here the moment an owner
+          books you, already confirmed.
         </p>
       ) : (
         <div className="mt-8 space-y-3">

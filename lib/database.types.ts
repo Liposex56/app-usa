@@ -89,6 +89,16 @@ export type BookingStatus =
   | 'disputed'
   | 'refunded';
 
+export type MeetGreetStatus = 'proposed' | 'accepted' | 'declined' | 'cancelled';
+
+/** Whether the owner has paid for a confirmed booking yet (Stripe PaymentIntent). */
+export type BookingPaymentStatus =
+  | 'unpaid'
+  | 'processing'
+  | 'paid'
+  | 'refunded'
+  | 'failed';
+
 export type ProfileRow = {
   id: string;
   email: string | null;
@@ -231,6 +241,14 @@ export type SitterProfileRow = {
   completed_bookings: number;
   response_time_minutes: number | null;
   calendar_updated_at: string | null;
+
+  /** Stripe Connect Express account for this Havener's payouts. */
+  stripe_account_id: string | null;
+  stripe_charges_enabled: boolean;
+  stripe_payouts_enabled: boolean;
+  /** Stripe Identity verification session for the automated document check. */
+  stripe_identity_session_id: string | null;
+
   created_at: string;
   updated_at: string;
 };
@@ -336,6 +354,12 @@ export type BookingRow = {
   paid_out_at: string | null;
   cancelled_at: string | null;
 
+  /** Preferred window for the counterparty to call the masked Havenr number. */
+  call_window: string | null;
+  /** Stripe PaymentIntent id once checkout has started for this booking. */
+  stripe_payment_intent_id: string | null;
+  payment_status: BookingPaymentStatus;
+
   created_at: string;
   updated_at: string;
 };
@@ -350,6 +374,18 @@ export type BookingCounterparty = {
   id: string;
   display_name: string | null;
   avatar_url: string | null;
+};
+
+export type MeetGreetRow = {
+  id: string;
+  booking_id: string;
+  proposed_by: string;
+  starts_at: string;
+  location_note: string | null;
+  status: MeetGreetStatus;
+  responded_at: string | null;
+  created_at: string;
+  updated_at: string;
 };
 
 export type MessageRow = {
@@ -486,6 +522,7 @@ export type Database = {
       booking_pets: Table<BookingPetRow, 'booking_id' | 'pet_id'>;
       messages: Table<MessageRow, 'booking_id' | 'sender_id' | 'recipient_id' | 'body'>;
       reviews: Table<ReviewRow, 'booking_id' | 'reviewer_id' | 'reviewee_id' | 'rating'>;
+      meet_greets: Table<MeetGreetRow, 'booking_id' | 'proposed_by' | 'starts_at'>;
     };
     Views: {
       public_sitters: {
@@ -511,6 +548,7 @@ export type Database = {
       staff_role: StaffRole;
       badge_type: BadgeType;
       booking_status: BookingStatus;
+      meet_greet_status: MeetGreetStatus;
     };
     CompositeTypes: Record<string, never>;
   };

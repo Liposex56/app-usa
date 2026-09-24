@@ -27,10 +27,13 @@ export async function generateMetadata({
 
 export default async function SitterProfilePage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ startDate?: string; endDate?: string }>;
 }) {
   const { id } = await params;
+  const { startDate, endDate } = await searchParams;
   const supabase = await createClient();
 
   const [{ data: sitter }, { data: services }, { data: { user } }] = await Promise.all([
@@ -50,6 +53,8 @@ export default async function SitterProfilePage({
       sitter={sitter as PublicSitterRow}
       services={(services ?? []) as SitterServiceRow[]}
       isOwnProfile={user?.id === id}
+      startDate={startDate}
+      endDate={endDate}
     />
   );
 }

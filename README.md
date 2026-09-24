@@ -45,8 +45,23 @@ En el **SQL Editor** de Supabase, ejecuta en este orden:
 3. `supabase/migrations/0003_storage.sql` — buckets y sus políticas
 4. `supabase/migrations/0004_payments_settings.sql` — comisión configurable
    y el candado que evita que un Havener se auto-apruebe el seguro
+5. `supabase/migrations/0005_service_settings.sql` — configuración de
+   servicios y días disponibles por Havener
+6. `supabase/migrations/0006_profile_and_public_view.sql` — perfil público
+   y la vista `public_sitters`
+7. `supabase/migrations/0007_pet_profile.sql` — perfil extendido de mascota
+8. `supabase/migrations/0008_bookings_chat_reviews.sql` — reservas, chat y
+   reseñas de publicación doble
+9. `supabase/migrations/0009_instant_booking.sql` — reserva instantánea
+   (sin paso de aceptar/rechazar), propuestas de Meet & Greet
+10. `supabase/migrations/0010_payments_verification.sql` — cuentas Stripe
+    Connect por Havener, estado de pago por reserva y verificación de
+    documentos con Stripe Identity
 
 Cada archivo es idempotente: se puede volver a correr sin romper nada.
+**Cada vez que se agregue un archivo nuevo en `supabase/migrations/`, hay
+que correrlo a mano en el SQL Editor de Supabase — nadie más lo hace por
+ti.**
 
 ### 2.3 Auth
 

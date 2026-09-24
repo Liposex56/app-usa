@@ -29,23 +29,6 @@ async function updateBooking(
   return { error: null };
 }
 
-export async function acceptBookingAction(bookingId: string): Promise<ActionState> {
-  await requireProfile();
-  return updateBooking(bookingId, { status: 'confirmed' });
-}
-
-export async function declineBookingAction(
-  bookingId: string,
-  _prev: ActionState,
-  formData: FormData
-): Promise<ActionState> {
-  await requireProfile();
-  return updateBooking(bookingId, {
-    status: 'declined',
-    decline_reason: text(formData, 'reason'),
-  });
-}
-
 export async function cancelBookingAction(
   bookingId: string,
   _prev: ActionState,
