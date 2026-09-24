@@ -10,7 +10,12 @@ import {
   IconStar,
 } from '@/components/icons';
 import { ButtonLink } from '@/components/ui/button';
-import type { PublicSitterRow, Skill, SitterServiceRow } from '@/lib/database.types';
+import type {
+  PublicSitterReviewRow,
+  PublicSitterRow,
+  Skill,
+  SitterServiceRow,
+} from '@/lib/database.types';
 import { serviceName } from '@/lib/services';
 import { cn, formatCents } from '@/lib/utils';
 
@@ -92,12 +97,14 @@ export function SitterProfileTabs({
   isOwnProfile = false,
   startDate,
   endDate,
+  reviews = [],
 }: {
   sitter: PublicSitterRow;
   services: SitterServiceRow[];
   isOwnProfile?: boolean;
   startDate?: string;
   endDate?: string;
+  reviews?: PublicSitterReviewRow[];
 }) {
   const [tab, setTab] = useState<'info' | 'reviews' | 'services'>('info');
   const skills = (sitter.skills ?? []) as Skill[];
@@ -302,15 +309,54 @@ export function SitterProfileTabs({
 
         {/* ------------------------------------------------------- Reviews */}
         {tab === 'reviews' && (
-          <div className="mt-8">
-            {sitter.review_count > 0 ? (
-              <p className="text-sm text-espresso-500">
-                Reviews are coming to Havenr soon.
-              </p>
-            ) : (
+          <div className="mt-8 space-y-4">
+            {reviews.length === 0 ? (
               <p className="rounded-2xl border border-espresso-700/10 bg-white p-8 text-center text-sm text-espresso-500">
                 No reviews yet.
               </p>
+            ) : (
+              reviews.map((review) => (
+                <div
+                  key={review.id}
+                  className="rounded-2xl border border-espresso-700/8 bg-white p-5"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="h-9 w-9 shrink-0 overflow-hidden rounded-full bg-sky-100">
+                      {review.reviewer_avatar_url ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={review.reviewer_avatar_url}
+                          alt=""
+                          className="h-full w-full object-cover"
+                        />
+                      ) : (
+                        <div className="flex h-full w-full items-center justify-center text-sm font-medium text-espresso-500">
+                          {review.reviewer_first_name.slice(0, 1)}
+                        </div>
+                      )}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium text-espresso-700">
+                        {review.reviewer_first_name}
+                      </p>
+                      <p className="text-xs text-espresso-500">
+                        {'★'.repeat(review.rating)}
+                        {'☆'.repeat(5 - review.rating)}
+                        {' · '}
+                        {new Date(review.created_at).toLocaleDateString(undefined, {
+                          month: 'short',
+                          year: 'numeric',
+                        })}
+                      </p>
+                    </div>
+                  </div>
+                  {review.body && (
+                    <p className="mt-3 text-sm leading-relaxed text-espresso-600">
+                      {review.body}
+                    </p>
+                  )}
+                </div>
+              ))
             )}
           </div>
         )}

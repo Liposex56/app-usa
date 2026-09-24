@@ -414,6 +414,19 @@ export type ReviewRow = {
   created_at: string;
 };
 
+/** What `public_sitter_reviews()` returns — a first name only, never the reviewer's full profile. */
+export type PublicSitterReviewRow = {
+  id: string;
+  rating: number;
+  punctuality: number | null;
+  communication: number | null;
+  pet_care: number | null;
+  body: string | null;
+  created_at: string;
+  reviewer_first_name: string;
+  reviewer_avatar_url: string | null;
+};
+
 export type StaffMemberRow = {
   user_id: string;
   role: StaffRole;
@@ -534,6 +547,10 @@ export type Database = {
       booking_counterparty: {
         Args: { p_booking_id: string };
         Returns: { id: string; display_name: string | null; avatar_url: string | null }[];
+      };
+      public_sitter_reviews: {
+        Args: { p_sitter_id: string };
+        Returns: PublicSitterReviewRow[];
       };
     };
     Enums: {

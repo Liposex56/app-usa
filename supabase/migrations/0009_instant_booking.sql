@@ -93,3 +93,47 @@ exception when duplicate_object then null; end $$;
 -- ---------------------------------------------------------------------------
 alter table public.bookings
   add column if not exists call_window text;
+
+-- ---------------------------------------------------------------------------
+-- public_sitter_reviews() — the Havener public profile's Reviews tab needs
+-- to show *something* about who left each review, but `profiles` is never
+-- publicly readable (see 0002_rls.sql). This is the same narrow pattern as
+-- booking_counterparty(): a security-definer function that hands back only
+-- a first name and avatar, and only for reviews that are already published
+-- (both sides submitted — see publish_paired_reviews() in 0008).
+-- ---------------------------------------------------------------------------
+create or replace function public.public_sitter_reviews(p_sitter_id uuid)
+returns table (
+  id uuid,
+  rating smallint,
+  punctuality smallint,
+  communication smallint,
+  pet_care smallint,
+  body text,
+  created_at timestamptz,
+  reviewer_first_name text,
+  reviewer_avatar_url text
+)
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select
+    r.id,
+    r.rating,
+    r.punctuality,
+    r.communication,
+    r.pet_care,
+    r.body,
+    r.created_at,
+    split_part(coalesce(p.display_name, 'A Havenr owner'), ' ', 1),
+    p.avatar_url
+  from public.reviews r
+  join public.profiles p on p.id = r.reviewer_id
+  where r.reviewee_id = p_sitter_id
+    and r.published_at is not null
+  order by r.created_at desc;
+$$;
+
+grant execute on function public.public_sitter_reviews(uuid) to anon, authenticated;

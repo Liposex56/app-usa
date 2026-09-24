@@ -1,7 +1,11 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 
-import type { PublicSitterRow, SitterServiceRow } from '@/lib/database.types';
+import type {
+  PublicSitterReviewRow,
+  PublicSitterRow,
+  SitterServiceRow,
+} from '@/lib/database.types';
 import { createClient } from '@/lib/supabase/server';
 
 import { SitterProfileTabs } from './sitter-profile-tabs';
@@ -36,15 +40,17 @@ export default async function SitterProfilePage({
   const { startDate, endDate } = await searchParams;
   const supabase = await createClient();
 
-  const [{ data: sitter }, { data: services }, { data: { user } }] = await Promise.all([
-    supabase.from('public_sitters').select('*').eq('id', id).maybeSingle(),
-    supabase
-      .from('sitter_services')
-      .select('*')
-      .eq('sitter_id', id)
-      .eq('is_active', true),
-    supabase.auth.getUser(),
-  ]);
+  const [{ data: sitter }, { data: services }, { data: { user } }, { data: reviews }] =
+    await Promise.all([
+      supabase.from('public_sitters').select('*').eq('id', id).maybeSingle(),
+      supabase
+        .from('sitter_services')
+        .select('*')
+        .eq('sitter_id', id)
+        .eq('is_active', true),
+      supabase.auth.getUser(),
+      supabase.rpc('public_sitter_reviews', { p_sitter_id: id }),
+    ]);
 
   if (!sitter) notFound();
 
@@ -55,6 +61,7 @@ export default async function SitterProfilePage({
       isOwnProfile={user?.id === id}
       startDate={startDate}
       endDate={endDate}
+      reviews={(reviews ?? []) as PublicSitterReviewRow[]}
     />
   );
 }
