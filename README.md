@@ -32,9 +32,14 @@ En tu proyecto de Supabase → **Project Settings → API**:
 |---|---|
 | Project URL | `NEXT_PUBLIC_SUPABASE_URL` |
 | `anon` / `publishable` key | `NEXT_PUBLIC_SUPABASE_ANON_KEY` |
+| `service_role` key | `SUPABASE_SERVICE_ROLE_KEY` (ver 2.5 — solo la usa el webhook de Stripe) |
 
-La `service_role` key **no se usa en este proyecto** y nunca debe entrar al
-código de Next.js: se salta todas las políticas RLS.
+La `service_role` key se salta todas las políticas RLS — **solo** se lee
+desde `lib/supabase/service.ts`, y ese archivo solo se usa desde
+`app/api/stripe/webhook/route.ts` (un endpoint que Stripe llama sin sesión
+de usuario). Nunca la importes desde una Server Action, página o componente
+que actúe a nombre de un usuario — ahí siempre `lib/supabase/server.ts`,
+para que RLS siga aplicando.
 
 ### 2.2 Migraciones
 
@@ -53,10 +58,15 @@ En el **SQL Editor** de Supabase, ejecuta en este orden:
 8. `supabase/migrations/0008_bookings_chat_reviews.sql` — reservas, chat y
    reseñas de publicación doble
 9. `supabase/migrations/0009_instant_booking.sql` — reserva instantánea
-   (sin paso de aceptar/rechazar), propuestas de Meet & Greet
-10. `supabase/migrations/0010_payments_verification.sql` — cuentas Stripe
+   (sin paso de aceptar/rechazar), propuestas de Meet & Greet, reseñas
+   públicas del perfil del Havener
+10. `supabase/migrations/0010_owner_profile.sql` — vista del dueño de
+    mascota para el Havener (About / Feedback / Pets)
+11. `supabase/migrations/0011_stripe.sql` — columnas para cuentas Stripe
     Connect por Havener, estado de pago por reserva y verificación de
     documentos con Stripe Identity
+12. `supabase/migrations/0012_walk_tracking.sql` — puntos GPS de las
+    caminatas (mapa en vivo)
 
 Cada archivo es idempotente: se puede volver a correr sin romper nada.
 **Cada vez que se agregue un archivo nuevo en `supabase/migrations/`, hay
@@ -81,6 +91,32 @@ Después de crear tu cuenta, corre esto en el SQL Editor:
 insert into public.staff_members (user_id, role)
 select id, 'admin' from public.profiles where email = 'tu-correo@ejemplo.com';
 ```
+
+### 2.5 Stripe (cobros, payouts y verificación de identidad)
+
+Todo el código ya está escrito y no se activa hasta que exista la cuenta de
+Stripe de la empresa — sin estas llaves, la app sigue funcionando igual,
+solo que cada pantalla de pago/verificación muestra "todavía no está
+activado" en vez de fallar. Cuando la cuenta exista:
+
+1. Crea la cuenta en [stripe.com](https://stripe.com) y activa **Connect**
+   (tipo Express) e **Identity** en el dashboard.
+2. En **Developers → API keys**, copia la *Secret key* → `STRIPE_SECRET_KEY`.
+3. En **Developers → Webhooks**, crea un endpoint apuntando a
+   `https://<tu-dominio>/api/stripe/webhook`, suscrito a:
+   `account.updated`, `checkout.session.completed`,
+   `identity.verification_session.verified`,
+   `identity.verification_session.requires_input`.
+   Copia el *Signing secret* → `STRIPE_WEBHOOK_SECRET`.
+4. Agrega `SUPABASE_SERVICE_ROLE_KEY` (ver 2.1) — sin ella el webhook no
+   puede escribir en `bookings` / `sitter_profiles`.
+5. Confirma que `NEXT_PUBLIC_SITE_URL` sea el dominio real en producción
+   (Vercel → Environment Variables) — Stripe redirige ahí después del
+   onboarding, el checkout y la verificación.
+
+Ningún cambio de código hace falta: en cuanto esas variables existan en
+Vercel y se vuelva a desplegar, `/dashboard/havener/payments`, el botón
+"Pay now" y `/dashboard/havener/verification` empiezan a funcionar.
 
 Eso te da acceso de staff en todas las políticas RLS. El panel administrativo
 en sí es una fase posterior.
@@ -145,13 +181,41 @@ lo que se pidió como primer avance del módulo de pagos/seguros:
 El resto del panel (usuarios, reservas, chat, reportes — sección 15 de la
 propuesta) sigue sin construir.
 
+### Reservas, disponibilidad, chat y Meet & Greet
+
+- **Búsqueda por fechas** (`/search`): el dueño elige rango de fechas y solo
+  ve Haveners sin una reserva `confirmed`/`in_progress` que choque con esas
+  fechas (`lib/availability.ts`).
+- **Reserva instantánea**: como la disponibilidad ya se verificó al buscar,
+  `requestBookingAction` crea la reserva directamente en `confirmed` — no
+  existe paso de aceptar/rechazar por parte del Havener.
+- **Chat** (`/dashboard/bookings/[id]`) en vivo vía Supabase Realtime, con
+  filtro de contacto externo (`lib/chat-filter.ts`).
+- **Meet & Greet**: cualquiera de las dos partes propone fecha/hora desde el
+  chat; la otra acepta o rechaza (`meet_greets`, `0009_instant_booking.sql`).
+- **Perfil del dueño para el Havener** (`/dashboard/bookings/[id]/owner`):
+  About / Feedback / Pets — nunca expone la fila cruda de `profiles`.
+- **Mapa GPS en vivo de las caminatas**: Leaflet + OpenStreetMap (sin llave
+  de API), el Havener comparte su ubicación mientras camina al perro y el
+  dueño ve la ruta en tiempo real (`0012_walk_tracking.sql`).
+
 ### Reparto de pago (empresa / Havener)
 
 `lib/payments.ts` calcula el reparto — hoy 20% empresa / 80% Havener,
-configurable desde `/dashboard/admin/settings` — pero **no mueve dinero**.
-No hay todavía `bookings` ni pasarela de pago conectada; eso implica elegir
-un proveedor (Stripe Connect u otro) y abrir cuenta empresarial con él antes
-de poder cobrar y liquidar de verdad.
+configurable desde `/dashboard/admin/settings`. **El código de cobro ya
+está completo** (`lib/stripe.ts`, `/dashboard/havener/payments`, botón "Pay
+now" en la reserva, `/api/stripe/webhook`) pero no mueve dinero real todavía
+porque falta crear la cuenta de Stripe de la empresa — en cuanto exista,
+solo hace falta cargar las llaves (ver sección 2.5) para que empiece a
+funcionar, sin tocar código.
+
+### Verificación de identidad automática
+
+`/dashboard/havener/verification` usa Stripe Identity (documento + selfie)
+para aprobar `background_check_status` automáticamente — mismo estado: el
+código está listo, solo falta la cuenta de Stripe. Es una verificación de
+identidad, no un background check criminal completo; si la empresa
+necesita eso además, hay que sumar un proveedor tipo Checkr más adelante.
 
 ---
 
@@ -176,20 +240,18 @@ está implementado en `0002_rls.sql`:
 
 ## 5. Lo que falta (fases siguientes)
 
-En orden sugerido:
+Búsqueda por disponibilidad, reservas instantáneas, chat, Meet & Greet, mapa
+GPS de caminatas, cobro con Stripe Connect y verificación de identidad con
+Stripe Identity ya están construidos (ver sección 3). Queda:
 
-1. **Búsqueda y filtros** — la regla de "compatibilidad antes que popularidad"
-   ya está en el modelo de datos, falta la consulta y la UI
-2. **Reservas** — tabla `bookings`, máquina de estados, calendario, y la
-   política RLS que le da al Havener acceso a la mascota mientras dure la reserva
-3. **Chat interno** con detección de contactos externos
-4. **Pagos reales** — el reparto empresa/Havener ya está (ver arriba); falta
-   conectar `bookings` con una pasarela de marketplace (Stripe Connect u
-   otra), propinas y liquidación de verdad
-5. **App móvil** (React Native + Expo) con GPS e informes de servicio
-6. **Panel administrativo completo** — usuarios, reservas, chat, reportes
+1. **Llamada con número enmascarado** ("Connect through Havenr" en la
+   reserva) — hoy solo se guarda la preferencia de horario
+   (`bookings.call_window`); falta contratar un proveedor de telefonía tipo
+   Twilio para el número real.
+2. **App móvil** (React Native + Expo) con GPS e informes de servicio
+3. **Panel administrativo completo** — usuarios, reservas, chat, reportes
    (hoy sólo existen seguros y comisión, ver arriba)
-7. **Reels y multimedia**
+4. **Reels y multimedia**
 
 ### Pendientes que no son código
 
@@ -197,11 +259,15 @@ En orden sugerido:
   en EE.UU. Las páginas ya existen, solo falta reemplazar el contenido.
 - **Política de cancelación**: el anexo referido en la propuesta todavía no
   existe. Sin él no se puede programar el cálculo de fees.
-- **Proveedores externos**: background check (tipo Checkr), pasarela de pagos,
-  mapas, correo transaccional. Cada uno necesita cuenta empresarial a nombre
-  de Havenr. Mientras tanto, el seguro se revisa a mano desde
-  `/dashboard/admin/insurance` — no hay verificación automática con la
-  aseguradora.
+- **Cuenta de Stripe de la empresa** — activa cobros, payouts y la
+  verificación de identidad automática a la vez (ver sección 2.5). Mientras
+  tanto, el seguro y el background check se revisan a mano desde
+  `/dashboard/admin/insurance` y `/dashboard/havener/verification`.
+- **Proveedor de telefonía** (tipo Twilio) para el número enmascarado.
+- **Background check criminal completo** (tipo Checkr) si Stripe Identity
+  (solo identidad) no es suficiente para el negocio.
+- **Correo transaccional** — cada uno necesita cuenta empresarial a nombre
+  de Havenr.
 
 ---
 
