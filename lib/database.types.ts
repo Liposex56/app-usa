@@ -458,6 +458,14 @@ export type BookingOwnerFeedbackRow = {
   reviewer_first_name: string;
 };
 
+export type WalkLocationRow = {
+  id: string;
+  booking_id: string;
+  latitude: number;
+  longitude: number;
+  recorded_at: string;
+};
+
 export type StaffMemberRow = {
   user_id: string;
   role: StaffRole;
@@ -567,6 +575,7 @@ export type Database = {
       messages: Table<MessageRow, 'booking_id' | 'sender_id' | 'recipient_id' | 'body'>;
       reviews: Table<ReviewRow, 'booking_id' | 'reviewer_id' | 'reviewee_id' | 'rating'>;
       meet_greets: Table<MeetGreetRow, 'booking_id' | 'proposed_by' | 'starts_at'>;
+      walk_locations: Table<WalkLocationRow, 'booking_id' | 'latitude' | 'longitude'>;
     };
     Views: {
       public_sitters: {

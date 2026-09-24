@@ -9,6 +9,7 @@ import type {
   MessageRow,
   PetRow,
   ReviewRow,
+  WalkLocationRow,
 } from '@/lib/database.types';
 import { requireProfile } from '@/lib/auth';
 import { serviceName } from '@/lib/services';
@@ -22,6 +23,8 @@ import { Chat } from './chat';
 import { MeetGreetPanel } from './meet-greet';
 import { PayButton } from './pay-button';
 import { ReviewForm } from './review-form';
+import { WalkMap } from './walk-map';
+import { WalkTracker } from './walk-tracker';
 
 export const metadata: Metadata = { title: 'Booking' };
 
@@ -65,6 +68,7 @@ export default async function BookingDetailPage({
     { data: messageRows },
     { data: reviewRows },
     { data: meetGreetRows },
+    { data: walkLocationRows },
   ] = await Promise.all([
     supabase.rpc('booking_counterparty', { p_booking_id: id }),
     supabase.from('booking_pets').select('pet_id').eq('booking_id', id),
@@ -79,6 +83,13 @@ export default async function BookingDetailPage({
       .select('*')
       .eq('booking_id', id)
       .order('created_at', { ascending: true }),
+    booking.service_type === 'dog_walking'
+      ? supabase
+          .from('walk_locations')
+          .select('*')
+          .eq('booking_id', id)
+          .order('recorded_at', { ascending: true })
+      : Promise.resolve({ data: [] as WalkLocationRow[] }),
   ]);
 
   const counterparty = (counterpartyRows as BookingCounterparty[] | null)?.[0] ?? null;
@@ -90,6 +101,7 @@ export default async function BookingDetailPage({
   const messages = (messageRows ?? []) as MessageRow[];
   const reviews = (reviewRows ?? []) as ReviewRow[];
   const meetGreets = (meetGreetRows ?? []) as MeetGreetRow[];
+  const walkLocations = (walkLocationRows ?? []) as WalkLocationRow[];
   const myReview = reviews.find((r) => r.reviewer_id === profile.id);
   const counterpartyId = viewerRole === 'owner' ? booking.sitter_id : booking.owner_id;
 
@@ -219,6 +231,21 @@ export default async function BookingDetailPage({
           />
         </div>
       </div>
+
+      {booking.service_type === 'dog_walking' &&
+        (booking.status === 'in_progress' || walkLocations.length > 0) && (
+          <div className="mt-6 space-y-3">
+            <h2 className="text-lg text-espresso-700">Walk route</h2>
+            {viewerRole === 'sitter' && booking.status === 'in_progress' && (
+              <WalkTracker bookingId={booking.id} />
+            )}
+            <WalkMap
+              bookingId={booking.id}
+              initialLocations={walkLocations}
+              live={booking.status === 'in_progress'}
+            />
+          </div>
+        )}
 
       <h2 className="mt-8 text-lg text-espresso-700">Messages</h2>
       <div className="mt-3">

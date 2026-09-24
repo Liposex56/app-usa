@@ -199,3 +199,25 @@ export async function submitReviewAction(
   revalidatePath(`/dashboard/bookings/${bookingId}`);
   return { error: null };
 }
+
+/**
+ * Called every few seconds by the Havener's browser during an in-progress
+ * dog walk. No error surfaces to the UI for a single failed ping — the RLS
+ * policy already only allows this while the walk is actually in progress,
+ * so a rejected write just means the walk ended or was never this
+ * sitter's, and retrying isn't useful.
+ */
+export async function logWalkLocationAction(
+  bookingId: string,
+  latitude: number,
+  longitude: number
+): Promise<void> {
+  await requireProfile();
+  const supabase = await createClient();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  await (supabase.from('walk_locations') as any).insert({
+    booking_id: bookingId,
+    latitude,
+    longitude,
+  });
+}
