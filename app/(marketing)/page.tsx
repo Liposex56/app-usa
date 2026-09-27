@@ -75,44 +75,49 @@ const HOW_IT_WORKS_LAYOUT: Array<{ left: string; top: string; transform: string 
 
 const FEATURES = [
   {
-    wordmark: '/brand/homepage/tile-everything-in-app.svg',
-    ratio: 372 / 28,
-    title: 'Everything stays in the app',
+    photo: '/brand/homepage/feature-everything-in-app.jpg',
+    title: 'everything stays in the app',
     body: 'Messages, agreements and evidence live in one thread, so support can see exactly what was promised if anything goes wrong.',
   },
   {
-    wordmark: '/brand/homepage/tile-updates.svg',
-    ratio: 454 / 28,
-    title: 'Updates you don’t have to ask for',
+    photo: '/brand/homepage/feature-updates.jpg',
+    title: 'updates you don’t have to ask for',
     body: 'Boarding and daycare Haveners are reminded to send photos and videos during the day. If nothing has arrived, we remind them again.',
   },
   {
-    wordmark: '/brand/homepage/tile-walks-verify.svg',
-    ratio: 416 / 28,
-    title: 'Walks you can actually verify',
+    photo: '/brand/homepage/feature-walks-verify.jpg',
+    title: 'walks you can actually verify',
     body: 'GPS route, distance, duration, potty log and required photos before a walk can be marked complete.',
   },
   {
-    wordmark: '/brand/homepage/tile-private-by-design.svg',
-    ratio: 229 / 28,
-    title: 'Private by design',
+    photo: '/brand/homepage/feature-private.jpg',
+    title: 'private by design',
     body: 'Your address is hidden until a booking is confirmed. We never sell your location or conversations to advertisers.',
   },
   {
-    wordmark: '/brand/homepage/tile-visits-checklist.svg',
-    ratio: 239 / 68,
-    title: 'Visits with a real checklist',
+    photo: '/brand/homepage/feature-visits-checklist.jpg',
+    title: 'visits with a real checklist',
     body: 'Litter, food, water, play, medication, wellbeing check. Every task is ticked off and timestamped.',
   },
   {
-    wordmark: '/brand/homepage/tile-one-clear-total.svg',
-    ratio: 264 / 68,
-    title: 'One clear total, no surprises',
+    photo: '/brand/homepage/feature-one-total.jpg',
+    title: 'one clear total, no surprises',
     body: 'Service rate, add-ons, taxes and tip are itemized before you confirm. Nothing is added later without your approval.',
   },
 ];
 
 const SERVICE_SWATCHES = ['bg-cream', 'bg-sky-100', 'bg-gold-50', 'bg-white', 'bg-sky-200'];
+
+// Real photos from the delivered shoot, aligned by index to SERVICES —
+// matching the reference, which shows an actual photo on every card instead
+// of a reserved placeholder.
+const SERVICE_PHOTOS = [
+  '/brand/homepage/service-boarding.jpg',
+  '/brand/homepage/service-daycare.jpg',
+  '/brand/homepage/service-house-sitting.jpg',
+  '/brand/homepage/service-dog-walking.jpg',
+  '/brand/homepage/service-drop-in-visits.jpg',
+];
 
 // Grid placement per service, aligned by index to SERVICES: Boarding and
 // Daycare stack in column 1, House Sitting spans the full height of column
@@ -176,11 +181,13 @@ export default function HomePage() {
             </Link>
           </div>
 
-          {/* Centered block, each line individually centered — confirmed
-              against the reference screenshot (varying left/right insets
-              per line, not a shared left edge). No trailing period after
-              "booked in minutes" either, per the same reference. */}
-          <h1 className="mt-7 text-center font-display font-black uppercase leading-[0.86] tracking-tight sm:mx-auto sm:max-w-3xl">
+          {/* Left-aligned block — confirmed directly in the live Figma file:
+              the hero heading and the subtitle below it share the exact
+              same left edge (two text layers of different widths, same X),
+              which only happens with shared left-alignment, not independent
+              centering of each. No trailing period after "booked in
+              minutes" either, per the same file. */}
+          <h1 className="mt-7 font-display font-black uppercase leading-[0.86] tracking-tight">
             <span className="block text-[2.6rem] text-espresso-700 sm:text-6xl lg:text-7xl">
               Pet <span className="text-sky-500">care</span>
             </span>
@@ -191,6 +198,12 @@ export default function HomePage() {
               booked in minutes
             </span>
           </h1>
+
+          <p className="mt-5 max-w-xl text-base font-medium text-espresso-600 sm:text-xl">
+            Havenr is a better way to find care for your pet—somewhere that
+            feels like home. We connect families with carefully selected and
+            vetted Haveners.
+          </p>
 
           {/* Reserved space for the door-opening / blue-flood interaction
               from the spec, deferred until that illustration is finalized.
@@ -214,29 +227,33 @@ export default function HomePage() {
 
       {/* ------------------------------------------------------- A day in their haven */}
       <section className="pb-20 sm:pb-28">
-        <div className="container-page" data-reveal>
-          <h2 className="max-w-lg font-display text-3xl font-black uppercase leading-[0.98] text-espresso-700 sm:text-5xl">
-            Every pet deserves a place that feels like home.
-          </h2>
-        </div>
-
         <div
-          className="container-page relative mt-10 aspect-video overflow-hidden rounded-[2rem] bg-gradient-to-br from-olive-500 via-gold-500 to-espresso-700"
+          className="container-page grid items-center gap-10 sm:grid-cols-2"
           data-reveal
         >
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 px-6 text-center">
-            <span className="flex h-16 w-16 items-center justify-center rounded-full border-2 border-cream/70 bg-cream/10 backdrop-blur-sm">
-              <svg width="22" height="26" viewBox="0 0 22 26" fill="none">
-                <path d="M2 2.5C2 1.34 3.26 0.62 4.26 1.2L20.26 11.7C21.25 12.28 21.25 13.72 20.26 14.3L4.26 24.8C3.26 25.38 2 24.66 2 23.5V2.5Z" fill="#FFF8CD" />
-              </svg>
-            </span>
-            <p className="font-display text-lg font-bold uppercase tracking-wide text-cream sm:text-2xl">
-              A day in their haven
-            </p>
-            <p className="max-w-sm text-sm font-medium text-cream/75">
-              Real homes. Real care. Real connection. Our hero film is in
-              production — check back soon.
-            </p>
+          <h2 className="font-display text-3xl font-black uppercase leading-[0.98] text-espresso-700 sm:text-5xl">
+            Every pet deserves a place that feels like home.
+          </h2>
+
+          {/* The real illustration from the design file — a Havener out on a
+              walk — not the video placeholder that used to sit here (Figma
+              has no video in this spot; the hero film is a separate,
+              still-pending asset). */}
+          <div className="relative h-64 sm:h-80">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/brand/homepage/illustration-walk-woman.png"
+              alt=""
+              aria-hidden
+              className="absolute left-[8%] top-0 h-[85%] w-auto object-contain"
+            />
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/brand/homepage/illustration-walk-dog-jumping.png"
+              alt=""
+              aria-hidden
+              className="absolute bottom-0 right-[4%] h-[55%] w-auto object-contain"
+            />
           </div>
         </div>
       </section>
@@ -288,9 +305,14 @@ export default function HomePage() {
                 className={`bone-cursor group flex h-44 flex-col rounded-3xl border-2 border-espresso-700/10 p-7 text-espresso-700 shadow-card transition-transform hover:-translate-y-1 sm:h-auto ${SERVICE_GRID_LAYOUT[i]} ${SERVICE_SWATCHES[i % SERVICE_SWATCHES.length]}`}
               >
                 {isHouseSitting && (
-                  // Photo goes here once it's ready — reserved space, image on
-                  // top with the title and tagline pinned below it.
-                  <div className="mb-4 flex-1 rounded-2xl border-2 border-dashed border-espresso-700/15" />
+                  // Image on top with the title and tagline pinned below it.
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={SERVICE_PHOTOS[i]}
+                    alt=""
+                    aria-hidden
+                    className="mb-4 h-full max-h-40 w-full flex-1 rounded-2xl object-cover"
+                  />
                 )}
                 <h3 className="font-display text-2xl font-black uppercase">
                   {service.name}
@@ -299,7 +321,13 @@ export default function HomePage() {
                   {service.tagline}
                 </p>
                 {!isHouseSitting && (
-                  <div className="mt-4 flex-1 rounded-2xl border-2 border-dashed border-espresso-700/15" />
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={SERVICE_PHOTOS[i]}
+                    alt=""
+                    aria-hidden
+                    className="mt-4 h-24 w-full flex-1 rounded-2xl object-cover sm:h-auto"
+                  />
                 )}
               </Link>
             );
@@ -324,8 +352,16 @@ export default function HomePage() {
       </section>
 
       {/* --------------------------------------------------------------- Trust */}
-      <section className="pb-20 pt-4 sm:pb-24">
-        <div className="container-page text-center" data-reveal>
+      <section className="relative overflow-hidden pb-20 pt-4 sm:pb-24">
+        {/* Small cream blob behind the eyebrow — confirmed in Figma
+            (fill #FFF8CD, ~170×162), same blob technique as the hero. */}
+        <div
+          aria-hidden
+          className="animate-blob-move absolute left-1/2 top-0 h-24 w-24 -translate-x-[9rem] bg-cream sm:h-32 sm:w-32 sm:-translate-x-64"
+          style={{ borderRadius: '44% 56% 62% 38% / 48% 42% 58% 52%' }}
+        />
+
+        <div className="container-page relative text-center" data-reveal>
           <span className="font-display text-sm font-bold uppercase tracking-widest text-gold-500 after:ml-2 after:content-['•']">
             Trust &amp; safety
           </span>
@@ -468,19 +504,20 @@ export default function HomePage() {
               key={feature.title}
               data-reveal
               style={{ transitionDelay: `${(index + 1) * 90}ms` }}
-              className={`rounded-3xl bg-white p-6 shadow-lift ${FEATURE_SPANS[index]}`}
+              className={`relative flex h-64 flex-col overflow-hidden rounded-3xl shadow-lift ${FEATURE_SPANS[index]}`}
             >
-              <h3>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={feature.wordmark}
-                  alt={feature.title}
-                  width={200}
-                  height={Math.round(200 / feature.ratio)}
-                  className="h-auto w-full max-w-[13rem]"
-                />
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={feature.photo}
+                alt=""
+                aria-hidden
+                className="absolute inset-0 h-full w-full object-cover grayscale"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/5 to-transparent" />
+              <h3 className="relative m-4 self-start rounded-full bg-cream px-4 py-2 font-display text-lg font-medium leading-tight text-espresso-700">
+                {feature.title}
               </h3>
-              <p className="mt-4 text-sm leading-relaxed text-espresso-500">
+              <p className="relative mt-auto px-5 pb-5 text-sm leading-relaxed text-white">
                 {feature.body}
               </p>
             </div>
