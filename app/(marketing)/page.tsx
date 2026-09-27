@@ -108,16 +108,14 @@ const FEATURES = [
   },
 ];
 
-const SERVICE_SWATCHES = ['bg-cream', 'bg-sky-100', 'bg-gold-50', 'bg-white', 'bg-sky-200'];
-
-// Real photos from the delivered shoot, aligned by index to SERVICES —
-// matching the reference, which shows an actual photo on every card instead
-// of a reserved placeholder.
-const SERVICE_PHOTOS = [
-  '/brand/homepage/service-boarding.jpg',
-  '/brand/homepage/service-daycare.jpg',
+// Real photos from the delivered shoot, aligned by index to SERVICES.
+// Boarding has no photo in Figma — a plain house-outline icon sits behind
+// its text instead (exported straight off the "Vector" layer in that card).
+const SERVICE_PHOTOS: Array<string | null> = [
+  null,
+  '/brand/homepage/service-daycare.png',
   '/brand/homepage/service-house-sitting.jpg',
-  '/brand/homepage/service-dog-walking.jpg',
+  '/brand/homepage/service-dog-walking.png',
   '/brand/homepage/service-drop-in-visits.jpg',
 ];
 
@@ -228,34 +226,64 @@ export default function HomePage() {
       </section>
 
       {/* ------------------------------------------------------- A day in their haven */}
-      <section className="pb-20 sm:pb-28">
-        <div
-          className="container-page grid items-center gap-10 sm:grid-cols-2"
-          data-reveal
-        >
-          <h2 className="font-display text-3xl font-black uppercase leading-[0.98] text-espresso-700 sm:text-5xl">
-            Every pet deserves a place that feels like home.
-          </h2>
+      <section className="pb-14 sm:pb-20">
+        {/* Every measurement here is read directly off the Figma layers
+            (woman, dog, both speech bubbles and the leash vector) as
+            percentages of their shared bounding box, so the composition —
+            including the leash running from her hand all the way to the
+            dog's collar — matches the reference exactly instead of the
+            two-independent-floating-images approximation this used to be. */}
+        <div className="container-page" data-reveal>
+          <div className="relative w-full" style={{ aspectRatio: '1374 / 560' }}>
+            <h2 className="absolute left-0 top-[19%] w-[26%] font-display text-[clamp(0.7rem,3.2vw,1.125rem)] font-medium uppercase leading-[0.95] text-espresso-700">
+              Every pet deserves a place that feels like home.
+            </h2>
 
-          {/* The real illustration from the design file — a Havener out on a
-              walk — not the video placeholder that used to sit here (Figma
-              has no video in this spot; the hero film is a separate,
-              still-pending asset). */}
-          <div className="relative h-64 sm:h-80">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/brand/homepage/illustration-walk-woman.png"
               alt=""
               aria-hidden
-              className="absolute left-[8%] top-0 h-[85%] w-auto object-contain"
+              className="absolute left-[24.7%] top-0 h-[79.5%] w-[26.6%] object-contain"
             />
+
+            <svg
+              aria-hidden
+              viewBox="0 0 1374 560"
+              className="absolute inset-0 h-full w-full"
+              style={{ overflow: 'visible' }}
+            >
+              <path
+                d="M 607 353 Q 780 290 1010 260"
+                fill="none"
+                stroke="#26100B"
+                strokeWidth="5"
+                strokeLinecap="round"
+              />
+            </svg>
+
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/brand/homepage/illustration-walk-dog-jumping.png"
               alt=""
               aria-hidden
-              className="absolute bottom-0 right-[4%] h-[55%] w-auto object-contain"
+              className="absolute left-[73.6%] top-[24.5%] h-[75.5%] w-[26.4%] object-contain"
             />
+
+            <p className="absolute left-[72.9%] top-[24.5%] w-[24%] font-zen-loop text-[clamp(0.5rem,1.7vw,0.9rem)] leading-tight text-espresso-700">
+              - oh! you know..
+              <br />
+              went for a walk
+              <br />
+              played a little
+              <br />
+              got loots of cuddles
+              <br />
+              took the best nap
+            </p>
+            <p className="absolute left-[83.3%] top-[17.1%] w-[22%] font-zen-loop italic text-[clamp(0.5rem,1.7vw,0.9rem)] leading-tight text-espresso-700">
+              - so... what did you do today?
+            </p>
           </div>
         </div>
       </section>
@@ -312,34 +340,63 @@ export default function HomePage() {
         <div className="container-page relative mt-14 hidden gap-5 sm:grid sm:grid-cols-3">
           {SERVICES.map((service, i) => {
             const isHouseSitting = i === 2;
+            const isBoarding = i === 0;
+            const isDropIn = i === 4;
+            const photo = SERVICE_PHOTOS[i];
             return (
               <Link
                 key={service.slug}
                 href={`/services/${service.slug}`}
                 data-reveal
                 style={{ transitionDelay: `${(i + 1) * 90}ms` }}
-                className={`bone-cursor group flex h-44 flex-col rounded-3xl border-2 border-espresso-700/10 p-7 text-espresso-700 shadow-card transition-transform hover:-translate-y-1 sm:h-auto ${SERVICE_GRID_LAYOUT[i]} ${SERVICE_SWATCHES[i % SERVICE_SWATCHES.length]}`}
+                className={`bone-cursor group relative flex h-44 flex-col overflow-hidden rounded-3xl border-2 border-espresso-700/10 bg-[#D6D1C6] p-7 text-espresso-700 shadow-card transition-transform hover:-translate-y-1 sm:h-auto ${SERVICE_GRID_LAYOUT[i]}`}
               >
-                {isHouseSitting && (
+                {isHouseSitting && photo && (
                   // Image on top with the title and tagline pinned below it.
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
-                    src={SERVICE_PHOTOS[i]}
+                    src={photo}
                     alt=""
                     aria-hidden
                     className="mb-4 h-full max-h-40 w-full flex-1 rounded-2xl object-cover"
                   />
                 )}
-                <h3 className="font-display text-2xl font-black uppercase">
+
+                {isDropIn && (
+                  <svg
+                    aria-hidden
+                    viewBox="0 0 64 64"
+                    className="absolute right-4 top-4 h-10 w-10 text-white/40"
+                  >
+                    <circle cx="32" cy="40" r="12" fill="currentColor" />
+                    <circle cx="14" cy="26" r="7" fill="currentColor" />
+                    <circle cx="27" cy="14" r="7" fill="currentColor" />
+                    <circle cx="42" cy="14" r="7" fill="currentColor" />
+                    <circle cx="53" cy="27" r="7" fill="currentColor" />
+                  </svg>
+                )}
+
+                <h3 className="relative z-[1] font-display text-2xl font-black uppercase">
                   {service.name}
                 </h3>
-                <p className="mt-2 text-sm font-bold text-espresso-500">
+                <p className="relative z-[1] mt-2 text-sm font-bold text-espresso-500">
                   {service.tagline}
                 </p>
-                {!isHouseSitting && (
+
+                {isBoarding && (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
-                    src={SERVICE_PHOTOS[i]}
+                    src="/brand/homepage/icon-house.svg"
+                    alt=""
+                    aria-hidden
+                    className="absolute bottom-3 right-3 h-24 w-auto opacity-70"
+                  />
+                )}
+
+                {!isHouseSitting && !isBoarding && photo && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={photo}
                     alt=""
                     aria-hidden
                     className="mt-4 h-24 w-full flex-1 rounded-2xl object-cover sm:h-auto"

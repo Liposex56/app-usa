@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next';
-import { Barlow_Condensed, Source_Sans_3 } from 'next/font/google';
+import { Barlow_Condensed, Source_Sans_3, Zen_Loop } from 'next/font/google';
 
 import './globals.css';
 
@@ -21,6 +21,15 @@ const display = Barlow_Condensed({
   display: 'swap',
   weight: ['400', '500', '600', '700', '800', '900'],
   variable: '--font-display',
+});
+
+/** The hand-written speech-bubble copy on the homepage's walk illustration
+ * is set in Zen Loop in Figma — a distinct script face, not a Barlow weight. */
+const zenLoop = Zen_Loop({
+  subsets: ['latin'],
+  display: 'swap',
+  weight: '400',
+  variable: '--font-zen-loop',
 });
 
 export const metadata: Metadata = {
@@ -53,7 +62,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${body.variable} ${display.variable}`}>
+    <html
+      lang="en"
+      className={`${body.variable} ${display.variable} ${zenLoop.variable}`}
+    >
       <body>{children}</body>
     </html>
   );
