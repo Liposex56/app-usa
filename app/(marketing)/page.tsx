@@ -349,49 +349,52 @@ export default function HomePage() {
                 href={`/services/${service.slug}`}
                 data-reveal
                 style={{ transitionDelay: `${(i + 1) * 90}ms` }}
-                className={`bone-cursor group relative flex h-44 flex-col overflow-hidden rounded-3xl border-2 border-espresso-700/10 bg-[#D6D1C6] p-7 text-espresso-700 shadow-card transition-transform hover:-translate-y-1 sm:h-auto ${SERVICE_GRID_LAYOUT[i]}`}
+                className={`bone-cursor group relative flex h-44 flex-col overflow-hidden rounded-3xl border-2 border-espresso-700/10 bg-[#D6D1C6] text-espresso-700 shadow-card transition-transform hover:-translate-y-1 sm:h-auto ${SERVICE_GRID_LAYOUT[i]}`}
               >
                 {isHouseSitting && photo && (
-                  // Image on top with the title and tagline pinned below it.
+                  // Photo bleeds edge-to-edge, same as Figma — not inset in
+                  // the card's padding like the title/tagline below it.
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
                     src={photo}
                     alt=""
                     aria-hidden
-                    className="mb-4 h-full max-h-40 w-full flex-1 rounded-2xl object-cover"
+                    className="h-32 w-full flex-1 object-cover sm:h-56"
                   />
                 )}
 
-                {isDropIn && (
-                  <svg
-                    aria-hidden
-                    viewBox="0 0 64 64"
-                    className="absolute right-4 top-4 h-10 w-10 text-white/40"
-                  >
-                    <circle cx="32" cy="40" r="12" fill="currentColor" />
-                    <circle cx="14" cy="26" r="7" fill="currentColor" />
-                    <circle cx="27" cy="14" r="7" fill="currentColor" />
-                    <circle cx="42" cy="14" r="7" fill="currentColor" />
-                    <circle cx="53" cy="27" r="7" fill="currentColor" />
-                  </svg>
-                )}
+                <div className="relative z-[1] flex flex-1 flex-col p-6">
+                  {isDropIn && (
+                    <svg
+                      aria-hidden
+                      viewBox="0 0 64 64"
+                      className="absolute right-4 top-4 h-10 w-10 text-white/40"
+                    >
+                      <circle cx="32" cy="40" r="12" fill="currentColor" />
+                      <circle cx="14" cy="26" r="7" fill="currentColor" />
+                      <circle cx="27" cy="14" r="7" fill="currentColor" />
+                      <circle cx="42" cy="14" r="7" fill="currentColor" />
+                      <circle cx="53" cy="27" r="7" fill="currentColor" />
+                    </svg>
+                  )}
 
-                <h3 className="relative z-[1] font-display text-2xl font-black uppercase">
-                  {service.name}
-                </h3>
-                <p className="relative z-[1] mt-2 text-sm font-bold text-espresso-500">
-                  {service.tagline}
-                </p>
+                  <h3 className="font-display text-2xl font-black uppercase">
+                    {service.name}
+                  </h3>
+                  <p className="mt-2 text-sm font-bold text-espresso-500">
+                    {service.tagline}
+                  </p>
 
-                {isBoarding && (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src="/brand/homepage/icon-house.svg"
-                    alt=""
-                    aria-hidden
-                    className="absolute bottom-3 right-3 h-24 w-auto opacity-70"
-                  />
-                )}
+                  {isBoarding && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src="/brand/homepage/icon-house.svg"
+                      alt=""
+                      aria-hidden
+                      className="absolute bottom-3 right-3 h-24 w-auto opacity-70"
+                    />
+                  )}
+                </div>
 
                 {!isHouseSitting && !isBoarding && photo && (
                   // eslint-disable-next-line @next/next/no-img-element
@@ -399,7 +402,9 @@ export default function HomePage() {
                     src={photo}
                     alt=""
                     aria-hidden
-                    className="mt-4 h-24 w-full flex-1 rounded-2xl object-cover sm:h-auto"
+                    // Daycare's source photo faces right; Figma's card has
+                    // her looking left, so it's mirrored here to match.
+                    className={`h-24 w-full flex-1 object-cover sm:h-40 ${i === 1 ? 'scale-x-[-1]' : ''}`}
                   />
                 )}
               </Link>

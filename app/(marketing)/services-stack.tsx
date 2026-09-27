@@ -73,6 +73,8 @@ export function ServicesStack({
               )}
               <div className="relative h-2/3 w-full overflow-hidden">
                 {item.photo ? (
+                  // Daycare's source photo faces right; Figma's card has her
+                  // looking left, so it's mirrored here to match.
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
                     src={item.photo}
@@ -80,7 +82,7 @@ export function ServicesStack({
                     aria-hidden
                     className={`h-full w-full object-cover ${
                       index === 2 || index === 4 ? 'grayscale' : ''
-                    }`}
+                    } ${index === 1 ? 'scale-x-[-1]' : ''}`}
                   />
                 ) : (
                   // eslint-disable-next-line @next/next/no-img-element
