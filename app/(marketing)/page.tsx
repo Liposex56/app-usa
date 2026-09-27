@@ -566,6 +566,50 @@ export default function HomePage() {
           </strong>
         </p>
       </section>
+
+      {/* ------------------------------------------------------- Testimonial */}
+      <section className="relative overflow-hidden py-20 sm:py-28">
+        <div
+          aria-hidden
+          className="absolute -right-16 top-10 h-40 w-40 rounded-full bg-gold-500/90 sm:h-52 sm:w-52"
+        />
+        <div className="container-page relative max-w-3xl" data-reveal>
+          <h2 className="font-display text-3xl font-black uppercase leading-[0.95] text-espresso-700 sm:text-5xl">
+            Trust you can feel from the first message
+          </h2>
+          <div className="relative mt-10 rounded-[2.5rem] border-2 border-espresso-700/10 bg-cream p-8 shadow-card sm:p-10">
+            <p className="font-display text-2xl font-medium leading-snug text-espresso-700 sm:text-3xl">
+              “i never had to ask how my dog was doing — the photos just
+              showed up, every few hours.”
+            </p>
+            <p className="mt-5 text-sm font-bold uppercase tracking-wide text-espresso-500">
+              Laura, Arlington
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* --------------------------------------------------------------- FAQ */}
+      <section className="pb-24 sm:pb-32">
+        <div className="container-page max-w-3xl" data-reveal>
+          <span className="font-display text-sm font-bold uppercase tracking-widest text-gold-500 after:ml-2 after:content-['•']">
+            Before you book
+          </span>
+          <h2 className="mt-3 font-display text-3xl font-black uppercase leading-[0.95] text-espresso-700 sm:text-5xl">
+            Quick answers
+          </h2>
+          <div className="mt-8 rounded-3xl border-2 border-espresso-700/10 bg-white p-7 shadow-card sm:p-8">
+            <h3 className="font-display text-xl font-bold lowercase text-espresso-700 sm:text-2xl">
+              what if i need to cancel?
+            </h3>
+            <p className="mt-3 text-base leading-relaxed text-espresso-500">
+              You can cancel or reschedule right in the app. We’ll show you
+              the exact cutoff for a full refund before you confirm — no
+              surprises.
+            </p>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }
