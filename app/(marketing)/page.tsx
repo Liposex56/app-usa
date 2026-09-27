@@ -5,6 +5,8 @@ import { IntroSplash } from '@/components/marketing/intro-splash';
 import { ScrollReveal } from '@/components/marketing/scroll-reveal';
 import { SERVICES } from '@/lib/services';
 
+import { ServicesStack } from './services-stack';
+
 const TRUST_STEPS = [
   {
     title: 'Background checked',
@@ -293,7 +295,21 @@ export default function HomePage() {
           />
         </div>
 
-        <div className="container-page relative mt-14 grid gap-5 sm:grid-cols-3">
+        {/* Mobile: an interactive, click-through card stack — tap the front
+            card and it slides aside and stays put, revealing the next one,
+            one at a time. The grid below is desktop-only. */}
+        <div className="container-page">
+          <ServicesStack
+            items={SERVICES.map((service, i) => ({
+              slug: service.slug,
+              name: service.name,
+              tagline: service.tagline,
+              photo: SERVICE_PHOTOS[i],
+            }))}
+          />
+        </div>
+
+        <div className="container-page relative mt-14 hidden gap-5 sm:grid sm:grid-cols-3">
           {SERVICES.map((service, i) => {
             const isHouseSitting = i === 2;
             return (
