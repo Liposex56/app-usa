@@ -58,8 +58,8 @@ export default async function HavenerBookingsPage() {
 
       {bookings.length === 0 ? (
         <p className="mt-8 rounded-3xl border border-dashed border-espresso-700/15 bg-white p-10 text-center text-sm text-espresso-500">
-          No bookings yet — they&rsquo;ll show up here the moment an owner
-          books you, already confirmed.
+          No requests yet — when an owner contacts you, their request shows up
+          here for you to accept or decline.
         </p>
       ) : (
         <div className="mt-8 space-y-3">
