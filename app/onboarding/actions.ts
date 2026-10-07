@@ -33,7 +33,7 @@ export async function selectRoleAction(
   formData: FormData
 ): Promise<ActionState> {
   const role = text(formData, 'role');
-  if (role !== 'owner' && role !== 'havener' && role !== 'both') {
+  if (role !== 'owner' && role !== 'havener') {
     return { error: 'Please choose how you’ll use Havenr.' };
   }
 
@@ -45,8 +45,8 @@ export async function selectRoleAction(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { error } = await (supabase.from('profiles') as any)
     .update({
-      is_owner: role === 'owner' || role === 'both',
-      is_havener: role === 'havener' || role === 'both',
+      is_owner: role === 'owner',
+      is_havener: role === 'havener',
       onboarding_step: 'owner_profile',
     })
     .eq('id', userId);
@@ -192,7 +192,8 @@ export async function savePetAction(
   // Adding a second pet later must not rewind onboarding.
   const isHavener = profile?.is_havener ?? false;
   if (profile?.onboarding_step !== 'pet') {
-    redirect('/dashboard');
+    const returnTo = text(formData, 'returnTo');
+    redirect(returnTo && returnTo.startsWith('/') && !returnTo.startsWith('//') ? returnTo : '/dashboard');
   }
 
   const nextStep = isHavener ? 'havener' : 'done';

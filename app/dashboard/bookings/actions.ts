@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 
 import type { MeetGreetRow, MessageRow } from '@/lib/database.types';
 import { requireProfile } from '@/lib/auth';
+import { sitterIdsWithConflict } from '@/lib/availability';
 import { filterChatMessage } from '@/lib/chat-filter';
 import { createClient } from '@/lib/supabase/server';
 import { text } from '@/lib/utils';
@@ -41,6 +42,56 @@ export async function cancelBookingAction(
   return updateBooking(bookingId, {
     status: 'cancelled',
     cancellation_reason: reason,
+  });
+}
+
+/**
+ * A Havener accepts an owner's request. Contacting several Haveners at once
+ * means two of them could both say yes, so availability is re-checked here —
+ * the first acceptance for those dates wins and the second is told why not.
+ */
+export async function acceptBookingAction(bookingId: string): Promise<ActionState> {
+  const profile = await requireProfile();
+  const supabase = await createClient();
+
+  const { data: booking } = await supabase
+    .from('bookings')
+    .select('sitter_id, status, start_date, end_date')
+    .eq('id', bookingId)
+    .maybeSingle();
+
+  if (!booking || booking.sitter_id !== profile.id) {
+    return { error: 'This request isn’t yours to answer.' };
+  }
+  if (booking.status !== 'requested') {
+    return { error: 'This request has already been answered.' };
+  }
+
+  const conflicts = await sitterIdsWithConflict(
+    supabase,
+    booking.start_date as string,
+    (booking.end_date as string | null) ?? (booking.start_date as string),
+    [profile.id]
+  );
+  if (conflicts.has(profile.id)) {
+    return {
+      error:
+        'You already have a confirmed booking or blocked dates in that range, so you can’t accept this one.',
+    };
+  }
+
+  return updateBooking(bookingId, { status: 'confirmed' });
+}
+
+export async function declineBookingAction(
+  bookingId: string,
+  _prev: ActionState,
+  formData: FormData
+): Promise<ActionState> {
+  await requireProfile();
+  return updateBooking(bookingId, {
+    status: 'declined',
+    decline_reason: text(formData, 'reason'),
   });
 }
 

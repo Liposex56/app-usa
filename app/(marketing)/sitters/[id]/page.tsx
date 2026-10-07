@@ -6,9 +6,10 @@ import type {
   PublicSitterRow,
   SitterServiceRow,
 } from '@/lib/database.types';
+import { HOME_MEDIA_BUCKET, homeMediaKind } from '@/lib/home-media';
 import { createClient } from '@/lib/supabase/server';
 
-import { SitterProfileTabs } from './sitter-profile-tabs';
+import { SitterProfileTabs, type HomeMediaItem } from './sitter-profile-tabs';
 
 export async function generateMetadata({
   params,
@@ -34,10 +35,10 @@ export default async function SitterProfilePage({
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ startDate?: string; endDate?: string }>;
+  searchParams: Promise<{ startDate?: string; endDate?: string; service?: string }>;
 }) {
   const { id } = await params;
-  const { startDate, endDate } = await searchParams;
+  const { startDate, endDate, service } = await searchParams;
   const supabase = await createClient();
 
   const [{ data: sitter }, { data: services }, { data: { user } }, { data: reviews }] =
@@ -54,6 +55,19 @@ export default async function SitterProfilePage({
 
   if (!sitter) notFound();
 
+  // The home photos/videos live in the public `sitter-photos` bucket under
+  // <havener id>/home/ — no table to keep in sync, just list the folder.
+  const { data: files } = await supabase.storage
+    .from(HOME_MEDIA_BUCKET)
+    .list(`${id}/home`, { limit: 24, sortBy: { column: 'created_at', order: 'asc' } });
+  const homeMedia: HomeMediaItem[] = (files ?? [])
+    .filter((file) => file.name && !file.name.startsWith('.'))
+    .map((file) => ({
+      url: supabase.storage.from(HOME_MEDIA_BUCKET).getPublicUrl(`${id}/home/${file.name}`).data
+        .publicUrl,
+      kind: homeMediaKind(file.name),
+    }));
+
   return (
     <SitterProfileTabs
       sitter={sitter as PublicSitterRow}
@@ -61,7 +75,9 @@ export default async function SitterProfilePage({
       isOwnProfile={user?.id === id}
       startDate={startDate}
       endDate={endDate}
+      service={service}
       reviews={(reviews ?? []) as PublicSitterReviewRow[]}
+      homeMedia={homeMedia}
     />
   );
 }

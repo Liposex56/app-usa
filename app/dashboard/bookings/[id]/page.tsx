@@ -154,11 +154,16 @@ export default async function BookingDetailPage({
             </div>
           </div>
           <span className="rounded-full bg-cream px-3 py-1 text-xs font-medium text-olive-600">
-            {STATUS_LABEL[booking.status] ?? booking.status}
+            {booking.status === 'requested' && viewerRole === 'sitter'
+              ? 'New request — your answer needed'
+              : (STATUS_LABEL[booking.status] ?? booking.status)}
           </span>
         </div>
 
-        <details className="group mt-4 border-t border-espresso-700/8 pt-3">
+        <details
+          open={booking.status === 'requested'}
+          className="group mt-4 border-t border-espresso-700/8 pt-3"
+        >
           <summary className="cursor-pointer list-none text-sm font-medium text-gold-600 hover:text-gold-700">
             <span className="group-open:hidden">View details</span>
             <span className="hidden group-open:inline">Hide details</span>
@@ -203,9 +208,12 @@ export default async function BookingDetailPage({
           </dl>
 
           {booking.owner_notes && (
-            <p className="mt-4 rounded-xl bg-bone p-4 text-sm text-espresso-600">
-              &ldquo;{booking.owner_notes}&rdquo;
-            </p>
+            <div className="mt-4 rounded-xl bg-bone p-4 text-sm text-espresso-600">
+              <p className="text-xs uppercase tracking-wider text-espresso-500/60">
+                Request details
+              </p>
+              <p className="mt-1.5 whitespace-pre-line">{booking.owner_notes}</p>
+            </div>
           )}
           {booking.decline_reason && (
             <p className="mt-4 rounded-xl bg-red-50 p-4 text-sm text-red-800">

@@ -10,11 +10,16 @@ export const metadata: Metadata = { title: 'Panel administrativo' };
 export default async function AdminOverviewPage() {
   const supabase = await createClient();
 
-  const [{ count: pendingInsurance }, { data: settings }] = await Promise.all([
+  const [{ count: pendingInsurance }, { count: pendingProfiles }, { data: settings }] =
+    await Promise.all([
     supabase
       .from('sitter_insurance')
       .select('sitter_id', { count: 'exact', head: true })
       .eq('status', 'pending'),
+    supabase
+      .from('sitter_profiles')
+      .select('id', { count: 'exact', head: true })
+      .eq('status', 'pending_review'),
     supabase
       .from('platform_settings')
       .select('company_commission_percent')
@@ -26,6 +31,20 @@ export default async function AdminOverviewPage() {
 
   return (
     <div className="grid gap-6 sm:grid-cols-2">
+      <Link
+        href="/dashboard/admin/havener-profiles"
+        className="rounded-2xl border border-espresso-700/10 bg-white p-6 shadow-card transition-colors hover:border-gold-500/50"
+      >
+        <IconShield className="h-6 w-6 text-gold-600" />
+        <p className="mt-4 text-2xl font-semibold text-espresso-700">
+          {pendingProfiles ?? 0}
+        </p>
+        <p className="text-sm text-espresso-500">
+          Perfil{pendingProfiles === 1 ? '' : 'es'} de Havener pendiente
+          {pendingProfiles === 1 ? '' : 's'} de aprobación
+        </p>
+      </Link>
+
       <Link
         href="/dashboard/admin/insurance"
         className="rounded-2xl border border-espresso-700/10 bg-white p-6 shadow-card transition-colors hover:border-gold-500/50"

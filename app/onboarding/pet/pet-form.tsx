@@ -19,6 +19,7 @@ import {
   Textarea,
 } from '@/components/ui/field';
 import type { PetRow } from '@/lib/database.types';
+import { DOG_SIZE_OPTIONS } from '@/lib/pet-options';
 
 import { savePetAction, updatePetAction, type ActionState } from '../actions';
 
@@ -73,10 +74,13 @@ export function PetForm({
   isHavener,
   hideSteps = false,
   existing = null,
+  returnTo,
 }: {
   isHavener: boolean;
   hideSteps?: boolean;
   existing?: PetRow | null;
+  /** Where to send the owner after saving (e.g. back to a half-finished contact request). */
+  returnTo?: string;
 }) {
   const isEdit = Boolean(existing);
   const action = isEdit ? updatePetAction : savePetAction;
@@ -106,6 +110,7 @@ export function PetForm({
       <form action={formAction} className="space-y-6">
         <FormError message={state.error} />
         {isEdit && <input type="hidden" name="petId" value={existing!.id} />}
+        {returnTo && <input type="hidden" name="returnTo" value={returnTo} />}
 
         {/* ------------------------------------------------------- Basics */}
         <Fieldset legend="The basics">
@@ -200,15 +205,18 @@ export function PetForm({
           </div>
 
           <div className="grid gap-5 sm:grid-cols-2">
-            <Field label="Size" htmlFor="size">
-              <Select id="size" name="size" defaultValue={existing?.size ?? ''}>
-                <option value="">Select…</option>
-                <option value="small">Small — up to 25 lb</option>
-                <option value="medium">Medium — 26 to 60 lb</option>
-                <option value="large">Large — 61 to 100 lb</option>
-                <option value="giant">Giant — over 100 lb</option>
-              </Select>
-            </Field>
+            {species === 'dog' && (
+              <Field label="Size" htmlFor="size">
+                <Select id="size" name="size" defaultValue={existing?.size ?? ''}>
+                  <option value="">Select…</option>
+                  {DOG_SIZE_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </Select>
+              </Field>
+            )}
             <Field label="Energy level" htmlFor="energyLevel">
               <Select
                 id="energyLevel"

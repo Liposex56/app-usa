@@ -175,6 +175,7 @@ lo que se pidió como primer avance del módulo de pagos/seguros:
 | Ruta | Contenido |
 |---|---|
 | `/dashboard/admin` | Resumen: seguros pendientes, comisión vigente |
+| `/dashboard/admin/havener-profiles` | Aprobar/rechazar perfiles de Havener (`sitter_profiles.status`) — lo que hace visibles a los Haveners en la búsqueda |
 | `/dashboard/admin/insurance` | Aprobar/rechazar seguros enviados; actualiza `sitter_insurance` y la insignia pública `is_insured` |
 | `/dashboard/admin/settings` | Comisión de la empresa (`platform_settings`, sólo editable por `role = 'admin'`) y un simulador de reparto |
 
@@ -183,12 +184,17 @@ propuesta) sigue sin construir.
 
 ### Reservas, disponibilidad, chat y Meet & Greet
 
-- **Búsqueda por fechas** (`/search`): el dueño elige rango de fechas y solo
-  ve Haveners sin una reserva `confirmed`/`in_progress` que choque con esas
-  fechas (`lib/availability.ts`).
-- **Reserva instantánea**: como la disponibilidad ya se verificó al buscar,
-  `requestBookingAction` crea la reserva directamente en `confirmed` — no
-  existe paso de aceptar/rechazar por parte del Havener.
+- **Búsqueda por fechas y servicio** (`/search`): no muestra ningún Havener
+  hasta que el dueño elige fechas **y** servicio; entonces solo aparecen los
+  compatibles con la mascota (especie, tamaño, energía) y libres en esas
+  fechas (`lib/matching.ts`, `lib/availability.ts`). Los Haveners que
+  actualizan su disponibilidad cada día aparecen primero.
+- **Contactar a un Havener** (`/sitters/[id]/contact`): resumen editable
+  (servicio, fechas, ventanas de entrega/recogida, mascotas, extras y mensaje
+  prediseñado). Crea una solicitud `requested` más el primer mensaje del chat;
+  el Havener la acepta o rechaza desde la reserva. Después
+  (`/sitters/[id]/contact/sent`) se ofrecen hasta 3 Haveners compatibles ya
+  seleccionados para contactarlos a todos con un clic.
 - **Chat** (`/dashboard/bookings/[id]`) en vivo vía Supabase Realtime, con
   filtro de contacto externo (`lib/chat-filter.ts`).
 - **Meet & Greet**: cualquiera de las dos partes propone fecha/hora desde el

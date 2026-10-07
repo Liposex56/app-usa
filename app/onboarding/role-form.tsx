@@ -29,7 +29,7 @@ export function RoleForm({ firstName }: { firstName: string | null }) {
 
       <OnboardingHeading
         title={firstName ? `Welcome, ${firstName}` : 'Welcome to Havenr'}
-        description="First, tell us how you plan to use Havenr. You can change this later — plenty of people do both."
+        description="First, tell us how you plan to use Havenr. You can add the other side later from your profile — plenty of people do both."
       />
 
       <form action={formAction} className="space-y-6">
@@ -49,12 +49,6 @@ export function RoleForm({ firstName }: { firstName: string | null }) {
             value="havener"
             label="I want to offer care as a Havener"
             description="Set your rates and calendar. You’ll need to pass verification before taking bookings."
-          />
-          <RadioCard
-            name="role"
-            value="both"
-            label="Both"
-            description="Book care for your own pets and care for others."
           />
         </div>
 

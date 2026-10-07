@@ -139,6 +139,9 @@ export default async function HavenerProfilePage() {
                 Ver mi perfil público
               </ActionLink>
             )}
+            <ActionLink href="/dashboard/havener/home">
+              Fotos y video de mi casa
+            </ActionLink>
             <ActionLink href="/dashboard/havener/services">
               Gestionar mis servicios
             </ActionLink>

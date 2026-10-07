@@ -5,6 +5,10 @@ export type ServiceDefinition = {
   slug: string;
   name: string;
   tagline: string;
+  /** Very short "where does this happen" line shown next to the name in pickers. */
+  blurb: string;
+  /** Name used inside pickers, where the product copy says "Doggy Day Care". */
+  pickerName: string;
   where: string;
   duration: string;
   /** Copy for the marketing pages. */
@@ -21,6 +25,8 @@ export const SERVICES: ServiceDefinition[] = [
     type: 'boarding',
     slug: 'boarding',
     name: 'Boarding',
+    pickerName: 'Boarding',
+    blurb: 'at your Havener’s home',
     tagline: 'Overnight care in your Havener’s home',
     where: 'Your Havener’s home',
     duration: 'One or more nights',
@@ -41,6 +47,8 @@ export const SERVICES: ServiceDefinition[] = [
     type: 'daycare',
     slug: 'daycare',
     name: 'Daycare',
+    pickerName: 'Doggy Day Care',
+    blurb: 'at your Havener’s home',
     tagline: 'Daytime care, home by evening',
     where: 'Your Havener’s home',
     duration: 'Daytime, no overnight',
@@ -61,6 +69,8 @@ export const SERVICES: ServiceDefinition[] = [
     type: 'house_sitting',
     slug: 'house-sitting',
     name: 'House Sitting',
+    pickerName: 'House Sitting',
+    blurb: 'in your home',
     tagline: 'Your Havener stays at your place',
     where: 'Your home',
     duration: 'Hours, full days or nights',
@@ -81,6 +91,8 @@ export const SERVICES: ServiceDefinition[] = [
     type: 'dog_walking',
     slug: 'dog-walking',
     name: 'Dog Walking',
+    pickerName: 'Dog Walking',
+    blurb: 'in your neighborhood',
     tagline: 'GPS-tracked walks, reported end to end',
     where: 'Your neighborhood',
     duration: 'Per booked walk',
@@ -101,6 +113,8 @@ export const SERVICES: ServiceDefinition[] = [
     type: 'drop_in_visit',
     slug: 'drop-in-visits',
     name: 'Drop-In Visits',
+    pickerName: 'Drop-In Visits',
+    blurb: 'visits in your home',
     tagline: 'Short visits, built for cats and stay-at-home pets',
     where: 'Your home',
     duration: 'Per visit',
@@ -134,4 +148,9 @@ export function serviceBySlug(slug: string): ServiceDefinition | undefined {
 
 export function serviceName(type: ServiceType): string {
   return SERVICE_BY_TYPE[type]?.name ?? type;
+}
+
+/** "Boarding — at your Havener’s home" — the label used in service dropdowns. */
+export function servicePickerLabel(service: ServiceDefinition): string {
+  return `${service.pickerName} — ${service.blurb}`;
 }

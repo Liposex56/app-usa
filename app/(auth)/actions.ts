@@ -17,7 +17,8 @@ const signUpSchema = z.object({
     .string()
     .min(8, 'Your password needs at least 8 characters.')
     .max(72, 'Passwords can be at most 72 characters.'),
-  role: z.enum(['owner', 'havener', 'both']).default('owner'),
+  role: z.enum(['owner', 'havener']).default('owner'),
+  ref: z.string().trim().max(40).optional(),
 });
 
 const loginSchema = z.object({
@@ -46,13 +47,14 @@ export async function signUpAction(
     email: formData.get('email'),
     password: formData.get('password'),
     role: formData.get('role') ?? 'owner',
+    ref: formData.get('ref') ?? undefined,
   });
 
   if (!parsed.success) {
     return { error: parsed.error.issues[0]?.message ?? 'Please check the form.' };
   }
 
-  const { firstName, lastName, email, password, role } = parsed.data;
+  const { firstName, lastName, email, password, role, ref } = parsed.data;
   const supabase = await createClient();
   const origin = await siteOrigin();
 
@@ -61,7 +63,12 @@ export async function signUpAction(
     password,
     options: {
       emailRedirectTo: `${origin}/auth/callback?next=/onboarding`,
-      data: { first_name: firstName, last_name: lastName, intended_role: role },
+      data: {
+        first_name: firstName,
+        last_name: lastName,
+        intended_role: role,
+        ...(ref ? { referral_code: ref } : {}),
+      },
     },
   });
 

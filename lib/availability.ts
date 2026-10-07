@@ -6,10 +6,10 @@ import type { Database } from '@/lib/database.types';
  * Sitter ids that are unavailable for [startDate, endDate], for either of
  * two reasons:
  *  1. A confirmed/in-progress booking overlaps it. A booking with a null
- *     end_date is a single day (its own start_date). Bookings are
- *     auto-confirmed the moment they're created (see requestBookingAction),
- *     so `confirmed`/`in_progress` is the complete set of "busy" statuses —
- *     a declined or cancelled row never blocks anything.
+ *     end_date is a single day (its own start_date). Only `confirmed` and
+ *     `in_progress` block — a still-open `requested` inquiry doesn't (an
+ *     owner may have contacted several Haveners at once, and the first to
+ *     accept wins), and a declined or cancelled row never blocks anything.
  *  2. The Havener explicitly blocked a day in that range themselves
  *     (`sitter_availability`, managed at /dashboard/havener/availability —
  *     "absent row = available", so only rows with is_available = false

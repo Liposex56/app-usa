@@ -7,8 +7,10 @@ import { FormError } from '@/components/ui/field';
 import type { BookingStatus } from '@/lib/database.types';
 
 import {
+  acceptBookingAction,
   cancelBookingAction,
   completeServiceAction,
+  declineBookingAction,
   startServiceAction,
   type ActionState,
 } from '../actions';
@@ -67,7 +69,36 @@ export function BookingActions({
   viewerRole: 'owner' | 'sitter';
 }) {
   const [isPending, startTransition] = useTransition();
+  const [acceptError, setAcceptError] = useState<string | null>(null);
   const cancel = cancelBookingAction.bind(null, bookingId);
+  const decline = declineBookingAction.bind(null, bookingId);
+
+  if (viewerRole === 'sitter' && status === 'requested') {
+    return (
+      <div className="space-y-3">
+        <FormError message={acceptError} />
+        <div className="flex flex-wrap items-start gap-2">
+          <Button
+            size="sm"
+            disabled={isPending}
+            onClick={() =>
+              startTransition(async () => {
+                const result = await acceptBookingAction(bookingId);
+                setAcceptError(result.error);
+              })
+            }
+          >
+            Accept request
+          </Button>
+          <ReasonForm
+            action={decline}
+            label="Decline"
+            placeholder="Let them know why you can’t take this one."
+          />
+        </div>
+      </div>
+    );
+  }
 
   if (viewerRole === 'sitter' && status === 'confirmed') {
     return (

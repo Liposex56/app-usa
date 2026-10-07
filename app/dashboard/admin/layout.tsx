@@ -24,6 +24,12 @@ export default async function AdminLayout({
               Resumen
             </Link>
             <Link
+              href="/dashboard/admin/havener-profiles"
+              className="text-sm font-medium text-espresso-700 hover:text-gold-600"
+            >
+              Perfiles
+            </Link>
+            <Link
               href="/dashboard/admin/insurance"
               className="text-sm font-medium text-espresso-700 hover:text-gold-600"
             >

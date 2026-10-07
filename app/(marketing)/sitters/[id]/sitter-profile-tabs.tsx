@@ -91,26 +91,73 @@ function RateLine({ label, cents }: { label: string; cents: number | null }) {
   );
 }
 
+export type HomeMediaItem = { url: string; kind: 'photo' | 'video' };
+
+/** Photos and clips of the home a boarding Havener hosts pets in. */
+function HomeGallery({ media }: { media: HomeMediaItem[] }) {
+  return (
+    <section>
+      <h2 className="text-lg font-semibold text-espresso-700">Meet the home</h2>
+      <p className="mt-1 text-sm text-espresso-500">
+        Where your pet would stay while you&rsquo;re away.
+      </p>
+      <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3">
+        {media.map((item) =>
+          item.kind === 'video' ? (
+            <video
+              key={item.url}
+              src={item.url}
+              controls
+              preload="metadata"
+              className="aspect-square w-full rounded-2xl bg-espresso-700/5 object-cover"
+            />
+          ) : (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              key={item.url}
+              src={item.url}
+              alt="Inside the Havener’s home"
+              loading="lazy"
+              className="aspect-square w-full rounded-2xl object-cover"
+            />
+          )
+        )}
+      </div>
+    </section>
+  );
+}
+
 export function SitterProfileTabs({
   sitter,
   services,
   isOwnProfile = false,
   startDate,
   endDate,
+  service,
   reviews = [],
+  homeMedia = [],
 }: {
   sitter: PublicSitterRow;
   services: SitterServiceRow[];
   isOwnProfile?: boolean;
   startDate?: string;
   endDate?: string;
+  service?: string;
   reviews?: PublicSitterReviewRow[];
+  homeMedia?: HomeMediaItem[];
 }) {
   const [tab, setTab] = useState<'info' | 'reviews' | 'services'>('info');
   const skills = (sitter.skills ?? []) as Skill[];
-  const bookHref = startDate
-    ? `/sitters/${sitter.id}/book?startDate=${startDate}&endDate=${endDate || startDate}`
-    : `/sitters/${sitter.id}/book`;
+
+  // Carries the search (dates + service) forward into the contact summary.
+  const contactQuery = new URLSearchParams();
+  if (startDate) {
+    contactQuery.set('startDate', startDate);
+    contactQuery.set('endDate', endDate || startDate);
+  }
+  if (service) contactQuery.set('service', service);
+  const contactQueryString = contactQuery.toString();
+  const contactHref = `/sitters/${sitter.id}/contact${contactQueryString ? `?${contactQueryString}` : ''}`;
 
   return (
     <div className="container-page py-10 sm:py-14">
@@ -173,8 +220,8 @@ export function SitterProfileTabs({
             </div>
             {!isOwnProfile && (
               <div className="mt-5">
-                <ButtonLink href={bookHref} size="md">
-                  Request a booking
+                <ButtonLink href={contactHref} size="md">
+                  Contact this Havener
                 </ButtonLink>
               </div>
             )}
@@ -283,6 +330,25 @@ export function SitterProfileTabs({
                     cats
                   </p>
                 )}
+              </section>
+            )}
+
+            {homeMedia.length > 0 && <HomeGallery media={homeMedia} />}
+            {homeMedia.length === 0 && isOwnProfile && (
+              <section className="rounded-2xl border border-dashed border-espresso-700/15 bg-white p-5">
+                <h2 className="text-lg font-semibold text-espresso-700">Meet the home</h2>
+                <p className="mt-1 text-sm text-espresso-500">
+                  Owners choosing boarding want to see where their pet will
+                  stay. Add photos or a short video of your home.
+                </p>
+                <ButtonLink
+                  href="/dashboard/havener/home"
+                  size="sm"
+                  variant="secondary"
+                  className="mt-3"
+                >
+                  Add photos or video
+                </ButtonLink>
               </section>
             )}
 

@@ -23,8 +23,9 @@ function SubmitButton() {
 export function SignUpForm() {
   const searchParams = useSearchParams();
   const roleParam = searchParams.get('role');
-  const defaultRole =
-    roleParam === 'havener' || roleParam === 'both' ? roleParam : 'owner';
+  const defaultRole = roleParam === 'havener' ? 'havener' : 'owner';
+  // A Havener's referral link (/signup?ref=CODE) rides along with the account.
+  const referralCode = searchParams.get('ref');
 
   const [state, formAction] = useActionState(signUpAction, INITIAL);
 
@@ -51,14 +52,11 @@ export function SignUpForm() {
           description="Offer care and get paid. Requires verification before you can take bookings."
           defaultChecked={defaultRole === 'havener'}
         />
-        <RadioCard
-          name="role"
-          value="both"
-          label="Both"
-          description="You can switch between the two at any time."
-          defaultChecked={defaultRole === 'both'}
-        />
+        <p className="text-xs leading-relaxed text-espresso-500/75">
+          You can become a Havener — or add a pet — later from your profile.
+        </p>
       </fieldset>
+      {referralCode && <input type="hidden" name="ref" value={referralCode} />}
 
       <div className="grid gap-4 sm:grid-cols-2">
         <Field label="First name" htmlFor="firstName" required>
