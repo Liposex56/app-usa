@@ -91,8 +91,7 @@ async function createContactRequest(
       wantsPickupDropoff: input.wantsPickupDropoff,
       pickupDropoffRateCents: service.pickup_dropoff_rate_cents,
     }),
-  ].join('
-');
+  ].join('\n');
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { data: booking, error } = await (supabase.from('bookings') as any)
