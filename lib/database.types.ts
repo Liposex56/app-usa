@@ -366,6 +366,17 @@ export type BookingRow = {
   stripe_payment_intent_id: string | null;
   payment_status: BookingPaymentStatus;
 
+  /** A booking is `confirmed` only once both of these are set. */
+  owner_booked_at: string | null;
+  sitter_booked_at: string | null;
+  archived_by_owner: boolean;
+  archived_by_sitter: boolean;
+  dropoff_from: string | null;
+  dropoff_to: string | null;
+  pickup_from: string | null;
+  pickup_to: string | null;
+  wants_pickup_dropoff: boolean;
+
   created_at: string;
   updated_at: string;
 };

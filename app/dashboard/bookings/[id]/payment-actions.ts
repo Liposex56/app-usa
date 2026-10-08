@@ -35,7 +35,9 @@ export async function createCheckoutSessionAction(
   if (booking.payment_status === 'paid') {
     return { error: 'This booking is already paid.' };
   }
-  if (!['confirmed', 'in_progress', 'completed'].includes(booking.status)) {
+  // An open request is paid when the owner clicks Book; older confirmed
+  // bookings that were never paid can still be paid from here.
+  if (!['requested', 'confirmed', 'in_progress', 'completed'].includes(booking.status)) {
     return { error: 'This booking can no longer be paid.' };
   }
 

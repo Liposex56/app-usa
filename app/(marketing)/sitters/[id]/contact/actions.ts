@@ -10,33 +10,18 @@ import type {
 } from '@/lib/database.types';
 import { requireProfile } from '@/lib/auth';
 import { sitterIdsWithConflict } from '@/lib/availability';
+import { scheduleLines } from '@/lib/booking-notes';
 import { filterChatMessage } from '@/lib/chat-filter';
 import { findMatchingSitters } from '@/lib/matching';
 import { commissionPercentFromSettings, computeFeeSplit } from '@/lib/payments';
 import { computeBookingTotals } from '@/lib/pricing';
 import { SERVICE_BY_TYPE } from '@/lib/services';
 import { createClient } from '@/lib/supabase/server';
-import { bool, formatCents, list, petAge, text } from '@/lib/utils';
+import { bool, list, petAge, text } from '@/lib/utils';
 
 export type ContactState = { error: string | null };
 
 type Supabase = Awaited<ReturnType<typeof createClient>>;
-
-function formatTime(value: string | null): string | null {
-  if (!value) return null;
-  const [hourText, minute] = value.split(':');
-  const hour = Number(hourText);
-  if (Number.isNaN(hour)) return null;
-  const suffix = hour >= 12 ? 'PM' : 'AM';
-  return `${hour % 12 === 0 ? 12 : hour % 12}:${minute} ${suffix}`;
-}
-
-function timeRange(from: string | null, to: string | null): string | null {
-  const start = formatTime(from);
-  const end = formatTime(to);
-  if (start && end) return `${start} – ${end}`;
-  return start ?? end;
-}
 
 /**
  * A Havener can't read a pet's profile until a booking moves past the request
@@ -60,8 +45,10 @@ type RequestInput = {
   startDate: string;
   endDate: string | null;
   pets: PetRow[];
-  dropoff: string | null;
-  pickup: string | null;
+  dropoffFrom: string | null;
+  dropoffTo: string | null;
+  pickupFrom: string | null;
+  pickupTo: string | null;
   wantsPickupDropoff: boolean;
   message: string;
   flagged: boolean;
@@ -96,16 +83,16 @@ async function createContactRequest(
 
   const summary = [
     `Pets: ${pets.map(petSummaryLine).join('; ')}`,
-    input.dropoff ? `Drop-off window: ${input.dropoff}` : null,
-    input.pickup ? `Pick-up window: ${input.pickup}` : null,
-    input.wantsPickupDropoff && service.pickup_dropoff_rate_cents
-      ? `Extras: Havener pick-up and drop-off (+${formatCents(service.pickup_dropoff_rate_cents)})`
-      : input.wantsPickupDropoff
-        ? 'Extras: Havener pick-up and drop-off requested'
-        : null,
-  ]
-    .filter(Boolean)
-    .join('\n');
+    ...scheduleLines({
+      dropoffFrom: input.dropoffFrom,
+      dropoffTo: input.dropoffTo,
+      pickupFrom: input.pickupFrom,
+      pickupTo: input.pickupTo,
+      wantsPickupDropoff: input.wantsPickupDropoff,
+      pickupDropoffRateCents: service.pickup_dropoff_rate_cents,
+    }),
+  ].join('
+');
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { data: booking, error } = await (supabase.from('bookings') as any)
@@ -118,6 +105,11 @@ async function createContactRequest(
       start_date: startDate,
       end_date: endDate,
       owner_notes: summary,
+      dropoff_from: input.dropoffFrom,
+      dropoff_to: input.dropoffTo,
+      pickup_from: input.pickupFrom,
+      pickup_to: input.pickupTo,
+      wants_pickup_dropoff: input.wantsPickupDropoff,
       base_rate_cents: service.base_rate_cents,
       additional_pet_rate_cents: service.additional_pet_rate_cents,
       extra_fees_cents: totals.extraFeesCents,
@@ -215,8 +207,10 @@ export async function contactHavenerAction(
     startDate,
     endDate: endDate || null,
     pets,
-    dropoff: timeRange(text(formData, 'dropoffFrom'), text(formData, 'dropoffTo')),
-    pickup: timeRange(text(formData, 'pickupFrom'), text(formData, 'pickupTo')),
+    dropoffFrom: text(formData, 'dropoffFrom'),
+    dropoffTo: text(formData, 'dropoffTo'),
+    pickupFrom: text(formData, 'pickupFrom'),
+    pickupTo: text(formData, 'pickupTo'),
     wantsPickupDropoff: bool(formData, 'wantsPickupDropoff'),
     message: filtered.body,
     flagged: filtered.flagged,
@@ -286,11 +280,6 @@ export async function contactAdditionalHavenersAction(
   });
   const allowed = new Set(sitters.map((s) => s.id));
 
-  // Keep the extras the owner picked on the original request.
-  const notes = String(original.owner_notes ?? '');
-  const dropoff = /Drop-off window: (.+)/.exec(notes)?.[1] ?? null;
-  const pickup = /Pick-up window: (.+)/.exec(notes)?.[1] ?? null;
-  const wantsPickupDropoff = /Extras: Havener pick-up and drop-off/.test(notes);
 
   for (const sitterId of chosen) {
     const service = serviceBySitter.get(sitterId);
@@ -303,9 +292,12 @@ export async function contactAdditionalHavenersAction(
       startDate,
       endDate,
       pets,
-      dropoff,
-      pickup,
-      wantsPickupDropoff,
+      // The same schedule and transport choice as the original request.
+      dropoffFrom: (original.dropoff_from as string | null) ?? null,
+      dropoffTo: (original.dropoff_to as string | null) ?? null,
+      pickupFrom: (original.pickup_from as string | null) ?? null,
+      pickupTo: (original.pickup_to as string | null) ?? null,
+      wantsPickupDropoff: Boolean(original.wants_pickup_dropoff),
       message,
       flagged: false,
       flaggedReason: null,

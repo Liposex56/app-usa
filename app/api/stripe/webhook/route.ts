@@ -62,6 +62,17 @@ export async function POST(request: Request) {
       const session = event.data.object as Stripe.Checkout.Session;
       const bookingId = session.metadata?.booking_id;
       if (bookingId) {
+        const now = new Date().toISOString();
+        const { data: current } = await supabase
+          .from('bookings')
+          .select('status, sitter_booked_at, owner_booked_at')
+          .eq('id', bookingId)
+          .maybeSingle();
+
+        // Paying is the owner's "Book". If the Havener has already booked too,
+        // the service is now confirmed; otherwise it stays pending.
+        const stillOpen = current?.status === 'requested';
+        const bothBooked = stillOpen && Boolean(current?.sitter_booked_at);
         await supabase
           .from('bookings')
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -69,6 +80,8 @@ export async function POST(request: Request) {
             payment_status: 'paid',
             stripe_payment_intent_id:
               typeof session.payment_intent === 'string' ? session.payment_intent : null,
+            ...(stillOpen ? { owner_booked_at: current?.owner_booked_at ?? now } : {}),
+            ...(bothBooked ? { status: 'confirmed', confirmed_at: now } : {}),
           } as never)
           .eq('id', bookingId);
       }

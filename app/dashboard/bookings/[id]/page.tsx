@@ -12,12 +12,14 @@ import type {
   WalkLocationRow,
 } from '@/lib/database.types';
 import { requireProfile } from '@/lib/auth';
+import { bookingPhase } from '@/lib/booking-phase';
 import { serviceName } from '@/lib/services';
 import { createClient } from '@/lib/supabase/server';
 import { formatCents, formatDate } from '@/lib/utils';
 
 import { sendMessageAction } from '../actions';
 import { BookingActions } from './booking-actions';
+import { BookingToolbar } from './booking-toolbar';
 import { CallWindow } from './call-window';
 import { Chat } from './chat';
 import { MeetGreetPanel } from './meet-greet';
@@ -27,19 +29,6 @@ import { WalkMap } from './walk-map';
 import { WalkTracker } from './walk-tracker';
 
 export const metadata: Metadata = { title: 'Booking' };
-
-const STATUS_LABEL: Record<string, string> = {
-  requested: 'Waiting on the Havener to respond',
-  confirmed: 'Confirmed',
-  in_progress: 'Service in progress',
-  completed: 'Completed',
-  pending_payout: 'Completed — payout pending',
-  paid_out: 'Completed',
-  cancelled: 'Cancelled',
-  declined: 'Declined',
-  disputed: 'In dispute',
-  refunded: 'Refunded',
-};
 
 export default async function BookingDetailPage({
   params,
@@ -61,6 +50,9 @@ export default async function BookingDetailPage({
 
   const viewerRole: 'owner' | 'sitter' =
     booking.owner_id === profile.id ? 'owner' : 'sitter';
+  const phase = bookingPhase(booking, viewerRole);
+  const archived =
+    viewerRole === 'owner' ? booking.archived_by_owner : booking.archived_by_sitter;
 
   const [
     { data: counterpartyRows },
@@ -153,14 +145,15 @@ export default async function BookingDetailPage({
               </p>
             </div>
           </div>
-          <span className="rounded-full bg-cream px-3 py-1 text-xs font-medium text-olive-600">
-            {booking.status === 'requested' && viewerRole === 'sitter'
-              ? 'New request — your answer needed'
-              : (STATUS_LABEL[booking.status] ?? booking.status)}
+          <span className={`rounded-full px-3 py-1 text-xs font-medium ${phase.tone}`}>
+            {phase.label}
           </span>
         </div>
 
+        {phase.hint && <p className="mt-3 text-sm text-olive-600">{phase.hint}</p>}
+
         <details
+          id="booking-details"
           open={booking.status === 'requested'}
           className="group mt-4 border-t border-espresso-700/8 pt-3"
         >
@@ -240,6 +233,9 @@ export default async function BookingDetailPage({
                 {booking.payment_status !== 'processing' && (
                   <div className="mt-3">
                     <PayButton bookingId={booking.id} totalCents={booking.total_cents} />
+                    <p className="mt-2 text-xs text-espresso-500">
+                      Includes a {booking.commission_percent}% Havenr service fee.
+                    </p>
                   </div>
                 )}
               </div>
@@ -283,7 +279,29 @@ export default async function BookingDetailPage({
           </div>
         )}
 
-      <div className="mt-6">
+      <div className="mt-6 rounded-3xl border border-espresso-700/8 bg-white p-4 shadow-card">
+        <BookingToolbar
+          bookingId={booking.id}
+          viewerRole={viewerRole}
+          status={booking.status}
+          ownerBooked={Boolean(booking.owner_booked_at)}
+          sitterBooked={Boolean(booking.sitter_booked_at)}
+          archived={archived}
+          modifyDefaults={{
+            startDate: booking.start_date,
+            endDate: booking.end_date,
+            dropoffFrom: booking.dropoff_from,
+            dropoffTo: booking.dropoff_to,
+            pickupFrom: booking.pickup_from,
+            pickupTo: booking.pickup_to,
+            wantsPickupDropoff: booking.wants_pickup_dropoff,
+            allowsTransport:
+              booking.service_type === 'boarding' || booking.service_type === 'daycare',
+          }}
+        />
+      </div>
+
+      <div className="mt-3">
         <Chat
           bookingId={booking.id}
           viewerId={profile.id}

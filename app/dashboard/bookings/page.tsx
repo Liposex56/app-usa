@@ -1,35 +1,29 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 
-import type { BookingRow, BookingStatus, PublicSitterRow } from '@/lib/database.types';
+import type { BookingRow, PublicSitterRow } from '@/lib/database.types';
 import { requireProfile } from '@/lib/auth';
+import { bookingPhase } from '@/lib/booking-phase';
 import { serviceName } from '@/lib/services';
 import { createClient } from '@/lib/supabase/server';
 import { formatCents, formatDate } from '@/lib/utils';
 
 export const metadata: Metadata = { title: 'My bookings' };
 
-const STATUS_LABEL: Record<BookingStatus, { label: string; tone: string }> = {
-  requested: { label: 'Waiting on Havener', tone: 'bg-cream text-olive-600' },
-  confirmed: { label: 'Confirmed', tone: 'bg-green-100 text-green-800' },
-  in_progress: { label: 'In progress', tone: 'bg-sky-100 text-sky-700' },
-  completed: { label: 'Completed', tone: 'bg-espresso-700/8 text-espresso-600' },
-  pending_payout: { label: 'Completed', tone: 'bg-espresso-700/8 text-espresso-600' },
-  paid_out: { label: 'Completed', tone: 'bg-espresso-700/8 text-espresso-600' },
-  cancelled: { label: 'Cancelled', tone: 'bg-red-100 text-red-800' },
-  declined: { label: 'Declined', tone: 'bg-red-100 text-red-800' },
-  disputed: { label: 'In dispute', tone: 'bg-red-100 text-red-800' },
-  refunded: { label: 'Refunded', tone: 'bg-red-100 text-red-800' },
-};
-
-export default async function OwnerBookingsPage() {
+export default async function OwnerBookingsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ archived?: string }>;
+}) {
   const profile = await requireProfile();
+  const showArchived = (await searchParams).archived === '1';
   const supabase = await createClient();
 
   const { data } = await supabase
     .from('bookings')
     .select('*')
     .eq('owner_id', profile.id)
+    .eq('archived_by_owner', showArchived)
     .order('created_at', { ascending: false });
 
   const bookings = (data ?? []) as BookingRow[];
@@ -49,19 +43,33 @@ export default async function OwnerBookingsPage() {
       >
         ← Back to dashboard
       </Link>
-      <h1 className="mt-6 text-3xl">My bookings</h1>
+      <div className="mt-6 flex flex-wrap items-end justify-between gap-3">
+        <h1 className="text-3xl">{showArchived ? 'Archived bookings' : 'My bookings'}</h1>
+        <Link
+          href={showArchived ? '/dashboard/bookings' : '/dashboard/bookings?archived=1'}
+          className="text-sm font-medium text-gold-600 hover:text-gold-700"
+        >
+          {showArchived ? '← Back to bookings' : 'View archived'}
+        </Link>
+      </div>
 
       {bookings.length === 0 ? (
         <p className="mt-8 rounded-3xl border border-dashed border-espresso-700/15 bg-white p-10 text-center text-sm text-espresso-500">
-          You haven&rsquo;t requested a booking yet.{' '}
-          <Link href="/search" className="font-medium text-gold-600">
-            Find a Havener →
-          </Link>
+          {showArchived ? (
+            'Nothing archived.'
+          ) : (
+            <>
+              You haven&rsquo;t requested a booking yet.{' '}
+              <Link href="/search" className="font-medium text-gold-600">
+                Find a Havener →
+              </Link>
+            </>
+          )}
         </p>
       ) : (
         <div className="mt-8 space-y-3">
           {bookings.map((booking) => {
-            const status = STATUS_LABEL[booking.status];
+            const status = bookingPhase(booking, 'owner');
             return (
               <Link
                 key={booking.id}

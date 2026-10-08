@@ -36,6 +36,12 @@ export default async function AdminLayout({
               Seguros
             </Link>
             <Link
+              href="/dashboard/admin/reports"
+              className="text-sm font-medium text-espresso-700 hover:text-gold-600"
+            >
+              Reportes
+            </Link>
+            <Link
               href="/dashboard/admin/settings"
               className="text-sm font-medium text-espresso-700 hover:text-gold-600"
             >

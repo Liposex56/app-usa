@@ -2,36 +2,30 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 
-import type { BookingCounterparty, BookingRow, BookingStatus } from '@/lib/database.types';
+import type { BookingCounterparty, BookingRow } from '@/lib/database.types';
 import { requireProfile } from '@/lib/auth';
+import { bookingPhase } from '@/lib/booking-phase';
 import { serviceName } from '@/lib/services';
 import { createClient } from '@/lib/supabase/server';
 import { formatCents, formatDate } from '@/lib/utils';
 
 export const metadata: Metadata = { title: 'Bookings' };
 
-const STATUS_LABEL: Record<BookingStatus, { label: string; tone: string }> = {
-  requested: { label: 'New request', tone: 'bg-cream text-olive-600' },
-  confirmed: { label: 'Confirmed', tone: 'bg-green-100 text-green-800' },
-  in_progress: { label: 'In progress', tone: 'bg-sky-100 text-sky-700' },
-  completed: { label: 'Completed', tone: 'bg-espresso-700/8 text-espresso-600' },
-  pending_payout: { label: 'Completed', tone: 'bg-espresso-700/8 text-espresso-600' },
-  paid_out: { label: 'Completed', tone: 'bg-espresso-700/8 text-espresso-600' },
-  cancelled: { label: 'Cancelled', tone: 'bg-red-100 text-red-800' },
-  declined: { label: 'Declined', tone: 'bg-red-100 text-red-800' },
-  disputed: { label: 'In dispute', tone: 'bg-red-100 text-red-800' },
-  refunded: { label: 'Refunded', tone: 'bg-red-100 text-red-800' },
-};
-
-export default async function HavenerBookingsPage() {
+export default async function HavenerBookingsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ archived?: string }>;
+}) {
   const profile = await requireProfile();
   if (!profile.is_havener) redirect('/dashboard');
+  const showArchived = (await searchParams).archived === '1';
 
   const supabase = await createClient();
   const { data } = await supabase
     .from('bookings')
     .select('*')
     .eq('sitter_id', profile.id)
+    .eq('archived_by_sitter', showArchived)
     .order('created_at', { ascending: false });
 
   const bookings = (data ?? []) as BookingRow[];
@@ -54,17 +48,27 @@ export default async function HavenerBookingsPage() {
       >
         ← Back to dashboard
       </Link>
-      <h1 className="mt-6 text-3xl">Bookings</h1>
+      <div className="mt-6 flex flex-wrap items-end justify-between gap-3">
+        <h1 className="text-3xl">{showArchived ? 'Archived' : 'Bookings'}</h1>
+        <Link
+          href={
+            showArchived ? '/dashboard/havener/bookings' : '/dashboard/havener/bookings?archived=1'
+          }
+          className="text-sm font-medium text-gold-600 hover:text-gold-700"
+        >
+          {showArchived ? '← Back to bookings' : 'View archived'}
+        </Link>
+      </div>
 
       {bookings.length === 0 ? (
         <p className="mt-8 rounded-3xl border border-dashed border-espresso-700/15 bg-white p-10 text-center text-sm text-espresso-500">
           No requests yet — when an owner contacts you, their request shows up
-          here for you to accept or decline.
+          here for you to book or decline.
         </p>
       ) : (
         <div className="mt-8 space-y-3">
           {bookings.map((booking) => {
-            const status = STATUS_LABEL[booking.status];
+            const status = bookingPhase(booking, 'sitter');
             const owner = ownerById.get(booking.id);
             return (
               <Link
