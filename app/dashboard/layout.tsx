@@ -64,6 +64,12 @@ export default async function DashboardLayout({
                 Booking requests
               </Link>
             )}
+            <Link
+              href="/dashboard/calendar"
+              className="text-sm text-espresso-500 hover:text-espresso-700"
+            >
+              Calendar
+            </Link>
             {isStaff && (
               <Link
                 href="/dashboard/admin"

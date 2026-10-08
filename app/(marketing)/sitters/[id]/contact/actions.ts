@@ -169,9 +169,13 @@ export async function contactHavenerAction(
   const filtered = filterChatMessage(rawMessage);
   if (filtered.blocked) return { error: filtered.blockedReason };
 
-  const conflicts = await sitterIdsWithConflict(supabase, startDate, endDate || startDate, [
-    sitterId,
-  ]);
+  const conflicts = await sitterIdsWithConflict(
+    supabase,
+    startDate,
+    endDate || startDate,
+    [sitterId],
+    { service: serviceType, pets: petIds.length }
+  );
   if (conflicts.has(sitterId)) {
     return {
       error:

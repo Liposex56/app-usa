@@ -89,11 +89,16 @@ export async function bookAction(bookingId: string): Promise<BookResult> {
 
   if (booking.sitter_id === profile.id) {
     if (!booking.sitter_booked_at) {
+      const { count: petCount } = await supabase
+        .from('booking_pets')
+        .select('pet_id', { count: 'exact', head: true })
+        .eq('booking_id', bookingId);
       const conflicts = await sitterIdsWithConflict(
         supabase,
         booking.start_date,
         booking.end_date ?? booking.start_date,
-        [profile.id]
+        [profile.id],
+        { service: booking.service_type, pets: petCount ?? 1 }
       );
       if (conflicts.has(profile.id)) {
         return {

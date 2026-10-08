@@ -123,7 +123,8 @@ export async function findMatchingSitters(
     supabase,
     startDate,
     endDate,
-    sitters.map((s) => s.id)
+    sitters.map((s) => s.id),
+    { service }
   );
   sitters = sitters.filter((s) => !conflicts.has(s.id));
 

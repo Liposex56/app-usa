@@ -661,6 +661,9 @@ export default async function DashboardPage({
           Havenr and GPS-tracked walks with service reports are next.
         </p>
         <div className="mt-4 flex flex-wrap gap-3">
+          <ButtonLink href="/dashboard/calendar" variant="secondary" size="sm">
+            Calendar
+          </ButtonLink>
           {profile.is_owner && (
             <ButtonLink href="/search" variant="secondary" size="sm">
               Find a Havener
