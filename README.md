@@ -195,6 +195,24 @@ propuesta) sigue sin construir.
   el Havener la acepta o rechaza desde la reserva. Después
   (`/sitters/[id]/contact/sent`) se ofrecen hasta 3 Haveners compatibles ya
   seleccionados para contactarlos a todos con un clic.
+- **Book en dos pasos** (`0014_booking_flow.sql`): una reserva solo pasa a
+  `confirmed` cuando dueño **y** Havener hacen clic en "Book"; con uno solo
+  queda `pending` (aunque el dueño ya haya pagado). El Havener ve tips de
+  seguridad antes de reservar y puede "Cancel request" antes de confirmarse.
+  Sobre el chat hay una barra: Book, Modify request (recalcula el precio en la
+  base de datos y pide volver a reservar), Archive, Details y Report (los
+  reportes se ven en `/dashboard/admin/reports`).
+- **Calendario** (`/dashboard/calendar`, `0015_calendar_capacity.sql`): vista
+  mensual por usuario. El Havener define cuántas mascotas acepta por servicio
+  (por defecto y por día) y la disponibilidad se calcula por espacios; el
+  dueño ve sus reservas y meet & greets.
+- **Ubicación en la búsqueda**: dirección obligatoria con autocompletado
+  (Photon/OpenStreetMap vía `/api/places`; cambiar de proveedor es editar
+  `lib/places.ts`). Solo aparecen Haveners dentro de su radio de servicio; el
+  Havener queda ubicado en el mapa al guardar su perfil.
+- **Registro/inicio con Google, Facebook o Apple**: los botones ya están; hay
+  que activar cada proveedor en Supabase → Authentication → Providers con las
+  credenciales de ese proveedor.
 - **Chat** (`/dashboard/bookings/[id]`) en vivo vía Supabase Realtime, con
   filtro de contacto externo (`lib/chat-filter.ts`).
 - **Meet & Greet**: cualquiera de las dos partes propone fecha/hora desde el

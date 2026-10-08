@@ -92,6 +92,24 @@ const PROVIDER_NAMES: Record<OAuthProvider, string> = {
   apple: 'Apple',
 };
 
+/** Which social providers are switched on in this Supabase project. */
+async function providerIsEnabled(provider: OAuthProvider): Promise<boolean> {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  if (!url || !key) return false;
+  try {
+    const response = await fetch(`${url}/auth/v1/settings`, {
+      headers: { apikey: key },
+      cache: 'no-store',
+    });
+    if (!response.ok) return false;
+    const settings = (await response.json()) as { external?: Record<string, boolean> };
+    return Boolean(settings.external?.[provider]);
+  } catch {
+    return false;
+  }
+}
+
 /**
  * "Continue with Google / Facebook / Apple". Each provider has to be turned
  * on in Supabase (Authentication → Providers) with credentials from that
@@ -106,6 +124,15 @@ export async function oauthSignInAction(
   const provider = formData.get('provider');
   if (typeof provider !== 'string' || !OAUTH_PROVIDERS.includes(provider as OAuthProvider)) {
     return { error: 'Please choose a sign-in option.' };
+  }
+
+  // signInWithOAuth hands back a URL even for a provider that isn't switched
+  // on, which would strand the user on a raw error page. Ask Supabase first.
+  const enabled = await providerIsEnabled(provider as OAuthProvider);
+  if (!enabled) {
+    return {
+      error: `Signing in with ${PROVIDER_NAMES[provider as OAuthProvider]} isn’t available yet — please use your email for now.`,
+    };
   }
 
   const supabase = await createClient();
