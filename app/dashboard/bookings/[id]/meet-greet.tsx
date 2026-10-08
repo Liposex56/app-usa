@@ -3,7 +3,9 @@
 import { useActionState, useEffect, useState, useTransition } from 'react';
 
 import { Button } from '@/components/ui/button';
+import { AddressAutocomplete } from '@/components/ui/address-autocomplete';
 import { FormError } from '@/components/ui/field';
+import { TimeSelect } from '@/components/ui/time-select';
 import type { MeetGreetRow } from '@/lib/database.types';
 import { createClient } from '@/lib/supabase/client';
 
@@ -78,22 +80,19 @@ function ProposeForm({
         </label>
         <label className="block text-xs font-medium text-espresso-600">
           Time
-          <input
-            type="time"
-            name="time"
-            required
-            className="mt-1 w-full rounded-lg border border-espresso-700/15 bg-white p-2 text-sm text-espresso-700 focus:border-gold-500 focus:outline-none"
-          />
+          <div className="mt-1">
+            <TimeSelect name="time" required placeholder="Select time" />
+          </div>
         </label>
       </div>
       <label className="block text-xs font-medium text-espresso-600">
         Where (optional)
-        <input
-          type="text"
-          name="locationNote"
-          placeholder="Your place, a nearby park…"
-          className="mt-1 w-full rounded-lg border border-espresso-700/15 bg-white p-2 text-sm text-espresso-700 placeholder:text-espresso-700/35 focus:border-gold-500 focus:outline-none"
-        />
+        <div className="mt-1">
+          <AddressAutocomplete
+            name="locationNote"
+            placeholder="Search for an address or a park"
+          />
+        </div>
       </label>
       <div className="flex gap-2">
         <Button type="submit" size="sm">

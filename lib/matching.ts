@@ -1,6 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 
 import { sitterIdsWithConflict } from '@/lib/availability';
+import { distanceMiles, type LatLng } from '@/lib/geo';
 import type {
   Database,
   EnergyLevel,
@@ -20,6 +21,8 @@ export type SitterCriteria = {
   city?: string;
   state?: string;
   excludeId?: string;
+  /** Where the pet owner is. Haveners farther than their own service radius are left out. */
+  origin?: LatLng;
 };
 
 const HOUR_MS = 36e5;
@@ -37,13 +40,17 @@ export function availabilityTier(updatedAt: string | null, now = Date.now()): 0 
  * Haveners who refresh their availability every day are rewarded with the
  * top spots; ties fall back to rating and then review count.
  */
-export function rankSitters<T extends Pick<PublicSitterRow, 'calendar_updated_at' | 'rating' | 'review_count'>>(
-  sitters: T[]
-): T[] {
+export function rankSitters<
+  T extends Pick<PublicSitterRow, 'id' | 'calendar_updated_at' | 'rating' | 'review_count'>,
+>(sitters: T[], distances?: Map<string, number>): T[] {
   const now = Date.now();
   return [...sitters].sort((a, b) => {
     const tier = availabilityTier(a.calendar_updated_at, now) - availabilityTier(b.calendar_updated_at, now);
     if (tier !== 0) return tier;
+    // Within the same freshness tier, nearer Haveners first; unknown distance last.
+    const da = distances?.get(a.id) ?? Number.POSITIVE_INFINITY;
+    const db = distances?.get(b.id) ?? Number.POSITIVE_INFINITY;
+    if (da !== db) return da < db ? -1 : 1;
     const rating = (b.rating ?? -1) - (a.rating ?? -1);
     if (rating !== 0) return rating;
     return b.review_count - a.review_count;
@@ -73,8 +80,11 @@ export async function findMatchingSitters(
   sitters: PublicSitterRow[];
   rateBySitter: Map<string, number>;
   serviceBySitter: Map<string, SitterServiceRow>;
+  distanceBySitter: Map<string, number>;
 }> {
-  const { service, species, size, energy, city, state, startDate, endDate, excludeId } = criteria;
+  const { service, species, size, energy, city, state, startDate, endDate, excludeId, origin } =
+    criteria;
+  const distanceBySitter = new Map<string, number>();
 
   let servicesQuery = supabase
     .from('sitter_services')
@@ -94,7 +104,7 @@ export async function findMatchingSitters(
   });
 
   const ids = matchingServices.map((row) => row.sitter_id).filter((id) => id !== excludeId);
-  if (ids.length === 0) return { sitters: [], rateBySitter, serviceBySitter };
+  if (ids.length === 0) return { sitters: [], rateBySitter, serviceBySitter, distanceBySitter };
 
   let sittersQuery = supabase.from('public_sitters').select('*').in('id', ids);
   if (city) sittersQuery = sittersQuery.ilike('service_city', `%${city}%`);
@@ -117,5 +127,17 @@ export async function findMatchingSitters(
   );
   sitters = sitters.filter((s) => !conflicts.has(s.id));
 
-  return { sitters: rankSitters(sitters), rateBySitter, serviceBySitter };
+  if (origin) {
+    // A Havener without a saved location can't be measured, so they stay in
+    // rather than silently vanishing; everyone else must be within the
+    // distance they say they work in.
+    sitters = sitters.filter((s) => {
+      if (s.latitude == null || s.longitude == null) return true;
+      const miles = distanceMiles(origin, { lat: s.latitude, lng: s.longitude });
+      distanceBySitter.set(s.id, miles);
+      return miles <= (s.service_radius_miles ?? 10);
+    });
+  }
+
+  return { sitters: rankSitters(sitters, distanceBySitter), rateBySitter, serviceBySitter, distanceBySitter };
 }

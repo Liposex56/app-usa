@@ -1,10 +1,8 @@
 'use client';
 
-import { useState } from 'react';
-
+import { AddressAutocomplete } from '@/components/ui/address-autocomplete';
 import { Button } from '@/components/ui/button';
 import { Field, Input, Select } from '@/components/ui/field';
-import { DOG_SIZE_OPTIONS } from '@/lib/pet-options';
 import { SERVICES, servicePickerLabel } from '@/lib/services';
 
 export type SearchDefaults = {
@@ -12,14 +10,12 @@ export type SearchDefaults = {
   endDate: string;
   service: string;
   species: string;
-  size: string;
-  energy: string;
-  city: string;
-  state: string;
+  address: string;
+  lat: number | null;
+  lng: number | null;
 };
 
 export function SearchFilters({ defaults }: { defaults: SearchDefaults }) {
-  const [species, setSpecies] = useState(defaults.species);
   const today = new Date().toISOString().slice(0, 10);
 
   return (
@@ -61,44 +57,32 @@ export function SearchFilters({ defaults }: { defaults: SearchDefaults }) {
         </Select>
       </Field>
       <Field label="Pet" htmlFor="species">
-        <Select
-          id="species"
-          name="species"
-          value={species}
-          onChange={(event) => setSpecies(event.target.value)}
-        >
+        <Select id="species" name="species" defaultValue={defaults.species}>
           <option value="">Dog or cat</option>
           <option value="dog">Dog</option>
           <option value="cat">Cat</option>
         </Select>
       </Field>
 
-      {species !== 'cat' && (
-        <Field label="Size" htmlFor="size">
-          <Select id="size" name="size" defaultValue={defaults.size}>
-            <option value="">Any size</option>
-            {DOG_SIZE_OPTIONS.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </Select>
-        </Field>
-      )}
-      <Field label="Energy level" htmlFor="energy">
-        <Select id="energy" name="energy" defaultValue={defaults.energy}>
-          <option value="">Any energy</option>
-          <option value="low">Low</option>
-          <option value="moderate">Moderate</option>
-          <option value="high">High</option>
-        </Select>
+      <Field
+        label="Address"
+        htmlFor="address"
+        required
+        hint="Pick your address from the list so we can show Haveners near you."
+        className="sm:col-span-2 lg:col-span-4"
+      >
+        <AddressAutocomplete
+          id="address"
+          name="address"
+          latName="lat"
+          lngName="lng"
+          required
+          defaultAddress={defaults.address}
+          defaultLat={defaults.lat}
+          defaultLng={defaults.lng}
+        />
       </Field>
-      <Field label="City" htmlFor="city">
-        <Input id="city" name="city" defaultValue={defaults.city} placeholder="Boston" />
-      </Field>
-      <Field label="State" htmlFor="state">
-        <Input id="state" name="state" defaultValue={defaults.state} placeholder="MA" />
-      </Field>
+
       <div className="flex items-end sm:col-span-2 lg:col-span-4">
         <Button type="submit" className="w-full sm:w-auto sm:min-w-[12rem]">
           Search

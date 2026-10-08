@@ -2,13 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 
 import { IconCheck, IconMapPin, IconShield, IconStar } from '@/components/icons';
-import type {
-  EnergyLevel,
-  PetRow,
-  PetSize,
-  PublicSitterRow,
-  ServiceType,
-} from '@/lib/database.types';
+import type { PetRow, PublicSitterRow, ServiceType } from '@/lib/database.types';
 import { availabilityLabel, findMatchingSitters } from '@/lib/matching';
 import { SERVICES, serviceName } from '@/lib/services';
 import { createClient } from '@/lib/supabase/server';
@@ -21,10 +15,9 @@ export const metadata: Metadata = { title: 'Find a Havener' };
 type SearchParams = {
   service?: string;
   species?: string;
-  city?: string;
-  state?: string;
-  size?: string;
-  energy?: string;
+  address?: string;
+  lat?: string;
+  lng?: string;
   startDate?: string;
   endDate?: string;
 };
@@ -39,17 +32,20 @@ export default async function SearchPage({
 
   const validService = SERVICES.some((s) => s.type === params.service);
   const service = (validService ? params.service : '') as ServiceType | '';
-  const city = params.city?.trim() ?? '';
-  const state = params.state?.trim() ?? '';
+  const address = params.address?.trim() ?? '';
+  const lat = Number(params.lat);
+  const lng = Number(params.lng);
+  const origin =
+    params.lat && params.lng && Number.isFinite(lat) && Number.isFinite(lng)
+      ? { lat, lng }
+      : null;
   const startDate = params.startDate?.trim() ?? '';
   const endDate = params.endDate?.trim() || startDate;
 
-  // A signed-in owner's own pet is the sensible starting point for the
-  // pet / size filters. These are only form defaults — nothing is searched
-  // until dates and a service are chosen and the form is submitted.
+  // A signed-in owner's own pet is the sensible starting point for the pet
+  // filter. It's only a form default — nothing is searched until dates, a
+  // service and an address are chosen and the form is submitted.
   let species = params.species ?? '';
-  let size = (params.size ?? '') as PetSize | '';
-  const energy = (params.energy ?? '') as EnergyLevel | '';
   const hasFormInput = Boolean(params.startDate || params.service || params.species);
   if (!hasFormInput) {
     const {
@@ -58,40 +54,37 @@ export default async function SearchPage({
     if (user) {
       const { data: firstPet } = await supabase
         .from('pets')
-        .select('species, size')
+        .select('species')
         .eq('owner_id', user.id)
         .order('created_at', { ascending: true })
         .limit(1)
         .maybeSingle();
-      const pet = firstPet as Pick<PetRow, 'species' | 'size'> | null;
-      if (pet) {
-        species = pet.species;
-        size = pet.species === 'dog' ? (pet.size ?? '') : '';
-      }
+      const pet = firstPet as Pick<PetRow, 'species'> | null;
+      if (pet) species = pet.species;
     }
   }
 
-  // No Haveners until the owner has said when and what they need. Showing
+  // No Haveners until the owner has said when, what and where. Showing
   // everyone up front would suggest people who may not fit or be free.
-  const ready = Boolean(startDate && service);
+  const ready = Boolean(startDate && service && origin);
 
   let sitters: PublicSitterRow[] = [];
   let rateBySitter = new Map<string, number>();
-  if (ready) {
+  let distanceBySitter = new Map<string, number>();
+  if (ready && origin) {
     const result = await findMatchingSitters(supabase, {
       service: service as ServiceType,
       startDate,
       endDate,
       species,
-      size,
-      energy,
-      city,
-      state,
+      origin,
     });
     sitters = result.sitters;
     rateBySitter = result.rateBySitter;
+    distanceBySitter = result.distanceBySitter;
   }
 
+  // Carried into each profile so the contact summary starts from this search.
   const profileQuery = new URLSearchParams();
   if (startDate) {
     profileQuery.set('startDate', startDate);
@@ -114,17 +107,17 @@ export default async function SearchPage({
           endDate: params.endDate?.trim() ?? '',
           service,
           species,
-          size,
-          energy,
-          city,
-          state,
+          address,
+          lat: origin?.lat ?? null,
+          lng: origin?.lng ?? null,
         }}
       />
 
       {!ready ? (
         <p className="mt-8 rounded-3xl border border-dashed border-espresso-700/15 bg-white p-10 text-center text-sm text-espresso-500">
-          Choose your dates and the service you need, then search — we’ll show
-          the Haveners who fit your pet and are free for those dates.
+          Choose your dates, the service you need and your address, then search —
+          we’ll show the Haveners near you who fit your pet and are free for
+          those dates.
         </p>
       ) : (
         <>
@@ -143,6 +136,7 @@ export default async function SearchPage({
             <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {sitters.map((sitter) => {
                 const updated = availabilityLabel(sitter.calendar_updated_at);
+                const miles = distanceBySitter.get(sitter.id);
                 return (
                   <Link
                     key={sitter.id}
@@ -203,8 +197,15 @@ export default async function SearchPage({
                       )}
                     </div>
 
-                    {updated && (
-                      <p className="mt-3 text-xs text-olive-600">{updated}</p>
+                    {(updated || miles != null) && (
+                      <p className="mt-3 text-xs text-olive-600">
+                        {[
+                          miles != null ? `${miles < 0.1 ? '<0.1' : miles.toFixed(1)} mi away` : null,
+                          updated,
+                        ]
+                          .filter(Boolean)
+                          .join(' · ')}
+                      </p>
                     )}
 
                     <div className="mt-4 flex items-center justify-between border-t border-espresso-700/8 pt-3 text-sm">

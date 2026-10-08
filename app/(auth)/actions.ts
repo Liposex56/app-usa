@@ -83,6 +83,48 @@ export async function signUpAction(
   redirect('/onboarding');
 }
 
+const OAUTH_PROVIDERS = ['google', 'facebook', 'apple'] as const;
+type OAuthProvider = (typeof OAUTH_PROVIDERS)[number];
+
+const PROVIDER_NAMES: Record<OAuthProvider, string> = {
+  google: 'Google',
+  facebook: 'Facebook',
+  apple: 'Apple',
+};
+
+/**
+ * "Continue with Google / Facebook / Apple". Each provider has to be turned
+ * on in Supabase (Authentication → Providers) with credentials from that
+ * provider; until it is, the user gets a plain message and can use email.
+ * Whoever comes back lands on /dashboard, which routes brand-new accounts
+ * into onboarding (role first) and finished ones straight in.
+ */
+export async function oauthSignInAction(
+  _prevState: AuthState,
+  formData: FormData
+): Promise<AuthState> {
+  const provider = formData.get('provider');
+  if (typeof provider !== 'string' || !OAUTH_PROVIDERS.includes(provider as OAuthProvider)) {
+    return { error: 'Please choose a sign-in option.' };
+  }
+
+  const supabase = await createClient();
+  const origin = await siteOrigin();
+
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: provider as OAuthProvider,
+    options: { redirectTo: `${origin}/auth/callback?next=/dashboard` },
+  });
+
+  if (error || !data.url) {
+    return {
+      error: `Signing in with ${PROVIDER_NAMES[provider as OAuthProvider]} isn’t available yet — please use your email for now.`,
+    };
+  }
+
+  redirect(data.url);
+}
+
 export async function loginAction(
   _prevState: AuthState,
   formData: FormData

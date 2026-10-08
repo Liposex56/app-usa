@@ -2,10 +2,11 @@
 
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { useActionState } from 'react';
+import { useActionState, useState } from 'react';
 import { useFormStatus } from 'react-dom';
 
 import { signUpAction, type AuthState } from '@/app/(auth)/actions';
+import { SocialButtons } from '@/components/auth/social-buttons';
 import { Button } from '@/components/ui/button';
 import { Field, FormError, Input, RadioCard } from '@/components/ui/field';
 
@@ -28,6 +29,44 @@ export function SignUpForm() {
   const referralCode = searchParams.get('ref');
 
   const [state, formAction] = useActionState(signUpAction, INITIAL);
+  // Quick social options first; the full form opens on "Sign Up with Email".
+  // Links that already say who you are (?role=havener) skip straight to it.
+  const [showEmail, setShowEmail] = useState(Boolean(roleParam || referralCode));
+
+  if (!showEmail) {
+    return (
+      <div className="mt-8 space-y-3">
+        <SocialButtons />
+        <div className="flex items-center gap-3 py-1 text-xs text-espresso-500">
+          <span className="h-px flex-1 bg-espresso-700/15" />
+          or
+          <span className="h-px flex-1 bg-espresso-700/15" />
+        </div>
+        <button
+          type="button"
+          onClick={() => setShowEmail(true)}
+          className="flex h-12 w-full items-center justify-center gap-3 rounded-lg border-2 border-espresso-700/70 bg-white px-4 text-[15px] font-semibold text-espresso-700 transition-colors hover:bg-bone"
+        >
+          <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden fill="none" stroke="currentColor" strokeWidth="1.8">
+            <rect x="3" y="5" width="18" height="14" rx="2" />
+            <path d="m3.5 7 8.5 6 8.5-6" />
+          </svg>
+          Sign Up with Email
+        </button>
+        <p className="pt-3 text-center text-xs leading-relaxed text-espresso-500/75">
+          By signing in or signing up, you agree to our{' '}
+          <Link href="/legal/terms" className="underline underline-offset-2">
+            Terms of Service
+          </Link>{' '}
+          and{' '}
+          <Link href="/legal/privacy" className="underline underline-offset-2">
+            Privacy Policy
+          </Link>
+          , and confirm that you are 18 years of age or older.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <form action={formAction} className="mt-8 space-y-5">

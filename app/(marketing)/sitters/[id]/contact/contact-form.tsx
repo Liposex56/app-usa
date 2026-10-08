@@ -6,6 +6,7 @@ import { useFormStatus } from 'react-dom';
 
 import { Button } from '@/components/ui/button';
 import { Field, FormError, Input, Select } from '@/components/ui/field';
+import { TimeSelect } from '@/components/ui/time-select';
 import type { ServiceType, Species } from '@/lib/database.types';
 import { computeBookingTotals } from '@/lib/pricing';
 import { formatCents } from '@/lib/utils';
@@ -202,9 +203,9 @@ export function ContactForm({
               Drop-off window <span className="text-espresso-500/60">(optional)</span>
             </legend>
             <div className="flex items-center gap-2">
-              <Input name="dropoffFrom" type="time" aria-label="Drop-off from" />
+              <TimeSelect name="dropoffFrom" aria-label="Drop-off from" placeholder="Any time" />
               <span className="text-xs text-espresso-500">to</span>
-              <Input name="dropoffTo" type="time" aria-label="Drop-off until" />
+              <TimeSelect name="dropoffTo" aria-label="Drop-off until" placeholder="Any time" />
             </div>
           </fieldset>
           <fieldset>
@@ -212,9 +213,9 @@ export function ContactForm({
               Pick-up window <span className="text-espresso-500/60">(optional)</span>
             </legend>
             <div className="flex items-center gap-2">
-              <Input name="pickupFrom" type="time" aria-label="Pick-up from" />
+              <TimeSelect name="pickupFrom" aria-label="Pick-up from" placeholder="Any time" />
               <span className="text-xs text-espresso-500">to</span>
-              <Input name="pickupTo" type="time" aria-label="Pick-up until" />
+              <TimeSelect name="pickupTo" aria-label="Pick-up until" placeholder="Any time" />
             </div>
           </fieldset>
         </div>

@@ -7,7 +7,7 @@ import type {
 
 import { cn } from '@/lib/utils';
 
-const CONTROL =
+export const CONTROL =
   'w-full rounded-xl border border-espresso-700/15 bg-white px-4 py-2.5 text-[15px] ' +
   'text-espresso-700 placeholder:text-espresso-700/35 transition-colors ' +
   'hover:border-espresso-700/25 focus:border-gold-500 focus:outline-none ' +

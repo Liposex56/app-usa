@@ -10,6 +10,7 @@ import type {
   PetSize,
   Skill,
 } from '@/lib/database.types';
+import { geocode } from '@/lib/places';
 import { createClient } from '@/lib/supabase/server';
 import { bool, list, num, parseDollarsToCents, text, triState } from '@/lib/utils';
 
@@ -331,6 +332,12 @@ export async function saveHavenerProfileAction(
 
   const submitForReview = formData.get('intent') === 'submit';
 
+  // Pin the Havener on the map from their city/zip so search can measure how
+  // far they are from an owner. If the lookup finds nothing the old pin stays.
+  const where = await geocode(
+    [city, state, text(formData, 'servicePostalCode')].filter(Boolean).join(', ')
+  );
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { error: profileError } = await (supabase.from('sitter_profiles') as any)
     .upsert(
@@ -350,6 +357,7 @@ export async function saveHavenerProfileAction(
         service_city: city,
         service_state: state,
         service_postal_code: text(formData, 'servicePostalCode'),
+        ...(where ? { latitude: where.lat, longitude: where.lng } : {}),
         service_radius_miles: num(formData, 'serviceRadiusMiles') ?? 10,
         provides_transport: bool(formData, 'providesTransport'),
 

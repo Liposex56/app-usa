@@ -6,6 +6,7 @@ import { useActionState } from 'react';
 import { useFormStatus } from 'react-dom';
 
 import { loginAction, type AuthState } from '@/app/(auth)/actions';
+import { SocialButtons } from '@/components/auth/social-buttons';
 import { Button } from '@/components/ui/button';
 import { Field, FormError, Input } from '@/components/ui/field';
 
@@ -26,6 +27,7 @@ export function LoginForm() {
   const [state, formAction] = useActionState(loginAction, INITIAL);
 
   return (
+    <>
     <form action={formAction} className="mt-8 space-y-5">
       <input type="hidden" name="next" value={next} />
 
@@ -66,5 +68,15 @@ export function LoginForm() {
 
       <SubmitButton />
     </form>
+
+    <div className="mt-5 space-y-3">
+      <div className="flex items-center gap-3 text-xs text-espresso-500">
+        <span className="h-px flex-1 bg-espresso-700/15" />
+        or
+        <span className="h-px flex-1 bg-espresso-700/15" />
+      </div>
+      <SocialButtons />
+    </div>
+    </>
   );
 }

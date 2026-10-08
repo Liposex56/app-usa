@@ -195,16 +195,18 @@ export default async function BookingDetailPage({
                 {formatCents(booking.total_cents)}
               </dd>
             </div>
-            <div>
-              <dt className="text-xs uppercase tracking-wider text-espresso-500/60">
-                {viewerRole === 'sitter' ? 'You earn' : 'Platform fee'}
-              </dt>
-              <dd className="mt-1 text-espresso-700">
-                {viewerRole === 'sitter'
-                  ? formatCents(booking.sitter_payout_cents)
-                  : formatCents(booking.platform_fee_cents)}
-              </dd>
-            </div>
+            {/* The platform fee isn't part of the booking details; owners only
+                see it as a percentage at the moment they pay. */}
+            {viewerRole === 'sitter' && (
+              <div>
+                <dt className="text-xs uppercase tracking-wider text-espresso-500/60">
+                  You earn
+                </dt>
+                <dd className="mt-1 text-espresso-700">
+                  {formatCents(booking.sitter_payout_cents)}
+                </dd>
+              </div>
+            )}
           </dl>
 
           {booking.owner_notes && (
