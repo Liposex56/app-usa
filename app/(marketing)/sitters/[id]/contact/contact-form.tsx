@@ -126,7 +126,8 @@ export function ContactForm({
         })
       : null;
 
-  const offersPickup = Boolean(service?.pickupDropoffRateCents);
+  // Transport only makes sense when the pet goes to the Havener's home.
+  const offersTransport = service?.type === 'boarding' || service?.type === 'daycare';
   const today = new Date().toISOString().slice(0, 10);
 
   // Where "+ Add a pet" sends the owner back to, with their choices intact.
@@ -253,28 +254,40 @@ export function ContactForm({
           </div>
         </fieldset>
 
-        {offersPickup && (
-          <label className="flex cursor-pointer items-center justify-between gap-4 rounded-xl border border-espresso-700/12 bg-bone px-4 py-3 has-[:checked]:border-gold-500 has-[:checked]:bg-gold-50">
-            <span className="min-w-0">
-              <span className="block text-sm font-medium text-espresso-700">
-                Havener pick-up and drop-off{' '}
-                <span className="text-espresso-500">
-                  (+{formatCents(service!.pickupDropoffRateCents!)})
+        {offersTransport && (
+          <fieldset>
+            <legend className="mb-1.5 text-sm font-medium text-espresso-700">
+              Extras and upgrades
+            </legend>
+            <label className="flex cursor-pointer items-center justify-between gap-4 rounded-xl border border-espresso-700/12 bg-bone px-4 py-3 has-[:checked]:border-gold-500 has-[:checked]:bg-gold-50">
+              <span className="min-w-0">
+                <span className="block text-sm font-medium text-espresso-700">
+                  Sitter pick-up and drop-off{' '}
+                  <span className="text-espresso-500">
+                    {service?.pickupDropoffRateCents
+                      ? `(+${formatCents(service.pickupDropoffRateCents)})`
+                      : '(price agreed with your Havener)'}
+                  </span>
+                </span>
+                <span className="block text-xs text-espresso-500">
+                  Save a trip and have your sitter pick up and drop off your pet
+                  at the beginning and end of their stay.
                 </span>
               </span>
-              <span className="block text-xs text-espresso-500">
-                Your Havener collects your pet at the start of the stay and brings
-                them back at the end.
+              <span className="relative shrink-0">
+                <input
+                  type="checkbox"
+                  name="wantsPickupDropoff"
+                  checked={wantsPickup}
+                  onChange={(event) => setWantsPickup(event.target.checked)}
+                  className="peer sr-only"
+                  aria-label="Sitter pick-up and drop-off"
+                />
+                <span className="block h-6 w-11 rounded-full bg-espresso-700/25 transition-colors peer-checked:bg-espresso-700 peer-focus-visible:ring-2 peer-focus-visible:ring-gold-500/50" />
+                <span className="absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform peer-checked:translate-x-5" />
               </span>
-            </span>
-            <input
-              type="checkbox"
-              name="wantsPickupDropoff"
-              checked={wantsPickup}
-              onChange={(event) => setWantsPickup(event.target.checked)}
-              className="h-5 w-5 shrink-0 accent-gold-500"
-            />
-          </label>
+            </label>
+          </fieldset>
         )}
 
         <Field
