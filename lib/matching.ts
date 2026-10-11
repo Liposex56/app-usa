@@ -21,6 +21,8 @@ export type SitterCriteria = {
   city?: string;
   state?: string;
   excludeId?: string;
+  /** More people to leave out (e.g. the requester, who may be a Havener too). */
+  excludeIds?: string[];
   /** Where the pet owner is. Haveners farther than their own service radius are left out. */
   origin?: LatLng;
 };
@@ -82,7 +84,7 @@ export async function findMatchingSitters(
   serviceBySitter: Map<string, SitterServiceRow>;
   distanceBySitter: Map<string, number>;
 }> {
-  const { service, species, size, energy, city, state, startDate, endDate, excludeId, origin } =
+  const { service, species, size, energy, city, state, startDate, endDate, excludeId, excludeIds, origin } =
     criteria;
   const distanceBySitter = new Map<string, number>();
 
@@ -103,7 +105,7 @@ export async function findMatchingSitters(
     serviceBySitter.set(row.sitter_id, row);
   });
 
-  const ids = matchingServices.map((row) => row.sitter_id).filter((id) => id !== excludeId);
+  const ids = matchingServices.map((row) => row.sitter_id).filter((id) => id !== excludeId && !(excludeIds ?? []).includes(id));
   if (ids.length === 0) return { sitters: [], rateBySitter, serviceBySitter, distanceBySitter };
 
   let sittersQuery = supabase.from('public_sitters').select('*').in('id', ids);

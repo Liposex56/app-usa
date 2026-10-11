@@ -283,6 +283,7 @@ export async function contactAdditionalHavenersAction(
     size: first.species === 'dog' ? (first.size ?? '') : '',
     energy: first.energy_level ?? '',
     excludeId: original.sitter_id as string,
+    excludeIds: [profile.id],
   });
   const allowed = new Set(sitters.map((s) => s.id));
 

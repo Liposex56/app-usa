@@ -72,6 +72,7 @@ export default async function ContactSentPage({
     size: firstPet?.species === 'dog' ? (firstPet.size ?? '') : '',
     energy: firstPet?.energy_level ?? '',
     excludeId: id,
+    excludeIds: [profile.id],
   });
 
   const definition = SERVICE_BY_TYPE[booking.service_type];

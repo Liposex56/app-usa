@@ -25,8 +25,8 @@ export async function generateMetadata({
     .maybeSingle();
   return {
     title: sitter?.display_name
-      ? `${sitter.display_name} · Havenr`
-      : 'Havener profile · Havenr',
+      ? sitter.display_name
+      : 'Havener profile',
   };
 }
 
