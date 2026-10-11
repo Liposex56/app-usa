@@ -129,13 +129,39 @@ en sí es una fase posterior.
 
 | Ruta | Contenido |
 |---|---|
-| `/` | Home: hero, 5 servicios, verificación, cómo funciona, features |
+| `/` | Home (el diseño final de la landing, ver abajo): entrada animada, hero, video HAVNR, 5 servicios, Four checks, cómo funciona, detalles, testimonios, FAQ y cierre |
 | `/services` | Los 5 servicios con lo que incluye cada uno |
 | `/services/[slug]` | Detalle por servicio |
 | `/how-it-works` | Flujo de dueño y flujo de Havener, y cómo funciona el pago |
 | `/trust-and-safety` | Las 5 verificaciones, privacidad, incidentes, reseñas dobles |
 | `/become-a-havener` | Landing de reclutamiento con requisitos |
 | `/legal/[terms\|privacy\|cookies]` | Plantillas — **falta el texto legal real** |
+
+### La home (landing)
+
+Es el trabajo final del programador (proyecto Vite `havenr-web`), portado
+tal cual a Next.js. El diseño, los textos y las rutas de los botones están en
+`components/home/`:
+
+| Archivo | Para qué |
+|---|---|
+| `components/home/content.ts` | **Todos** los textos, fotos y videos, y a dónde va cada botón (`links`). Se edita aquí, no en los componentes |
+| `components/home/intro.tsx`, `keyed-video.tsx` | Pantalla "Enter their haven": al dar clic se reproduce la puerta con el fondo negro vuelto transparente (WebGL). Se muestra una vez por sesión del navegador (cookie `havenr_intro_seen`); `intro.enabled = false` la apaga |
+| `components/home/*.tsx` | Una sección por archivo (hero, services, trust-safety, how-it-works, details, testimonials, faq, closing) |
+| `app/(home)/` | Layout (header + franja legal) y página que arma las secciones |
+| `public/home/images`, `public/home/video` | Fotos, ilustraciones y videos |
+
+**Cambiar el video de arriba:** el video HAVNR de la franja es
+`public/home/video/havnr.mp4` (poster en `public/home/images/havnr-poster.jpg`).
+Para usar otro, reemplaza el archivo o cambia `servicesBand` en `content.ts`.
+El espacio del hero (persona + perro) acepta un video poniendo su ruta en
+`hero.video`. La animación de entrada es `public/home/video/intro-door.mp4`.
+Los videos deben ir en MP4 H.264; con fondo negro si es la animación de entrada.
+
+El header es el mismo para todo el sitio (`components/site-header.tsx`): en la
+home sus enlaces bajan a cada sección; en las demás páginas llevan a `/#…`.
+Los colores propios de la landing viven en `tailwind.config.ts` bajo `hv`
+(`bg-hv-ink`, `text-hv-sky`…), porque su `cream` y `sky` no son los de la app.
 
 ### Cuentas
 

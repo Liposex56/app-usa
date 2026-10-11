@@ -12,6 +12,6 @@ export const config = {
      * Every path except static assets and image files, so the auth cookie is
      * refreshed on real navigations only.
      */
-    '/((?!_next/static|_next/image|favicon.ico|brand/|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)',
+    '/((?!_next/static|_next/image|favicon.ico|brand/|home/|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|mp4|webm)$).*)',
   ],
 };

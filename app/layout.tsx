@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next';
-import { Barlow_Condensed, Source_Sans_3, Zen_Loop } from 'next/font/google';
+import { Barlow_Condensed, Jost, Source_Sans_3, Zen_Loop } from 'next/font/google';
 
 import './globals.css';
 
@@ -30,6 +30,15 @@ const zenLoop = Zen_Loop({
   display: 'swap',
   weight: '400',
   variable: '--font-zen-loop',
+});
+
+/** The HAVENR wordmark in the header is lettered in Jost Light (the "e" is
+ * the curl from the Figma file, drawn as an SVG). */
+const logo = Jost({
+  subsets: ['latin'],
+  display: 'swap',
+  weight: '300',
+  variable: '--font-logo',
 });
 
 export const metadata: Metadata = {
@@ -64,7 +73,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${body.variable} ${display.variable} ${zenLoop.variable}`}
+      className={`${body.variable} ${display.variable} ${zenLoop.variable} ${logo.variable}`}
     >
       <body>{children}</body>
     </html>

@@ -53,11 +53,29 @@ const config: Config = {
           700: '#26100B', // brand near-black
           800: '#1A0A07',
         },
+        // Palette of the final landing design (components/home). Namespaced
+        // under `hv` because its `cream` and `sky` are not the same values as
+        // the app-wide ones above.
+        hv: {
+          ink: '#26100B',
+          cream: '#F8F5E6',
+          paper: '#FCF7DC',
+          sky: '#C2DCF4',
+          mustard: '#BE8210',
+          cocoa: '#69532A',
+          greige: '#D6D1C6',
+          khaki: '#DCD5B1',
+          butter: '#FFF8CD',
+          sand: '#DCD8CC',
+        },
       },
       fontFamily: {
         sans: ['var(--font-body)', 'ui-sans-serif', 'system-ui', 'sans-serif'],
         display: ['var(--font-display)', 'ui-sans-serif', 'system-ui', 'sans-serif'],
         'zen-loop': ['var(--font-zen-loop)', 'cursive'],
+        // Wordmark ("HAVENR") and the hand-written notes on the landing.
+        logo: ['var(--font-logo)', 'Futura', 'sans-serif'],
+        hand: ['var(--font-hand)', 'cursive'],
       },
       borderRadius: {
         '4xl': '2rem',
