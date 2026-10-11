@@ -43,7 +43,7 @@ export function DashboardNav({
 
   return (
     <>
-      <nav className="ml-6 hidden items-center gap-[clamp(1rem,2.2vw,2.25rem)] text-[clamp(16px,1.25vw,19px)] font-semibold lg:flex">
+      <nav className="ml-6 hidden items-center gap-[clamp(1rem,2.2vw,2.25rem)] text-[clamp(16px,1.25vw,19px)] font-semibold whitespace-nowrap xl:flex">
         {links.map((link) => (
           <Link
             key={link.href}
@@ -60,7 +60,7 @@ export function DashboardNav({
         ))}
       </nav>
 
-      <div className="ml-auto hidden items-center gap-5 lg:flex">
+      <div className="ml-auto hidden items-center gap-5 xl:flex">
         <span className="max-w-[16ch] truncate text-[17px] font-medium text-hv-cream/70">
           {name}
         </span>
@@ -69,7 +69,7 @@ export function DashboardNav({
 
       <button
         type="button"
-        className="ml-auto flex h-10 w-10 flex-col items-center justify-center gap-1.5 lg:hidden"
+        className="ml-auto flex h-10 w-10 flex-col items-center justify-center gap-1.5 xl:hidden"
         aria-label={open ? 'Close menu' : 'Open menu'}
         aria-expanded={open}
         onClick={() => setOpen((v) => !v)}
@@ -80,7 +80,7 @@ export function DashboardNav({
       </button>
 
       {open && (
-        <nav className="absolute inset-x-0 top-14 flex flex-col gap-4 border-t border-hv-cream/15 bg-hv-ink px-5 py-6 text-xl font-semibold lg:hidden">
+        <nav className="absolute inset-x-0 top-14 flex flex-col gap-4 border-t border-hv-cream/15 bg-hv-ink px-5 py-6 text-xl font-semibold xl:hidden">
           {links.map((link) => (
             <Link
               key={link.href}

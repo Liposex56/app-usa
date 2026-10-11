@@ -56,7 +56,7 @@ export default async function PetsPage() {
           You haven’t added a pet yet.
         </p>
       ) : (
-        <div className="mt-8 space-y-6">
+        <div className="mt-8 grid gap-6 md:grid-cols-2">
           {pets.map((pet) => {
             const tags = [
               friendlyTag('Dogs', pet.good_with_dogs),

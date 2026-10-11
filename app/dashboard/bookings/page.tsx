@@ -36,7 +36,7 @@ export default async function OwnerBookingsPage({
   );
 
   return (
-    <div>
+    <div className="mx-auto max-w-4xl">
       <Link
         href="/dashboard"
         className="text-sm text-espresso-500 hover:text-espresso-700"
@@ -70,28 +70,41 @@ export default async function OwnerBookingsPage({
         <div className="mt-8 space-y-3">
           {bookings.map((booking) => {
             const status = bookingPhase(booking, 'owner');
+            const name = sitterName.get(booking.sitter_id) ?? 'Havener';
             return (
               <Link
                 key={booking.id}
                 href={`/dashboard/bookings/${booking.id}`}
-                className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-espresso-700/8 bg-hv-paper p-5 shadow-card transition-colors hover:border-gold-500/40"
+                className="group flex items-center gap-4 rounded-3xl border border-espresso-700/8 bg-hv-paper p-4 shadow-card transition-all hover:-translate-y-0.5 hover:border-hv-ink/30 sm:p-5"
               >
-                <div>
-                  <p className="font-medium text-espresso-700">
-                    {serviceName(booking.service_type)} with{' '}
-                    {sitterName.get(booking.sitter_id) ?? 'Havener'}
-                  </p>
-                  <p className="mt-1 text-sm text-espresso-500">
-                    {formatDate(booking.start_date)}
-                    {booking.end_date ? ` – ${formatDate(booking.end_date)}` : ''}
-                    {' · '}
-                    {formatCents(booking.total_cents)}
+                <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-sky-100 text-2xl font-bold text-espresso-600">
+                  {name.slice(0, 1)}
+                </span>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-xl font-bold text-espresso-700">{name}</p>
+                  <p className="text-[17px] text-espresso-500">
+                    {serviceName(booking.service_type)} · {formatDate(booking.start_date)}
+                    {booking.end_date && booking.end_date !== booking.start_date
+                      ? ` – ${formatDate(booking.end_date)}`
+                      : ''}
                   </p>
                 </div>
+                <div className="hidden text-right sm:block">
+                  <p className="text-xl font-bold text-espresso-700">
+                    {formatCents(booking.total_cents)}
+                  </p>
+                  <p className="text-sm text-espresso-500">total</p>
+                </div>
                 <span
-                  className={`rounded-full px-3 py-1 text-xs font-medium ${status.tone}`}
+                  className={`shrink-0 rounded-full px-3 py-1 text-[15px] font-semibold ${status.tone}`}
                 >
                   {status.label}
+                </span>
+                <span
+                  aria-hidden
+                  className="text-xl text-espresso-500 transition-transform group-hover:translate-x-1"
+                >
+                  →
                 </span>
               </Link>
             );

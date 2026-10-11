@@ -158,6 +158,18 @@ export function SitterProfileTabs({
       }
     : null;
 
+  // Coming from a search, the card leads with the service that was searched.
+  const searchedRow = services.find((row) => row.service_type === service);
+  const headline = searchedRow
+    ? {
+        label: serviceName(searchedRow.service_type),
+        cents: searchedRow.base_rate_cents,
+        unit: SERVICE_BY_TYPE[searchedRow.service_type]?.rateUnit ?? 'visit',
+      }
+    : cheapest
+      ? { label: 'From', cents: cheapest.cents, unit: cheapest.unit }
+      : null;
+
   // Carries the search (dates + service) forward into the contact summary.
   const contactQuery = new URLSearchParams();
   if (startDate) {
@@ -233,15 +245,15 @@ export function SitterProfileTabs({
         <div className="mt-10 grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(300px,360px)] lg:items-start">
         {/* The booking card comes first on phones, to the side on desktop. */}
         <aside className="order-first rounded-3xl border border-espresso-700/8 bg-hv-paper p-6 shadow-card lg:order-last lg:sticky lg:top-20">
-          {cheapest ? (
+          {headline ? (
             <p className="text-espresso-600">
               <span className="text-sm font-bold uppercase tracking-[0.12em] text-olive-500">
-                From{' '}
+                {headline.label}{' '}
               </span>
               <span className="text-4xl font-bold text-espresso-700">
-                {formatCents(cheapest.cents)}
+                {formatCents(headline.cents)}
               </span>
-              <span className="text-[17px]"> / {cheapest.unit}</span>
+              <span className="text-[17px]"> / {headline.unit}</span>
             </p>
           ) : (
             <p className="text-[17px] text-espresso-500">No services published yet.</p>
@@ -252,7 +264,9 @@ export function SitterProfileTabs({
               {services.map((row) => (
                 <li
                   key={row.id}
-                  className="flex items-baseline justify-between gap-3 text-[17px]"
+                  className={`flex items-baseline justify-between gap-3 rounded-xl px-2 py-1 text-[17px] ${
+                    row.service_type === service ? 'bg-hv-butter' : ''
+                  }`}
                 >
                   <span className="text-espresso-700">{serviceName(row.service_type)}</span>
                   <span className="font-semibold text-espresso-700">

@@ -12,7 +12,7 @@ import { formatDate, petAge } from '@/lib/utils';
 
 function VerificationRow({ verified, label }: { verified: boolean; label: string }) {
   return (
-    <p className="flex items-center gap-2 text-sm text-espresso-600">
+    <p className="flex items-center gap-2 text-[18px] text-espresso-600">
       {verified ? (
         <IconCheck className="h-4 w-4 text-green-600" />
       ) : (
@@ -35,9 +35,9 @@ export function OwnerProfileTabs({
   const [tab, setTab] = useState<'about' | 'feedback' | 'pets'>('about');
 
   return (
-    <div className="py-8">
-      <div className="flex flex-col items-center gap-3 text-center">
-        <div className="h-24 w-24 shrink-0 overflow-hidden rounded-full bg-sky-100">
+    <div className="py-4">
+      <div className="flex flex-col items-center gap-4 rounded-3xl border border-espresso-700/8 bg-hv-paper p-6 text-center shadow-card sm:flex-row sm:p-8 sm:text-left">
+        <div className="h-28 w-28 shrink-0 overflow-hidden rounded-full bg-sky-100">
           {owner.avatar_url ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
@@ -51,24 +51,30 @@ export function OwnerProfileTabs({
             </div>
           )}
         </div>
-        <h1 className="text-2xl font-semibold text-espresso-700">
-          {owner.display_name ?? 'Pet owner'}
-        </h1>
-        {(owner.city || owner.state) && (
-          <p className="inline-flex items-center gap-1 text-sm text-espresso-500">
-            <IconMapPin className="h-4 w-4" />
-            {[owner.city, owner.state].filter(Boolean).join(', ')}
+        <div className="min-w-0">
+          <h1 className="text-[clamp(30px,3vw,42px)] leading-none">
+            {owner.display_name ?? 'Pet owner'}
+          </h1>
+          {(owner.city || owner.state) && (
+            <p className="mt-2 inline-flex items-center gap-1.5 text-[17px] font-medium text-espresso-500">
+              <IconMapPin className="h-4 w-4" />
+              {[owner.city, owner.state].filter(Boolean).join(', ')}
+            </p>
+          )}
+          <p className="mt-2 text-[17px] text-espresso-600">
+            Joined Havenr {formatDate(owner.joined_at)} · {owner.past_bookings_count} past booking
+            {owner.past_bookings_count === 1 ? '' : 's'}
           </p>
-        )}
+        </div>
       </div>
 
-      <div className="mt-8 flex justify-center gap-6 border-b border-espresso-700/8">
+      <div className="mt-8 flex gap-6 border-b border-espresso-700/8">
         {(['about', 'feedback', 'pets'] as const).map((t) => (
           <button
             key={t}
             type="button"
             onClick={() => setTab(t)}
-            className={`border-b-2 px-1 pb-3 text-sm font-medium capitalize transition-colors ${
+            className={`border-b-2 px-1 pb-3 text-[19px] font-semibold capitalize transition-colors ${
               tab === t
                 ? 'border-gold-500 text-espresso-700'
                 : 'border-transparent text-espresso-500 hover:text-espresso-700'
@@ -81,7 +87,7 @@ export function OwnerProfileTabs({
 
       {tab === 'about' && (
         <div className="mt-8 space-y-6">
-          <div className="flex flex-wrap gap-x-8 gap-y-3 text-sm text-espresso-600">
+          <div className="flex flex-wrap gap-x-8 gap-y-3 text-[18px] text-espresso-600">
             <p>Joined Havenr {formatDate(owner.joined_at)}</p>
             <p>
               {owner.past_bookings_count} past booking
@@ -114,7 +120,7 @@ export function OwnerProfileTabs({
                 className="rounded-2xl border border-espresso-700/8 bg-hv-paper p-5"
               >
                 <div className="flex items-center justify-between gap-3">
-                  <p className="text-sm font-medium text-espresso-700">
+                  <p className="text-[18px] font-semibold text-espresso-700">
                     {review.reviewer_first_name}
                   </p>
                   <p className="text-xs text-espresso-500">
@@ -123,7 +129,7 @@ export function OwnerProfileTabs({
                   </p>
                 </div>
                 {review.body && (
-                  <p className="mt-2 text-sm leading-relaxed text-espresso-600">
+                  <p className="mt-2 text-[18px] leading-relaxed text-espresso-600">
                     {review.body}
                   </p>
                 )}
