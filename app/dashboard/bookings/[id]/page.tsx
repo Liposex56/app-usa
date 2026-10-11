@@ -419,7 +419,7 @@ export default async function BookingDetailPage({
 
         {/* ------------------------------------------------- Conversation */}
         <section className="flex h-[80vh] min-h-[34rem] flex-col overflow-hidden rounded-3xl border border-espresso-700/8 bg-hv-paper shadow-card lg:sticky lg:top-20 lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:h-[calc(100vh-7.5rem)]">
-          <div className="flex items-center gap-3 border-b border-espresso-700/8 px-4 py-3 sm:px-6">
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-2 border-b border-espresso-700/8 px-4 py-3 sm:px-6">
             <div className="h-12 w-12 shrink-0 overflow-hidden rounded-full bg-sky-100">
               {counterparty?.avatar_url ? (
                 // eslint-disable-next-line @next/next/no-img-element
@@ -452,7 +452,7 @@ export default async function BookingDetailPage({
               </p>
             </div>
             {isParticipant && (
-              <div className="ml-auto shrink-0">
+              <div className="w-full shrink-0 sm:ml-auto sm:w-auto">
                 <BookingToolbar
                   parts="chat"
                   bookingId={booking.id}
