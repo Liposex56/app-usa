@@ -31,18 +31,18 @@ export default async function ServiceDetailPage({ params }: PageProps) {
 
   return (
     <>
-      <section className="bg-sky-200">
+      <section className="bg-[linear-gradient(180deg,#d6e6f1_0%,#c6ddf3_60%,#d8e6f0_100%)]">
         <div className="container-page py-16 sm:py-20">
           <Link
             href="/services"
-            className="text-sm text-espresso-600/70 transition-colors hover:text-espresso-700"
+            className="text-[17px] font-semibold text-espresso-600/70 transition-colors hover:text-espresso-700"
           >
             ← All services
           </Link>
-          <h1 className="mt-5 max-w-3xl text-4xl font-light leading-[1.1] text-espresso-700 sm:text-5xl">
+          <h1 className="mt-5 max-w-3xl text-[clamp(42px,6vw,84px)] leading-[0.95] text-espresso-700">
             {service.name}
           </h1>
-          <p className="mt-4 max-w-2xl text-lg text-espresso-600/80">
+          <p className="mt-4 max-w-2xl text-[clamp(19px,1.6vw,23px)] font-medium text-espresso-600">
             {service.tagline}
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
@@ -60,7 +60,7 @@ export default async function ServiceDetailPage({ params }: PageProps) {
         <div className="grid gap-12 lg:grid-cols-[1.15fr_0.85fr]">
           <div>
             <h2 className="text-2xl">What this is</h2>
-            <p className="mt-4 text-[17px] leading-relaxed text-espresso-500">
+            <p className="mt-4 text-[19px] leading-relaxed text-espresso-500">
               {service.description}
             </p>
 
@@ -73,7 +73,7 @@ export default async function ServiceDetailPage({ params }: PageProps) {
                     height={20}
                     className="mt-0.5 shrink-0 text-gold-500"
                   />
-                  <span className="text-[15px] leading-relaxed text-espresso-600">
+                  <span className="text-[17px] leading-relaxed text-espresso-600">
                     {item}
                   </span>
                 </li>
@@ -95,7 +95,7 @@ export default async function ServiceDetailPage({ params }: PageProps) {
           </div>
 
           <aside className="space-y-5">
-            <div className="rounded-3xl border border-espresso-700/8 bg-white p-7 shadow-card">
+            <div className="rounded-3xl border border-espresso-700/8 bg-hv-paper p-7 shadow-card">
               <h3 className="text-xs font-semibold uppercase tracking-[0.16em] text-olive-500">
                 At a glance
               </h3>

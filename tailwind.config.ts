@@ -40,7 +40,7 @@ const config: Config = {
           900: '#0F2031',
         },
         cream: '#FFF8CD',
-        bone: '#F8F5E9',
+        bone: '#F8F5E6', // page background (same as the landing's cream)
         olive: {
           400: '#8A7040',
           500: '#69532A', // brand tertiary
@@ -70,15 +70,29 @@ const config: Config = {
         },
       },
       fontFamily: {
-        sans: ['var(--font-body)', 'ui-sans-serif', 'system-ui', 'sans-serif'],
-        display: ['var(--font-display)', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        // One typeface for the whole product: Barlow Condensed (as on the landing).
+        sans: ['var(--font-display)', 'Arial Narrow', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        display: ['var(--font-display)', 'Arial Narrow', 'ui-sans-serif', 'system-ui', 'sans-serif'],
         'zen-loop': ['var(--font-zen-loop)', 'cursive'],
         // Wordmark ("HAVENR") and the hand-written notes on the landing.
         logo: ['var(--font-logo)', 'Futura', 'sans-serif'],
         hand: ['var(--font-hand)', 'cursive'],
       },
+      // Rounder, like the landing's cards (34px) — applies to every rounded-xl/2xl/3xl.
       borderRadius: {
-        '4xl': '2rem',
+        xl: '1rem',
+        '2xl': '1.5rem',
+        '3xl': '2.125rem',
+        '4xl': '2.5rem',
+      },
+      // Barlow Condensed is narrower and has a smaller x-height than the body
+      // face the app used before, so the small steps are a notch larger.
+      // (The landing pins its own sizes and doesn't use xs/sm/base/lg.)
+      fontSize: {
+        xs: ['0.875rem', { lineHeight: '1.2rem' }],
+        sm: ['1rem', { lineHeight: '1.4rem' }],
+        base: ['1.125rem', { lineHeight: '1.6rem' }],
+        lg: ['1.25rem', { lineHeight: '1.75rem' }],
       },
       boxShadow: {
         card: '0 1px 2px rgba(38, 16, 11, 0.04), 0 8px 24px -12px rgba(38, 16, 11, 0.18)',

@@ -90,8 +90,8 @@ export function ServiceSettingsForm({
   return (
     <div>
       <div className="mb-8 mt-6">
-        <h1 className="text-3xl leading-tight">{service.name} settings</h1>
-        <p className="mt-3 text-[15px] leading-relaxed text-espresso-500">
+        <h1 className="text-[clamp(34px,3.4vw,46px)] leading-none">{service.name} settings</h1>
+        <p className="mt-3 text-[17px] leading-relaxed text-espresso-500">
           Owners search for Haveners who match what they need, then request to
           book. What you set here is what decides who can find you for{' '}
           {service.name.toLowerCase()}.

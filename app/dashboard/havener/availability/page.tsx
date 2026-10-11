@@ -71,7 +71,7 @@ export default async function HavenerAvailabilityPage() {
         te van a poder encontrar y reservar directamente.
       </p>
 
-      <div className="mt-8 rounded-2xl border border-espresso-700/10 bg-white p-6">
+      <div className="mt-8 rounded-2xl border border-espresso-700/10 bg-hv-paper p-6">
         <h2 className="text-sm font-medium text-espresso-700">
           Bloquear fechas
         </h2>
@@ -85,7 +85,7 @@ export default async function HavenerAvailabilityPage() {
           Días bloqueados ({ranges.length})
         </h2>
         {ranges.length === 0 ? (
-          <p className="mt-3 rounded-2xl border border-dashed border-espresso-700/15 bg-white p-6 text-center text-sm text-espresso-500">
+          <p className="mt-3 rounded-2xl border border-dashed border-espresso-700/15 bg-hv-paper p-6 text-center text-sm text-espresso-500">
             No tienes ningún día bloqueado.
           </p>
         ) : (
@@ -93,7 +93,7 @@ export default async function HavenerAvailabilityPage() {
             {ranges.map((range) => (
               <div
                 key={`${range.startDate}-${range.endDate}`}
-                className="flex items-center justify-between gap-3 rounded-xl border border-espresso-700/8 bg-white p-4"
+                className="flex items-center justify-between gap-3 rounded-xl border border-espresso-700/8 bg-hv-paper p-4"
               >
                 <div>
                   <p className="text-sm font-medium text-espresso-700">

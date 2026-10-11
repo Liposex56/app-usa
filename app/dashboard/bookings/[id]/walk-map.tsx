@@ -124,7 +124,7 @@ export function WalkMap({
 
   if (locations.length === 0 && !live) {
     return (
-      <p className="rounded-2xl border border-dashed border-espresso-700/15 bg-white p-8 text-center text-sm text-espresso-500">
+      <p className="rounded-2xl border border-dashed border-espresso-700/15 bg-hv-paper p-8 text-center text-sm text-espresso-500">
         No route recorded for this walk.
       </p>
     );

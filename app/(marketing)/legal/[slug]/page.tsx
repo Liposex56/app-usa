@@ -52,8 +52,8 @@ export default async function LegalPage({
   return (
     <Section tone="bone">
       <div className="mx-auto max-w-2xl">
-        <h1 className="text-4xl font-light">{page.title}</h1>
-        <p className="mt-5 text-[17px] leading-relaxed text-espresso-500">
+        <h1 className="text-[clamp(38px,4.4vw,60px)] leading-none">{page.title}</h1>
+        <p className="mt-5 text-[19px] leading-relaxed text-espresso-500">
           {page.intro}
         </p>
 

@@ -75,7 +75,7 @@ export default async function HavenerPaymentsPage() {
         servicio.
       </p>
 
-      <div className="mt-8 rounded-2xl border border-espresso-700/10 bg-white p-6">
+      <div className="mt-8 rounded-2xl border border-espresso-700/10 bg-hv-paper p-6">
         {!stripeConfigured ? (
           <div className="rounded-xl bg-cream p-4 text-sm text-olive-700">
             Los pagos todavía no están activados en Havenr — falta conectar

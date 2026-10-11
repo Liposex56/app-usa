@@ -51,7 +51,7 @@ export default async function HavenerProfilePage() {
       </Link>
 
       {!sitter ? (
-        <div className="mt-6 rounded-3xl border border-espresso-700/10 bg-white p-8 text-center">
+        <div className="mt-6 rounded-3xl border border-espresso-700/10 bg-hv-paper p-8 text-center">
           <h1 className="text-xl font-semibold text-espresso-700">
             Crea tu perfil en Havener
           </h1>

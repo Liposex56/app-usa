@@ -47,7 +47,7 @@ export default async function HavenerServicesPage() {
             <Link
               key={service.type}
               href={`/dashboard/havener/services/${service.slug}`}
-              className="flex items-center justify-between rounded-2xl border border-espresso-700/10 bg-white p-5 transition-colors hover:border-gold-500/50"
+              className="flex items-center justify-between rounded-2xl border border-espresso-700/10 bg-hv-paper p-5 transition-colors hover:border-gold-500/50"
             >
               <div>
                 <div className="flex items-center gap-2">

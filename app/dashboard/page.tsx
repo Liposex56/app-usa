@@ -60,7 +60,7 @@ type MeetGreetToday = {
 
 function SectionCard({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
-    <div className={cn('rounded-3xl border border-espresso-700/8 bg-white p-6 shadow-card', className)}>
+    <div className={cn('rounded-3xl border border-espresso-700/8 bg-hv-paper p-6 shadow-card', className)}>
       {children}
     </div>
   );
@@ -229,10 +229,10 @@ export default async function DashboardPage({
       )}
 
       <div>
-        <h1 className="text-3xl">
+        <h1 className="text-[clamp(34px,3.4vw,46px)] leading-none">
           {profile.first_name ? `Hi, ${profile.first_name}` : 'Your dashboard'}
         </h1>
-        <p className="mt-2 text-[15px] text-espresso-500">
+        <p className="mt-2 text-[17px] text-espresso-500">
           {profile.is_owner && profile.is_havener
             ? 'You’re set up as both a pet owner and a Havener.'
             : profile.is_havener
@@ -372,7 +372,7 @@ export default async function DashboardPage({
           </div>
 
           {petList.length === 0 ? (
-            <div className="rounded-3xl border border-dashed border-espresso-700/15 bg-white p-10 text-center">
+            <div className="rounded-3xl border border-dashed border-espresso-700/15 bg-hv-paper p-10 text-center">
               <IconPaw width={32} height={32} className="mx-auto text-espresso-700/25" />
               <p className="mt-4 text-sm text-espresso-500">
                 No pets yet. Add one so we can start matching you.
@@ -386,7 +386,7 @@ export default async function DashboardPage({
               {petList.map((pet) => (
                 <article
                   key={pet.id}
-                  className="rounded-3xl border border-espresso-700/8 bg-white p-6 shadow-card"
+                  className="rounded-3xl border border-espresso-700/8 bg-hv-paper p-6 shadow-card"
                 >
                   <div className="flex items-start justify-between gap-3">
                     <h3 className="text-lg text-espresso-700">{pet.name}</h3>
@@ -516,7 +516,7 @@ export default async function DashboardPage({
           <h2 className="mb-4 text-xl">Havener profile</h2>
 
           <div className="grid gap-4 lg:grid-cols-[1.3fr_1fr]">
-            <div className="rounded-3xl border border-espresso-700/8 bg-white p-7 shadow-card">
+            <div className="rounded-3xl border border-espresso-700/8 bg-hv-paper p-7 shadow-card">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <h3 className="text-lg text-espresso-700">Listing status</h3>
                 <span
@@ -621,7 +621,7 @@ export default async function DashboardPage({
 
       {/* ------------------------------------------------- Add the other side */}
       {profile.is_owner && !profile.is_havener && (
-        <section className="flex flex-wrap items-center justify-between gap-4 rounded-3xl border border-espresso-700/8 bg-white p-6 shadow-card">
+        <section className="flex flex-wrap items-center justify-between gap-4 rounded-3xl border border-espresso-700/8 bg-hv-paper p-6 shadow-card">
           <div className="min-w-0">
             <h2 className="text-lg text-espresso-700">Want to care for pets too?</h2>
             <p className="mt-1 text-sm leading-relaxed text-espresso-500">
@@ -637,7 +637,7 @@ export default async function DashboardPage({
         </section>
       )}
       {profile.is_havener && !profile.is_owner && (
-        <section className="flex flex-wrap items-center justify-between gap-4 rounded-3xl border border-espresso-700/8 bg-white p-6 shadow-card">
+        <section className="flex flex-wrap items-center justify-between gap-4 rounded-3xl border border-espresso-700/8 bg-hv-paper p-6 shadow-card">
           <div className="min-w-0">
             <h2 className="text-lg text-espresso-700">Need care for your own pet?</h2>
             <p className="mt-1 text-sm leading-relaxed text-espresso-500">

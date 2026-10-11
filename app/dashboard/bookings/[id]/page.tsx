@@ -110,7 +110,7 @@ export default async function BookingDetailPage({
           data" (dates, pets, price, payment, cancel/decline reasons) lives
           behind the "View details" toggle below instead of dominating the
           page above the chat. */}
-      <div className="mt-6 rounded-3xl border border-espresso-700/8 bg-white p-5 shadow-card">
+      <div className="mt-6 rounded-3xl border border-espresso-700/8 bg-hv-paper p-5 shadow-card">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <div className="h-11 w-11 shrink-0 overflow-hidden rounded-full bg-sky-100">
@@ -279,7 +279,7 @@ export default async function BookingDetailPage({
           </div>
         )}
 
-      <div className="mt-6 rounded-3xl border border-espresso-700/8 bg-white p-4 shadow-card">
+      <div className="mt-6 rounded-3xl border border-espresso-700/8 bg-hv-paper p-4 shadow-card">
         <BookingToolbar
           bookingId={booking.id}
           viewerRole={viewerRole}
@@ -312,7 +312,7 @@ export default async function BookingDetailPage({
         />
       </div>
 
-      <div className="mt-3 rounded-3xl border border-espresso-700/8 bg-white shadow-card">
+      <div className="mt-3 rounded-3xl border border-espresso-700/8 bg-hv-paper shadow-card">
         <MeetGreetPanel
           bookingId={booking.id}
           viewerId={profile.id}
@@ -321,7 +321,7 @@ export default async function BookingDetailPage({
       </div>
 
       {booking.status === 'completed' && (
-        <div className="mt-8 rounded-3xl border border-espresso-700/8 bg-white p-7 shadow-card">
+        <div className="mt-8 rounded-3xl border border-espresso-700/8 bg-hv-paper p-7 shadow-card">
           <h2 className="text-lg text-espresso-700">Review</h2>
           {myReview ? (
             <p className="mt-2 text-sm text-espresso-500">

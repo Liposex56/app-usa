@@ -32,7 +32,7 @@ export function CommissionForm({
     <div className="grid gap-6 lg:grid-cols-2">
       <form
         action={formAction}
-        className="space-y-4 rounded-2xl border border-espresso-700/10 bg-white p-6"
+        className="space-y-4 rounded-2xl border border-espresso-700/10 bg-hv-paper p-6"
       >
         <h2 className="font-semibold text-espresso-700">Comisión de la plataforma</h2>
         <Field
@@ -67,7 +67,7 @@ export function CommissionForm({
         </Button>
       </form>
 
-      <div className="space-y-4 rounded-2xl border border-espresso-700/10 bg-white p-6">
+      <div className="space-y-4 rounded-2xl border border-espresso-700/10 bg-hv-paper p-6">
         <h2 className="font-semibold text-espresso-700">Simulador de reparto</h2>
         <Field label="Valor del servicio" htmlFor="sampleDollars" hint="En dólares, sólo para previsualizar el reparto.">
           <Input

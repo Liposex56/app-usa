@@ -44,10 +44,14 @@ export const hero = {
   },
 };
 
-// Video strip under the hero ("HAVNR (1).MOV", converted to MP4 for the web).
+// Video strip under the hero ("Havenr.MOV", 3840x1634, converted to MP4 for the web).
+// The band is shown at the video's own proportions — set width/height to the
+// real size of whatever file you put here so it is never cropped.
 export const servicesBand = {
-  video: '/home/video/havnr.mp4',
-  poster: '/home/images/havnr-poster.jpg',
+  video: '/home/video/havenr-brand.mp4',
+  poster: '/home/images/havenr-brand-poster.jpg',
+  width: 1920,
+  height: 818,
   label: 'Havenr brand video: dogs and cats cared for by Haveners',
 };
 

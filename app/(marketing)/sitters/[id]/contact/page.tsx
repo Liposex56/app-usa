@@ -106,11 +106,11 @@ export default async function ContactSitterPage({
       </p>
 
       {serviceRows.length === 0 ? (
-        <p className="mt-6 rounded-2xl border border-espresso-700/10 bg-white p-6 text-sm text-espresso-500">
+        <p className="mt-6 rounded-2xl border border-espresso-700/10 bg-hv-paper p-6 text-sm text-espresso-500">
           This Havener hasn&rsquo;t published any services yet.
         </p>
       ) : petRows.length === 0 ? (
-        <div className="mt-6 rounded-2xl border border-espresso-700/10 bg-white p-6 text-sm text-espresso-600">
+        <div className="mt-6 rounded-2xl border border-espresso-700/10 bg-hv-paper p-6 text-sm text-espresso-600">
           You need at least one pet on file before contacting a Havener.{' '}
           <Link
             href={`/dashboard/pets/new?returnTo=${encodeURIComponent(`/sitters/${id}/contact`)}`}

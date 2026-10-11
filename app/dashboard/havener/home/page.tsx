@@ -38,8 +38,8 @@ export default async function HavenerHomeMediaPage() {
         ← Back to Havener profile
       </Link>
 
-      <h1 className="mt-6 text-3xl">Meet the home</h1>
-      <p className="mt-2 mb-8 text-[15px] text-espresso-500">
+      <h1 className="mt-6 text-[clamp(34px,3.4vw,46px)] leading-none">Meet the home</h1>
+      <p className="mt-2 mb-8 text-[17px] text-espresso-500">
         If you offer boarding or daycare, owners want to see where their pet
         will stay. Add photos and a short video — they show on your public
         profile.

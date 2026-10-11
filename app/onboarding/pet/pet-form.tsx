@@ -47,7 +47,7 @@ function TriState({
   const current =
     defaultValue === true ? 'yes' : defaultValue === false ? 'no' : 'unsure';
   return (
-    <div className="rounded-xl border border-espresso-700/12 bg-white p-3.5">
+    <div className="rounded-xl border border-espresso-700/12 bg-hv-paper p-3.5">
       <p className="text-sm font-medium text-espresso-700">{label}</p>
       <div className="mt-2 flex gap-4">
         {(['yes', 'no', 'unsure'] as const).map((value) => (
@@ -120,7 +120,7 @@ export function PetForm({
             </legend>
             <div className="grid gap-2.5 sm:grid-cols-2">
               <label
-                className="flex cursor-pointer items-center gap-3 rounded-xl border border-espresso-700/12 bg-white p-3.5 transition-colors hover:border-gold-500/50 has-[:checked]:border-gold-500 has-[:checked]:bg-gold-50"
+                className="flex cursor-pointer items-center gap-3 rounded-xl border border-espresso-700/12 bg-hv-paper p-3.5 transition-colors hover:border-gold-500/50 has-[:checked]:border-gold-500 has-[:checked]:bg-gold-50"
                 htmlFor="species-dog"
               >
                 <input
@@ -137,7 +137,7 @@ export function PetForm({
                 <span className="text-sm font-medium text-espresso-700">Dog</span>
               </label>
               <label
-                className="flex cursor-pointer items-center gap-3 rounded-xl border border-espresso-700/12 bg-white p-3.5 transition-colors hover:border-gold-500/50 has-[:checked]:border-gold-500 has-[:checked]:bg-gold-50"
+                className="flex cursor-pointer items-center gap-3 rounded-xl border border-espresso-700/12 bg-hv-paper p-3.5 transition-colors hover:border-gold-500/50 has-[:checked]:border-gold-500 has-[:checked]:bg-gold-50"
                 htmlFor="species-cat"
               >
                 <input

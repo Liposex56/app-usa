@@ -55,7 +55,7 @@ export default async function HavenerInsurancePage() {
         &ldquo;Insured&rdquo; una vez que el staff la aprueba.
       </p>
 
-      <div className="mt-8 rounded-2xl border border-espresso-700/10 bg-white p-6">
+      <div className="mt-8 rounded-2xl border border-espresso-700/10 bg-hv-paper p-6">
         <InsuranceForm existing={insurance} />
       </div>
     </div>

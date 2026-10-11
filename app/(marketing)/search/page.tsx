@@ -95,8 +95,8 @@ export default async function SearchPage({
 
   return (
     <div className="container-page py-10 sm:py-14">
-      <h1 className="text-3xl">Find a Havener</h1>
-      <p className="mt-2 max-w-xl text-[15px] text-espresso-500">
+      <h1 className="text-[clamp(34px,3.4vw,46px)] leading-none">Find a Havener</h1>
+      <p className="mt-2 max-w-xl text-[17px] text-espresso-500">
         We only show you Haveners who genuinely fit — compatibility comes
         before popularity.
       </p>
@@ -114,7 +114,7 @@ export default async function SearchPage({
       />
 
       {!ready ? (
-        <p className="mt-8 rounded-3xl border border-dashed border-espresso-700/15 bg-white p-10 text-center text-sm text-espresso-500">
+        <p className="mt-8 rounded-3xl border border-dashed border-espresso-700/15 bg-hv-paper p-10 text-center text-sm text-espresso-500">
           Choose your dates, the service you need and your address, then search —
           we’ll show the Haveners near you who fit your pet and are free for
           those dates.
@@ -128,7 +128,7 @@ export default async function SearchPage({
           </p>
 
           {sitters.length === 0 ? (
-            <p className="mt-6 rounded-3xl border border-dashed border-espresso-700/15 bg-white p-10 text-center text-sm text-espresso-500">
+            <p className="mt-6 rounded-3xl border border-dashed border-espresso-700/15 bg-hv-paper p-10 text-center text-sm text-espresso-500">
               No Haveners fit those dates and filters yet. Try a different range
               or widen your search.
             </p>
@@ -141,7 +141,7 @@ export default async function SearchPage({
                   <Link
                     key={sitter.id}
                     href={`/sitters/${sitter.id}${profileQueryString ? `?${profileQueryString}` : ''}`}
-                    className="flex flex-col rounded-3xl border border-espresso-700/8 bg-white p-6 shadow-card transition-all hover:-translate-y-0.5 hover:border-gold-500/40 hover:shadow-lift"
+                    className="flex flex-col rounded-3xl border border-espresso-700/8 bg-hv-paper p-6 shadow-card transition-all hover:-translate-y-0.5 hover:border-gold-500/40 hover:shadow-lift"
                   >
                     <div className="flex items-center gap-3">
                       <div className="h-14 w-14 shrink-0 overflow-hidden rounded-full bg-sky-100">

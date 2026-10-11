@@ -94,7 +94,7 @@ export function HomeMediaManager({
       <FormError message={error} />
 
       {files.length === 0 ? (
-        <p className="rounded-2xl border border-dashed border-espresso-700/15 bg-white p-8 text-center text-sm text-espresso-500">
+        <p className="rounded-2xl border border-dashed border-espresso-700/15 bg-hv-paper p-8 text-center text-sm text-espresso-500">
           Nothing here yet. Owners looking at boarding will see these on your
           public profile.
         </p>

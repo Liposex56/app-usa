@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 
 import { IconCheck } from '@/components/icons';
-import { Section, SectionHeading } from '@/components/marketing/section';
+import { PageHero, Section, SectionHeading } from '@/components/marketing/section';
 import { ButtonLink } from '@/components/ui/button';
 
 export const metadata: Metadata = {
@@ -70,7 +70,7 @@ function StepList({
       {steps.map((step, index) => (
         <li
           key={step.title}
-          className="flex gap-5 rounded-2xl border border-espresso-700/8 bg-white p-6 shadow-card"
+          className="flex gap-5 rounded-2xl border border-espresso-700/8 bg-hv-paper p-6 shadow-card"
         >
           <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-cream font-display text-sm text-olive-600">
             {index + 1}
@@ -90,13 +90,11 @@ function StepList({
 export default function HowItWorksPage() {
   return (
     <>
-      <Section tone="cream" className="py-16 sm:py-20">
-        <SectionHeading
-          eyebrow="How it works"
-          title="No mystery, no guesswork"
-          description="Here is exactly what happens on both sides of a Havenr booking."
-        />
-      </Section>
+      <PageHero
+        eyebrow="How it works"
+        title="No mystery, no guesswork"
+        description="Here is exactly what happens on both sides of a Havenr booking."
+      />
 
       <Section tone="bone">
         <div className="grid gap-14 lg:grid-cols-2">
@@ -136,7 +134,7 @@ export default function HowItWorksPage() {
                     height={20}
                     className="mt-0.5 shrink-0 text-gold-400"
                   />
-                  <span className="text-[15px] leading-relaxed text-cream/75">
+                  <span className="text-[17px] leading-relaxed text-cream/75">
                     {item}
                   </span>
                 </li>
@@ -151,10 +149,10 @@ export default function HowItWorksPage() {
         </div>
       </Section>
 
-      <section className="bg-white">
+      <section className="bg-hv-paper">
         <div className="container-page py-20 text-center">
           <h2 className="text-3xl">Ready when you are</h2>
-          <p className="mx-auto mt-4 max-w-lg text-[17px] leading-relaxed text-espresso-500">
+          <p className="mx-auto mt-4 max-w-lg text-[19px] leading-relaxed text-espresso-500">
             Set up your pet’s profile in a few minutes. You only pay when you
             confirm a booking.
           </p>

@@ -57,7 +57,7 @@ export default async function HavenerVerificationPage() {
         &ldquo;Background checked&rdquo; en tu perfil público.
       </p>
 
-      <div className="mt-8 rounded-2xl border border-espresso-700/10 bg-white p-6">
+      <div className="mt-8 rounded-2xl border border-espresso-700/10 bg-hv-paper p-6">
         {!stripeConfigured ? (
           <p className="rounded-xl bg-cream p-4 text-sm text-olive-700">
             La verificación todavía no está activada en Havenr — falta

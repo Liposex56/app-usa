@@ -151,9 +151,11 @@ tal cual a Next.js. El diseño, los textos y las rutas de los botones están en
 | `app/(home)/` | Layout (header + franja legal) y página que arma las secciones |
 | `public/home/images`, `public/home/video` | Fotos, ilustraciones y videos |
 
-**Cambiar el video de arriba:** el video HAVNR de la franja es
-`public/home/video/havnr.mp4` (poster en `public/home/images/havnr-poster.jpg`).
-Para usar otro, reemplaza el archivo o cambia `servicesBand` en `content.ts`.
+**Cambiar el video de arriba:** el video de la franja es
+`public/home/video/havenr-brand.mp4` (poster en
+`public/home/images/havenr-brand-poster.jpg`). La franja se muestra con la
+proporción del propio video (hoy 1920×818, 2.35:1), sin recortarlo: al cambiar
+el archivo pon su ancho y alto reales en `servicesBand` (`content.ts`).
 El espacio del hero (persona + perro) acepta un video poniendo su ruta en
 `hero.video`. La animación de entrada es `public/home/video/intro-door.mp4`.
 Los videos deben ir en MP4 H.264; con fondo negro si es la animación de entrada.

@@ -18,8 +18,8 @@ export default async function CheckEmailPage({
         <IconCheck width={26} height={26} />
       </span>
 
-      <h1 className="mt-6 text-3xl">Check your email</h1>
-      <p className="mt-3 text-[15px] leading-relaxed text-espresso-500">
+      <h1 className="mt-6 text-[clamp(34px,3.4vw,46px)] leading-none">Check your email</h1>
+      <p className="mt-3 text-[17px] leading-relaxed text-espresso-500">
         We sent a confirmation link
         {email ? (
           <>
@@ -30,7 +30,7 @@ export default async function CheckEmailPage({
         . Click it and we’ll pick up right where you left off.
       </p>
 
-      <div className="mt-8 rounded-2xl border border-espresso-700/8 bg-white p-6 text-left">
+      <div className="mt-8 rounded-2xl border border-espresso-700/8 bg-hv-paper p-6 text-left">
         <h2 className="text-sm font-medium text-espresso-700">
           Didn’t get it?
         </h2>

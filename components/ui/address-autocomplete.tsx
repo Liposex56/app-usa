@@ -134,7 +134,7 @@ export function AddressAutocomplete({
       {open && options.length > 0 && (
         <ul
           role="listbox"
-          className="absolute left-0 right-0 z-30 mt-1 max-h-64 overflow-auto rounded-xl border border-espresso-700/15 bg-white py-1 shadow-lift"
+          className="absolute left-0 right-0 z-30 mt-1 max-h-64 overflow-auto rounded-xl border border-espresso-700/15 bg-hv-paper py-1 shadow-lift"
         >
           {options.map((option, index) => (
             <li

@@ -33,7 +33,7 @@ export default async function HomeLayout({ children }: { children: React.ReactNo
 
       {/* Slim legal strip — the landing design ends with the sand banner. */}
       <footer className="bg-hv-ink text-hv-cream/70">
-        <div className="mx-auto flex max-w-[1440px] flex-col gap-2 px-5 py-4 text-sm sm:flex-row sm:items-center sm:justify-between lg:px-[clamp(20px,4.6vw,66px)]">
+        <div className="mx-auto flex max-w-[1440px] flex-col gap-2 px-5 py-4 text-[14px] sm:flex-row sm:items-center sm:justify-between lg:px-[clamp(20px,4.6vw,66px)]">
           <p>© {new Date().getFullYear()} Havenr. All rights reserved.</p>
           <nav className="flex flex-wrap gap-x-6 gap-y-1">
             {LEGAL.map((item) => (

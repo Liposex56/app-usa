@@ -64,7 +64,7 @@ export function AdditionalHaveners({
           return (
             <div
               key={havener.id}
-              className="rounded-2xl border border-espresso-700/10 bg-white p-4 shadow-card"
+              className="rounded-2xl border border-espresso-700/10 bg-hv-paper p-4 shadow-card"
             >
               <div className="flex items-center gap-3">
                 <div className="h-14 w-14 shrink-0 overflow-hidden rounded-full bg-sky-100">

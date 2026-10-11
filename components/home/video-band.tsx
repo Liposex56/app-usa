@@ -4,8 +4,9 @@ import { useRef, useState } from 'react';
 
 import { servicesBand } from './content';
 
-// Full-width brand video (HAVNR), muted and looping.
-// The corner button turns the sound on or off.
+// Full-width brand video, muted and looping. The band takes the video's own
+// proportions (servicesBand.width / height), so it is shown whole — never
+// cropped into another shape. The corner button turns the sound on or off.
 export function VideoBand() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [muted, setMuted] = useState(true);
@@ -19,8 +20,10 @@ export function VideoBand() {
   };
 
   return (
-    // 16:9 (the video's ratio) so it isn't cropped; on short screens it is capped at 85% of the height
-    <div className="relative aspect-video max-h-[85vh] w-full overflow-hidden bg-hv-ink">
+    <div
+      className="relative w-full overflow-hidden bg-hv-ink"
+      style={{ aspectRatio: `${servicesBand.width} / ${servicesBand.height}` }}
+    >
       <video
         ref={videoRef}
         src={servicesBand.video}
@@ -31,13 +34,13 @@ export function VideoBand() {
         loop
         playsInline
         preload="metadata"
-        className="h-full w-full object-cover"
+        className="h-full w-full object-contain"
       />
       <button
         type="button"
         onClick={toggleSound}
         aria-label={muted ? 'Turn sound on' : 'Turn sound off'}
-        className="absolute bottom-[clamp(56px,6vw,90px)] right-5 z-20 grid h-11 w-11 place-items-center rounded-full bg-hv-cream/85 text-hv-ink backdrop-blur transition-colors hover:bg-hv-cream lg:right-10"
+        className="absolute bottom-[clamp(40px,6vw,90px)] right-5 z-20 grid h-11 w-11 place-items-center rounded-full bg-hv-cream/85 text-hv-ink backdrop-blur transition-colors hover:bg-hv-cream lg:right-10"
       >
         <svg
           viewBox="0 0 24 24"

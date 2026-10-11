@@ -35,7 +35,7 @@ export default async function AdminReportsPage() {
 
   if (reports.length === 0) {
     return (
-      <p className="rounded-2xl border border-espresso-700/10 bg-white p-8 text-center text-sm text-espresso-500">
+      <p className="rounded-2xl border border-espresso-700/10 bg-hv-paper p-8 text-center text-sm text-espresso-500">
         Nadie ha reportado una conversación todavía.
       </p>
     );
@@ -46,7 +46,7 @@ export default async function AdminReportsPage() {
       {reports.map((report) => (
         <div
           key={report.id}
-          className="rounded-2xl border border-espresso-700/10 bg-white p-5"
+          className="rounded-2xl border border-espresso-700/10 bg-hv-paper p-5"
         >
           <div className="flex flex-wrap items-center justify-between gap-2">
             <p className="font-medium text-espresso-700">

@@ -19,7 +19,7 @@ export function Hero() {
 
       <div className="relative mx-auto max-w-[1440px] [container-type:inline-size]">
         <div className="relative flex flex-col gap-8 px-5 pb-12 pt-8 lg:block lg:aspect-[1440/910] lg:p-0">
-          <p className="order-first text-sm font-semibold leading-tight lg:absolute lg:left-[89.7%] lg:top-[1.8%] lg:text-[length:1.1cqw]">
+          <p className="order-first text-[14px] font-semibold leading-tight lg:absolute lg:left-[89.7%] lg:top-[1.8%] lg:text-[length:1.1cqw]">
             {hero.tagline[0]}
             <br />
             {hero.tagline[1]}
@@ -34,7 +34,7 @@ export function Hero() {
             ))}
           </h1>
 
-          <p className="max-w-md text-justify text-lg font-medium leading-snug lg:absolute lg:left-[3.2%] lg:top-[39%] lg:w-[30.2%] lg:max-w-none lg:text-[length:1.72cqw] lg:leading-[1.1]">
+          <p className="max-w-md text-justify text-[18px] font-medium leading-snug lg:absolute lg:left-[3.2%] lg:top-[39%] lg:w-[30.2%] lg:max-w-none lg:text-[length:1.72cqw] lg:leading-[1.1]">
             {hero.text}
           </p>
 

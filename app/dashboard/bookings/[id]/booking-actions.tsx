@@ -43,7 +43,7 @@ function ReasonForm({
         name="reason"
         required
         placeholder={placeholder}
-        className="w-full rounded-lg border border-espresso-700/15 bg-white p-2.5 text-sm text-espresso-700 placeholder:text-espresso-700/35 focus:border-gold-500 focus:outline-none"
+        className="w-full rounded-lg border border-espresso-700/15 bg-hv-paper p-2.5 text-sm text-espresso-700 placeholder:text-espresso-700/35 focus:border-gold-500 focus:outline-none"
         rows={2}
       />
       <div className="flex gap-2">

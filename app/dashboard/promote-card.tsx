@@ -23,7 +23,7 @@ export function PromoteCard({ code, link }: { code: string; link: string }) {
   }
 
   return (
-    <div className="rounded-3xl border border-espresso-700/8 bg-white p-6 shadow-card">
+    <div className="rounded-3xl border border-espresso-700/8 bg-hv-paper p-6 shadow-card">
       <h3 className="text-lg text-espresso-700">Promote your profile</h3>
       <p className="mt-1.5 text-sm leading-relaxed text-espresso-500">
         Share your code — new owners get $20 off their first booking with you.

@@ -45,7 +45,7 @@ export function SignUpForm() {
         <button
           type="button"
           onClick={() => setShowEmail(true)}
-          className="flex h-12 w-full items-center justify-center gap-3 rounded-lg border-2 border-espresso-700/70 bg-white px-4 text-[15px] font-semibold text-espresso-700 transition-colors hover:bg-bone"
+          className="flex h-12 w-full items-center justify-center gap-3 rounded-lg border-2 border-espresso-700/70 bg-hv-paper px-4 text-[17px] font-semibold text-espresso-700 transition-colors hover:bg-bone"
         >
           <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden fill="none" stroke="currentColor" strokeWidth="1.8">
             <rect x="3" y="5" width="18" height="14" rx="2" />

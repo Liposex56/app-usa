@@ -7,7 +7,7 @@
     --brand-gold: #be8210;
     --brand-sky: #c2dcf4;
     --brand-cream: #fff8cd;
-    --brand-bone: #f8f5e9;
+    --brand-bone: #f8f5e6;
     --brand-olive: #69532a;
     --brand-espresso: #26100b;
   }
@@ -19,17 +19,37 @@
     scroll-padding-top: 3.5rem;
   }
 
+  /* One typeface for the whole product — Barlow Condensed, set a notch
+     larger and heavier than a normal body face because it is condensed. */
   body {
     @apply bg-bone text-espresso-700 antialiased;
-    font-family: var(--font-body), ui-sans-serif, system-ui, sans-serif;
+    font-family: var(--font-display), 'Arial Narrow', ui-sans-serif, system-ui, sans-serif;
+    font-size: 1.0625rem;
+    font-weight: 500;
   }
 
+  /* Titles follow the landing: big, condensed and uppercase. */
   h1,
   h2,
   h3,
   h4 {
-    @apply font-display tracking-tight text-espresso-700;
-    font-weight: 400;
+    @apply font-display text-espresso-700;
+    font-weight: 600;
+    letter-spacing: -0.005em;
+  }
+
+  h1,
+  h2 {
+    text-transform: uppercase;
+    line-height: 1.05;
+  }
+
+  h1 {
+    font-weight: 800;
+  }
+
+  h2 {
+    font-weight: 700;
   }
 
   ::selection {
@@ -67,12 +87,17 @@
     letter-spacing: normal;
   }
 
+  /* The landing is authored against a 16px root text size. */
+  .hv-home {
+    font-size: 1rem;
+  }
+
   .eyebrow {
-    @apply text-xs font-semibold uppercase tracking-[0.18em] text-olive-500;
+    @apply text-xs font-semibold uppercase tracking-[0.14em] text-olive-500;
   }
 
   .prose-havenr p {
-    @apply text-base leading-relaxed text-espresso-500;
+    @apply text-base font-medium leading-relaxed text-espresso-500;
   }
 }
 

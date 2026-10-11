@@ -9,16 +9,16 @@ export default function OnboardingLayout({
 }) {
   return (
     <div className="min-h-screen bg-bone">
-      <header className="border-b border-espresso-700/8 bg-bone/85 backdrop-blur">
-        <div className="container-page flex h-16 items-center justify-between">
-          <LogoLink width={118} />
+      <header className="sticky top-0 z-40 bg-hv-ink text-hv-cream">
+        <div className="mx-auto flex h-14 max-w-[1440px] items-center justify-between px-5 lg:px-[clamp(20px,4.6vw,66px)]">
+          <LogoLink tone="cream" width={156} />
           <div className="flex items-center gap-5">
-            <span className="hidden text-sm text-espresso-500 sm:inline">
+            <span className="hidden text-[17px] font-medium text-hv-cream/70 sm:inline">
               Your progress is saved as you go
             </span>
             <Link
               href="/dashboard"
-              className="text-sm font-medium text-espresso-600 hover:text-espresso-700"
+              className="rounded-full bg-hv-sky px-6 py-1 text-[17px] font-semibold text-hv-ink transition-colors hover:bg-hv-paper"
             >
               Finish later
             </Link>

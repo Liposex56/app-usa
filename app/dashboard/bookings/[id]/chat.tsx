@@ -108,7 +108,7 @@ export function Chat({
   }
 
   return (
-    <div className="rounded-3xl border border-espresso-700/8 bg-white shadow-card">
+    <div className="rounded-3xl border border-espresso-700/8 bg-hv-paper shadow-card">
       <div className="flex items-center gap-2.5 border-b border-espresso-700/8 px-5 py-3">
         <div className="h-8 w-8 shrink-0 overflow-hidden rounded-full bg-sky-100">
           {counterpartyAvatarUrl ? (
@@ -162,7 +162,7 @@ export function Chat({
                           className="h-full w-full object-cover"
                         />
                       ) : (
-                        <div className="flex h-full w-full items-center justify-center text-[10px] font-medium text-espresso-500">
+                        <div className="flex h-full w-full items-center justify-center text-[13px] font-medium text-espresso-500">
                           {counterpartyName.slice(0, 1)}
                         </div>
                       ))}

@@ -9,8 +9,8 @@ export const metadata: Metadata = { title: 'Log in' };
 export default function LoginPage() {
   return (
     <div>
-      <h1 className="text-3xl">Welcome back</h1>
-      <p className="mt-2 text-[15px] text-espresso-500">
+      <h1 className="text-[clamp(34px,3.4vw,46px)] leading-none">Welcome back</h1>
+      <p className="mt-2 text-[17px] text-espresso-500">
         Log in to manage your bookings, pets and messages.
       </p>
 

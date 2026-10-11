@@ -49,7 +49,7 @@ export default async function HavenerBookingsPage({
         ← Back to dashboard
       </Link>
       <div className="mt-6 flex flex-wrap items-end justify-between gap-3">
-        <h1 className="text-3xl">{showArchived ? 'Archived' : 'Bookings'}</h1>
+        <h1 className="text-[clamp(34px,3.4vw,46px)] leading-none">{showArchived ? 'Archived' : 'Bookings'}</h1>
         <Link
           href={
             showArchived ? '/dashboard/havener/bookings' : '/dashboard/havener/bookings?archived=1'
@@ -61,7 +61,7 @@ export default async function HavenerBookingsPage({
       </div>
 
       {bookings.length === 0 ? (
-        <p className="mt-8 rounded-3xl border border-dashed border-espresso-700/15 bg-white p-10 text-center text-sm text-espresso-500">
+        <p className="mt-8 rounded-3xl border border-dashed border-espresso-700/15 bg-hv-paper p-10 text-center text-sm text-espresso-500">
           No requests yet — when an owner contacts you, their request shows up
           here for you to book or decline.
         </p>
@@ -74,7 +74,7 @@ export default async function HavenerBookingsPage({
               <Link
                 key={booking.id}
                 href={`/dashboard/bookings/${booking.id}`}
-                className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-espresso-700/8 bg-white p-5 shadow-card transition-colors hover:border-gold-500/40"
+                className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-espresso-700/8 bg-hv-paper p-5 shadow-card transition-colors hover:border-gold-500/40"
               >
                 <div>
                   <p className="font-medium text-espresso-700">

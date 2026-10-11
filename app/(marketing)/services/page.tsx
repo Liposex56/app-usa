@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 
 import { IconCheck } from '@/components/icons';
-import { Section, SectionHeading } from '@/components/marketing/section';
+import { PageHero, Section, SectionHeading } from '@/components/marketing/section';
 import { ButtonLink } from '@/components/ui/button';
 import { SERVICES } from '@/lib/services';
 
@@ -15,20 +15,18 @@ export const metadata: Metadata = {
 export default function ServicesPage() {
   return (
     <>
-      <Section tone="cream" className="py-16 sm:py-20">
-        <SectionHeading
-          eyebrow="Services"
-          title="Five services, one standard of care"
-          description="Whether it’s a twenty-minute visit or a two-week stay, you get the same thing: a verified Havener, evidence while it happens, and a report at the end."
-        />
-      </Section>
+      <PageHero
+        eyebrow="Services"
+        title="Five services, one standard of care"
+        description="Whether it’s a twenty-minute visit or a two-week stay, you get the same thing: a verified Havener, evidence while it happens, and a report at the end."
+      />
 
       <Section tone="bone">
         <div className="space-y-6">
           {SERVICES.map((service) => (
             <article
               key={service.slug}
-              className="grid gap-8 rounded-3xl border border-espresso-700/8 bg-white p-8 shadow-card lg:grid-cols-[1fr_1.1fr] lg:p-10"
+              className="grid gap-8 rounded-3xl border border-espresso-700/8 bg-hv-paper p-8 shadow-card lg:grid-cols-[1fr_1.1fr] lg:p-10"
             >
               <div>
                 <div className="flex flex-wrap items-center gap-3">
@@ -37,10 +35,10 @@ export default function ServicesPage() {
                     from ${service.fromRate}/{service.rateUnit}
                   </span>
                 </div>
-                <p className="mt-2 text-[15px] font-medium text-gold-600">
+                <p className="mt-2 text-[17px] font-medium text-gold-600">
                   {service.tagline}
                 </p>
-                <p className="mt-5 text-[15px] leading-relaxed text-espresso-500">
+                <p className="mt-5 text-[17px] leading-relaxed text-espresso-500">
                   {service.description}
                 </p>
 

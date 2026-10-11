@@ -8,10 +8,10 @@ import type {
 import { cn } from '@/lib/utils';
 
 export const CONTROL =
-  'w-full rounded-xl border border-espresso-700/15 bg-white px-4 py-2.5 text-[15px] ' +
-  'text-espresso-700 placeholder:text-espresso-700/35 transition-colors ' +
-  'hover:border-espresso-700/25 focus:border-gold-500 focus:outline-none ' +
-  'focus:ring-2 focus:ring-gold-500/25 disabled:bg-espresso-700/5';
+  'w-full rounded-2xl border border-hv-ink/20 bg-hv-paper px-4 py-2.5 text-[17px] font-medium ' +
+  'text-espresso-700 placeholder:text-espresso-700/40 transition-colors ' +
+  'hover:border-hv-ink/35 focus:border-hv-ink focus:outline-none ' +
+  'focus:ring-2 focus:ring-hv-mustard/40 disabled:bg-espresso-700/5';
 
 export function Field({
   label,
@@ -32,13 +32,13 @@ export function Field({
     <div className={cn('space-y-1.5', className)}>
       <label
         htmlFor={htmlFor}
-        className="block text-sm font-medium text-espresso-700"
+        className="block text-sm font-semibold uppercase tracking-[0.06em] text-espresso-700"
       >
         {label}
         {required && <span className="ml-1 text-gold-600">*</span>}
       </label>
       {children}
-      {hint && <p className="text-xs leading-relaxed text-espresso-500/70">{hint}</p>}
+      {hint && <p className="text-sm leading-snug text-espresso-500/75">{hint}</p>}
     </div>
   );
 }
@@ -89,7 +89,7 @@ export function CheckboxCard({
   return (
     <label
       htmlFor={id}
-      className="flex cursor-pointer items-start gap-3 rounded-xl border border-espresso-700/12 bg-white p-3.5 transition-colors hover:border-gold-500/50 has-[:checked]:border-gold-500 has-[:checked]:bg-gold-50"
+      className="flex cursor-pointer items-start gap-3 rounded-2xl border border-hv-ink/15 bg-hv-paper p-3.5 transition-colors hover:border-hv-ink/40 has-[:checked]:border-hv-ink has-[:checked]:bg-hv-butter"
     >
       <input
         id={id}
@@ -97,11 +97,11 @@ export function CheckboxCard({
         name={name}
         value={value}
         defaultChecked={defaultChecked}
-        className="mt-0.5 shrink-0 accent-gold-500"
+        className="mt-0.5 shrink-0 accent-[#26100B]"
         style={{ width: '1.05rem', height: '1.05rem' }}
       />
       <span className="min-w-0">
-        <span className="block text-sm font-medium text-espresso-700">{label}</span>
+        <span className="block text-[17px] font-semibold leading-tight text-espresso-700">{label}</span>
         {description && (
           <span className="mt-0.5 block text-xs leading-relaxed text-espresso-500/75">
             {description}
@@ -132,7 +132,7 @@ export function RadioCard({
   return (
     <label
       htmlFor={id}
-      className="flex cursor-pointer items-start gap-3 rounded-xl border border-espresso-700/12 bg-white p-3.5 transition-colors hover:border-gold-500/50 has-[:checked]:border-gold-500 has-[:checked]:bg-gold-50"
+      className="flex cursor-pointer items-start gap-3 rounded-2xl border border-hv-ink/15 bg-hv-paper p-3.5 transition-colors hover:border-hv-ink/40 has-[:checked]:border-hv-ink has-[:checked]:bg-hv-butter"
     >
       <input
         id={id}
@@ -141,11 +141,11 @@ export function RadioCard({
         value={value}
         required={required}
         defaultChecked={defaultChecked}
-        className="mt-0.5 shrink-0 accent-gold-500"
+        className="mt-0.5 shrink-0 accent-[#26100B]"
         style={{ width: '1.05rem', height: '1.05rem' }}
       />
       <span className="min-w-0">
-        <span className="block text-sm font-medium text-espresso-700">{label}</span>
+        <span className="block text-[17px] font-semibold leading-tight text-espresso-700">{label}</span>
         {description && (
           <span className="mt-0.5 block text-xs leading-relaxed text-espresso-500/75">
             {description}
@@ -161,7 +161,7 @@ export function FormError({ message }: { message?: string | null }) {
   return (
     <p
       role="alert"
-      className="rounded-xl border border-red-300/60 bg-red-50 px-4 py-3 text-sm text-red-800"
+      className="rounded-2xl border border-red-300/60 bg-red-50 px-4 py-3 text-[16px] font-medium text-red-800"
     >
       {message}
     </p>
@@ -170,7 +170,7 @@ export function FormError({ message }: { message?: string | null }) {
 
 export function FormNote({ children }: { children: ReactNode }) {
   return (
-    <p className="rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm leading-relaxed text-sky-800">
+    <p className="rounded-2xl border border-hv-sky bg-hv-sky/30 px-4 py-3 text-[16px] font-medium leading-snug text-espresso-700">
       {children}
     </p>
   );

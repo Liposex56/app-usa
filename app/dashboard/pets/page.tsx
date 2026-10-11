@@ -41,8 +41,8 @@ export default async function PetsPage() {
 
       <div className="mt-6 flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-3xl">My pets</h1>
-          <p className="mt-2 text-[15px] text-espresso-500">
+          <h1 className="text-[clamp(34px,3.4vw,46px)] leading-none">My pets</h1>
+          <p className="mt-2 text-[17px] text-espresso-500">
             Keep these up to date — this is what Haveners are matched against.
           </p>
         </div>
@@ -52,7 +52,7 @@ export default async function PetsPage() {
       </div>
 
       {pets.length === 0 ? (
-        <p className="mt-10 rounded-3xl border border-dashed border-espresso-700/15 bg-white p-10 text-center text-sm text-espresso-500">
+        <p className="mt-10 rounded-3xl border border-dashed border-espresso-700/15 bg-hv-paper p-10 text-center text-sm text-espresso-500">
           You haven’t added a pet yet.
         </p>
       ) : (
@@ -67,7 +67,7 @@ export default async function PetsPage() {
             return (
               <article
                 key={pet.id}
-                className="overflow-hidden rounded-3xl border border-espresso-700/8 bg-white shadow-card"
+                className="overflow-hidden rounded-3xl border border-espresso-700/8 bg-hv-paper shadow-card"
               >
                 <div className="h-48 w-full bg-sky-100">
                   {pet.photo_url ? (

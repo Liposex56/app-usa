@@ -9,7 +9,7 @@ import { FormError } from '@/components/ui/field';
 const INITIAL: AuthState = { error: null };
 
 const BASE =
-  'flex h-12 w-full items-center justify-center gap-3 rounded-lg px-4 text-[15px] font-semibold ' +
+  'flex h-12 w-full items-center justify-center gap-3 rounded-full px-4 text-[17px] font-semibold ' +
   'transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60';
 
 function FacebookIcon() {

@@ -230,9 +230,9 @@ export default async function CalendarPage({
       </Link>
 
       <div className="mt-6 flex flex-wrap items-end justify-between gap-4">
-        <h1 className="text-3xl">Calendar</h1>
+        <h1 className="text-[clamp(34px,3.4vw,46px)] leading-none">Calendar</h1>
         {profile.is_havener && profile.is_owner && (
-          <div className="flex gap-1 rounded-full bg-white p-1 text-sm shadow-card">
+          <div className="flex gap-1 rounded-full bg-hv-paper p-1 text-sm shadow-card">
             {(['havener', 'owner'] as const).map((option) => (
               <Link
                 key={option}
@@ -256,7 +256,7 @@ export default async function CalendarPage({
             <>
               <form
                 action={saveDefaultCapacityAction}
-                className="rounded-2xl border border-espresso-700/8 bg-white p-4 shadow-card"
+                className="rounded-2xl border border-espresso-700/8 bg-hv-paper p-4 shadow-card"
               >
                 <input type="hidden" name="month" value={month} />
                 <h2 className="text-sm font-semibold text-espresso-700">Default spaces</h2>
@@ -279,7 +279,7 @@ export default async function CalendarPage({
                         min={0}
                         max={50}
                         defaultValue={defaults.get(service.service_type) ?? generalMax}
-                        className="w-16 rounded-lg border border-espresso-700/15 bg-white px-2 py-1 text-right text-sm"
+                        className="w-16 rounded-lg border border-espresso-700/15 bg-hv-paper px-2 py-1 text-right text-sm"
                       />
                     </label>
                   ))}
@@ -289,7 +289,7 @@ export default async function CalendarPage({
                 </Button>
               </form>
 
-              <div className="space-y-2 rounded-2xl border border-espresso-700/8 bg-white p-4 text-sm shadow-card">
+              <div className="space-y-2 rounded-2xl border border-espresso-700/8 bg-hv-paper p-4 text-sm shadow-card">
                 <Link
                   href="/dashboard/havener/availability"
                   className="block text-gold-600 hover:text-gold-700"
@@ -305,7 +305,7 @@ export default async function CalendarPage({
               </div>
             </>
           ) : (
-            <div className="rounded-2xl border border-espresso-700/8 bg-white p-4 text-sm text-espresso-600 shadow-card">
+            <div className="rounded-2xl border border-espresso-700/8 bg-hv-paper p-4 text-sm text-espresso-600 shadow-card">
               Your bookings and meet &amp; greets by day.
               <Link
                 href="/search"
@@ -324,28 +324,28 @@ export default async function CalendarPage({
             <div className="flex items-center gap-2 text-sm">
               <Link
                 href={baseQuery({}).replace(`month=${month}`, `month=${today.slice(0, 7)}`)}
-                className="rounded-full border border-espresso-700/15 px-3 py-1 text-espresso-700 hover:bg-white"
+                className="rounded-full border border-espresso-700/15 px-3 py-1 text-espresso-700 hover:bg-hv-paper"
               >
                 Today
               </Link>
               <Link
                 href={baseQuery({}).replace(`month=${month}`, `month=${shiftMonth(month, -1)}`)}
                 aria-label="Previous month"
-                className="rounded-full border border-espresso-700/15 px-3 py-1 text-espresso-700 hover:bg-white"
+                className="rounded-full border border-espresso-700/15 px-3 py-1 text-espresso-700 hover:bg-hv-paper"
               >
                 ←
               </Link>
               <Link
                 href={baseQuery({}).replace(`month=${month}`, `month=${shiftMonth(month, 1)}`)}
                 aria-label="Next month"
-                className="rounded-full border border-espresso-700/15 px-3 py-1 text-espresso-700 hover:bg-white"
+                className="rounded-full border border-espresso-700/15 px-3 py-1 text-espresso-700 hover:bg-hv-paper"
               >
                 →
               </Link>
             </div>
           </div>
 
-          <div className="overflow-x-auto rounded-2xl border border-espresso-700/10 bg-white shadow-card">
+          <div className="overflow-x-auto rounded-2xl border border-espresso-700/10 bg-hv-paper shadow-card">
             <div className="grid min-w-[700px] grid-cols-7">
               {WEEKDAYS.map((weekday) => (
                 <div
@@ -377,7 +377,7 @@ export default async function CalendarPage({
                     key={day}
                     href={baseQuery({ day })}
                     className={cn(
-                      'min-h-[7rem] border-b border-r border-espresso-700/8 p-1.5 text-[11px] leading-snug transition-colors hover:bg-gold-50',
+                      'min-h-[7rem] border-b border-r border-espresso-700/8 p-1.5 text-[13px] leading-snug transition-colors hover:bg-gold-50',
                       isSelected && 'bg-gold-50 ring-2 ring-inset ring-gold-500'
                     )}
                   >
@@ -451,7 +451,7 @@ export default async function CalendarPage({
           {asHavener && selectedDay && (
             <form
               action={saveCapacityAction}
-              className="mt-6 rounded-2xl border border-espresso-700/10 bg-white p-5 shadow-card"
+              className="mt-6 rounded-2xl border border-espresso-700/10 bg-hv-paper p-5 shadow-card"
             >
               <input type="hidden" name="month" value={month} />
               <div className="flex items-start justify-between gap-3">
@@ -495,7 +495,7 @@ export default async function CalendarPage({
                         max={50}
                         defaultValue={cap.spaces}
                         aria-label={`${SERVICE_BY_TYPE[service.service_type].pickerName} spaces`}
-                        className="w-20 rounded-lg border border-espresso-700/15 bg-white px-3 py-1.5 text-right text-sm"
+                        className="w-20 rounded-lg border border-espresso-700/15 bg-hv-paper px-3 py-1.5 text-right text-sm"
                       />
                     </div>
                   );

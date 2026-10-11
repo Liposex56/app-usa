@@ -12,7 +12,13 @@ export function Curl({ className = '' }: { className?: string }) {
   );
 }
 
-export function HavenrLogo({ className = '' }: { className?: string }) {
+export function HavenrLogo({
+  className = '',
+  style,
+}: {
+  className?: string;
+  style?: React.CSSProperties;
+}) {
   return (
     <span
       className={cn(
@@ -21,6 +27,7 @@ export function HavenrLogo({ className = '' }: { className?: string }) {
       )}
       aria-label="Havenr"
       role="img"
+      style={style}
     >
       <span aria-hidden="true">hav</span>
       <Curl className="mx-[0.04em] h-[1.02em] w-auto translate-y-[0.06em]" />

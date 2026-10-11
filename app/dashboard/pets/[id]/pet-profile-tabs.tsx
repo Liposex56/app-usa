@@ -134,7 +134,7 @@ export function PetProfileTabs({ pet }: { pet: PetRow }) {
               {pet.behavior_notes}
             </p>
           ) : (
-            <p className="rounded-2xl border border-espresso-700/10 bg-white p-8 text-center text-sm text-espresso-500">
+            <p className="rounded-2xl border border-espresso-700/10 bg-hv-paper p-8 text-center text-sm text-espresso-500">
               Nothing added yet. Add a note about {pet.name} from the edit
               screen.
             </p>
@@ -150,7 +150,7 @@ export function PetProfileTabs({ pet }: { pet: PetRow }) {
           <p className="mt-1 text-sm text-espresso-500">
             Read feedback from past Haveners who watched {pet.name}.
           </p>
-          <p className="mt-4 flex items-center gap-2.5 rounded-2xl border border-espresso-700/10 bg-white p-6 text-sm text-espresso-500">
+          <p className="mt-4 flex items-center gap-2.5 rounded-2xl border border-espresso-700/10 bg-hv-paper p-6 text-sm text-espresso-500">
             <IconChat className="h-4 w-4 shrink-0" />
             No sitter feedback yet.
           </p>
@@ -309,7 +309,7 @@ export function PetProfileTabs({ pet }: { pet: PetRow }) {
             <h2 className="text-sm font-semibold uppercase tracking-wider text-espresso-500/70">
               Photo gallery
             </h2>
-            <p className="mt-2 rounded-2xl border border-espresso-700/10 bg-white p-6 text-center text-sm text-espresso-500">
+            <p className="mt-2 rounded-2xl border border-espresso-700/10 bg-hv-paper p-6 text-center text-sm text-espresso-500">
               No photos yet.
             </p>
           </section>

@@ -20,21 +20,21 @@ export default function AuthLayout({
     <div className="min-h-screen lg:grid lg:grid-cols-[1fr_1.05fr]">
       {/* Brand panel */}
       <aside className="relative hidden flex-col justify-between bg-espresso-700 p-12 lg:flex">
-        <LogoLink tone="cream" width={132} />
+        <LogoLink tone="cream" width={156} />
 
         <div>
-          <h2 className="max-w-sm text-3xl font-light leading-tight text-cream">
-            Pet care you can actually trust.
+          <h2 className="max-w-md text-[clamp(38px,3.6vw,56px)] leading-[0.95] text-hv-cream">
+            Pet care you can actually <span className="text-hv-sky">trust.</span>
           </h2>
           <ul className="mt-9 space-y-4">
             {POINTS.map((point) => (
               <li key={point} className="flex gap-3">
                 <IconCheck
-                  width={19}
-                  height={19}
-                  className="mt-0.5 shrink-0 text-gold-400"
+                  width={20}
+                  height={20}
+                  className="mt-1 shrink-0 text-hv-sky"
                 />
-                <span className="text-sm leading-relaxed text-cream/70">
+                <span className="text-[19px] font-medium leading-snug text-cream/80">
                   {point}
                 </span>
               </li>
@@ -53,11 +53,11 @@ export default function AuthLayout({
 
       {/* Form panel */}
       <main className="flex min-h-screen flex-col bg-bone">
-        <div className="flex items-center justify-between p-6 lg:hidden">
-          <LogoLink width={110} />
+        <div className="flex h-14 items-center justify-between bg-hv-ink px-5 lg:hidden">
+          <LogoLink tone="cream" width={140} />
           <Link
             href="/"
-            className="text-sm text-espresso-500 hover:text-espresso-700"
+            className="text-[17px] font-semibold text-hv-cream hover:opacity-70"
           >
             Back to site
           </Link>

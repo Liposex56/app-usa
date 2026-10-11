@@ -335,7 +335,7 @@ export function SitterProfileTabs({
 
             {homeMedia.length > 0 && <HomeGallery media={homeMedia} />}
             {homeMedia.length === 0 && isOwnProfile && (
-              <section className="rounded-2xl border border-dashed border-espresso-700/15 bg-white p-5">
+              <section className="rounded-2xl border border-dashed border-espresso-700/15 bg-hv-paper p-5">
                 <h2 className="text-lg font-semibold text-espresso-700">Meet the home</h2>
                 <p className="mt-1 text-sm text-espresso-500">
                   Owners choosing boarding want to see where their pet will
@@ -377,14 +377,14 @@ export function SitterProfileTabs({
         {tab === 'reviews' && (
           <div className="mt-8 space-y-4">
             {reviews.length === 0 ? (
-              <p className="rounded-2xl border border-espresso-700/10 bg-white p-8 text-center text-sm text-espresso-500">
+              <p className="rounded-2xl border border-espresso-700/10 bg-hv-paper p-8 text-center text-sm text-espresso-500">
                 No reviews yet.
               </p>
             ) : (
               reviews.map((review) => (
                 <div
                   key={review.id}
-                  className="rounded-2xl border border-espresso-700/8 bg-white p-5"
+                  className="rounded-2xl border border-espresso-700/8 bg-hv-paper p-5"
                 >
                   <div className="flex items-center gap-3">
                     <div className="h-9 w-9 shrink-0 overflow-hidden rounded-full bg-sky-100">
@@ -434,14 +434,14 @@ export function SitterProfileTabs({
               Prices include all fees.
             </p>
             {services.length === 0 && (
-              <p className="rounded-2xl border border-espresso-700/10 bg-white p-8 text-center text-sm text-espresso-500">
+              <p className="rounded-2xl border border-espresso-700/10 bg-hv-paper p-8 text-center text-sm text-espresso-500">
                 This Havener hasn&rsquo;t published any services yet.
               </p>
             )}
             {services.map((service) => (
               <div
                 key={service.id}
-                className="rounded-2xl border border-espresso-700/10 bg-white p-5"
+                className="rounded-2xl border border-espresso-700/10 bg-hv-paper p-5"
               >
                 <div className="flex items-center justify-between">
                   <p className="font-medium text-espresso-700">

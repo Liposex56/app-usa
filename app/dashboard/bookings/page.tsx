@@ -44,7 +44,7 @@ export default async function OwnerBookingsPage({
         ← Back to dashboard
       </Link>
       <div className="mt-6 flex flex-wrap items-end justify-between gap-3">
-        <h1 className="text-3xl">{showArchived ? 'Archived bookings' : 'My bookings'}</h1>
+        <h1 className="text-[clamp(34px,3.4vw,46px)] leading-none">{showArchived ? 'Archived bookings' : 'My bookings'}</h1>
         <Link
           href={showArchived ? '/dashboard/bookings' : '/dashboard/bookings?archived=1'}
           className="text-sm font-medium text-gold-600 hover:text-gold-700"
@@ -54,7 +54,7 @@ export default async function OwnerBookingsPage({
       </div>
 
       {bookings.length === 0 ? (
-        <p className="mt-8 rounded-3xl border border-dashed border-espresso-700/15 bg-white p-10 text-center text-sm text-espresso-500">
+        <p className="mt-8 rounded-3xl border border-dashed border-espresso-700/15 bg-hv-paper p-10 text-center text-sm text-espresso-500">
           {showArchived ? (
             'Nothing archived.'
           ) : (
@@ -74,7 +74,7 @@ export default async function OwnerBookingsPage({
               <Link
                 key={booking.id}
                 href={`/dashboard/bookings/${booking.id}`}
-                className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-espresso-700/8 bg-white p-5 shadow-card transition-colors hover:border-gold-500/40"
+                className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-espresso-700/8 bg-hv-paper p-5 shadow-card transition-colors hover:border-gold-500/40"
               >
                 <div>
                   <p className="font-medium text-espresso-700">

@@ -48,7 +48,7 @@ export default async function AdminInsurancePage() {
 
   if (rows.length === 0) {
     return (
-      <p className="rounded-2xl border border-espresso-700/10 bg-white p-8 text-center text-sm text-espresso-500">
+      <p className="rounded-2xl border border-espresso-700/10 bg-hv-paper p-8 text-center text-sm text-espresso-500">
         Ningún Havener ha enviado información de seguro todavía.
       </p>
     );
@@ -64,7 +64,7 @@ export default async function AdminInsurancePage() {
         return (
           <div
             key={row.sitter_id}
-            className="flex flex-col gap-4 rounded-2xl border border-espresso-700/10 bg-white p-5 sm:flex-row sm:items-start sm:justify-between"
+            className="flex flex-col gap-4 rounded-2xl border border-espresso-700/10 bg-hv-paper p-5 sm:flex-row sm:items-start sm:justify-between"
           >
             <div className="space-y-1.5">
               <div className="flex items-center gap-2">

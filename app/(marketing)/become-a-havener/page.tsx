@@ -44,20 +44,20 @@ export default function BecomeAHavenerPage() {
       <section className="bg-espresso-700">
         <div className="container-page py-20 sm:py-24">
           <div className="max-w-2xl">
-            <p className="eyebrow text-cream/55">Become a Havener</p>
-            <h1 className="mt-4 text-4xl font-light leading-[1.1] text-cream sm:text-5xl">
+            <p className="eyebrow text-hv-sky">Become a Havener</p>
+            <h1 className="mt-4 text-[clamp(42px,6vw,84px)] leading-[0.95] text-hv-cream">
               Get paid to do what you’d probably do anyway.
             </h1>
-            <p className="mt-6 text-lg leading-relaxed text-cream/70">
+            <p className="mt-6 text-[clamp(19px,1.6vw,23px)] font-medium leading-snug text-cream/80">
               Set your own rates, your own calendar and your own rules. We
               bring you the bookings, handle the payments, and make sure the
               pets who arrive are ones you actually said yes to.
             </p>
             <div className="mt-9 flex flex-wrap gap-3">
-              <ButtonLink href="/signup?role=havener" size="lg">
+              <ButtonLink href="/signup?role=havener" variant="secondary" size="lg">
                 Start your application
               </ButtonLink>
-              <ButtonLink href="#requirements" variant="secondary" size="lg">
+              <ButtonLink href="#requirements" variant="light" size="lg">
                 See the requirements
               </ButtonLink>
             </div>
@@ -74,7 +74,7 @@ export default function BecomeAHavenerPage() {
           {PERKS.map((perk) => (
             <div
               key={perk.title}
-              className="rounded-3xl border border-espresso-700/8 bg-white p-7 shadow-card"
+              className="rounded-3xl border border-espresso-700/8 bg-hv-paper p-7 shadow-card"
             >
               <span className="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-cream text-olive-600">
                 <perk.icon />
@@ -95,7 +95,7 @@ export default function BecomeAHavenerPage() {
             {SERVICES.map((service) => (
               <span
                 key={service.slug}
-                className="rounded-full bg-white px-4 py-2 text-sm font-medium text-espresso-700"
+                className="rounded-full bg-hv-paper px-4 py-2 text-sm font-medium text-espresso-700"
               >
                 {service.name}
               </span>
@@ -126,7 +126,7 @@ export default function BecomeAHavenerPage() {
                     height={20}
                     className="mt-0.5 shrink-0 text-gold-500"
                   />
-                  <span className="text-[15px] leading-relaxed text-espresso-600">
+                  <span className="text-[17px] leading-relaxed text-espresso-600">
                     {item}
                   </span>
                 </li>
@@ -148,7 +148,7 @@ export default function BecomeAHavenerPage() {
       <section className="bg-cream">
         <div className="container-page py-20 text-center">
           <h2 className="text-3xl">Start your application</h2>
-          <p className="mx-auto mt-4 max-w-lg text-[17px] leading-relaxed text-espresso-600/80">
+          <p className="mx-auto mt-4 max-w-lg text-[19px] leading-relaxed text-espresso-600/80">
             Create your account, build your profile, and submit for review. You
             can save and come back at any point.
           </p>

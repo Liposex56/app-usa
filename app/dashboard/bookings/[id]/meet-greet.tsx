@@ -75,7 +75,7 @@ function ProposeForm({
             name="date"
             required
             min={new Date().toISOString().slice(0, 10)}
-            className="mt-1 w-full rounded-lg border border-espresso-700/15 bg-white p-2 text-sm text-espresso-700 focus:border-gold-500 focus:outline-none"
+            className="mt-1 w-full rounded-lg border border-espresso-700/15 bg-hv-paper p-2 text-sm text-espresso-700 focus:border-gold-500 focus:outline-none"
           />
         </label>
         <label className="block text-xs font-medium text-espresso-600">
@@ -127,7 +127,7 @@ function MeetGreetCard({
   const status = STATUS_COPY[meetGreet.status];
 
   return (
-    <div className="rounded-2xl border border-espresso-700/8 bg-white p-4">
+    <div className="rounded-2xl border border-espresso-700/8 bg-hv-paper p-4">
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div>
           <p className="text-sm font-medium text-espresso-700">

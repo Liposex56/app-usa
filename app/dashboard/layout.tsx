@@ -1,5 +1,4 @@
-import Link from 'next/link';
-
+import { DashboardNav } from '@/components/dashboard-nav';
 import { LogoLink } from '@/components/logo';
 import { requireProfile } from '@/lib/auth';
 import { createClient } from '@/lib/supabase/server';
@@ -19,80 +18,33 @@ export default async function DashboardLayout({
     .maybeSingle();
   const isStaff = Boolean(staffRow);
 
+  const links = [
+    { href: '/dashboard', label: 'Dashboard' },
+    ...(profile.is_owner
+      ? [
+          { href: '/dashboard/pets', label: 'My pets' },
+          { href: '/dashboard/bookings', label: 'My bookings' },
+        ]
+      : []),
+    ...(profile.is_havener
+      ? [
+          { href: '/dashboard/havener', label: 'Havener profile' },
+          { href: '/dashboard/havener/bookings', label: 'Booking requests' },
+        ]
+      : []),
+    { href: '/dashboard/calendar', label: 'Calendar' },
+    ...(isStaff ? [{ href: '/dashboard/admin', label: 'Panel administrativo' }] : []),
+  ];
+
   return (
     <div className="min-h-screen bg-bone">
-      <header className="border-b border-espresso-700/8 bg-bone/85 backdrop-blur">
-        <div className="container-page flex h-16 items-center justify-between gap-6">
-          <LogoLink width={118} />
-
-          <nav className="hidden items-center gap-6 md:flex">
-            <Link
-              href="/dashboard"
-              className="text-sm font-medium text-espresso-700"
-            >
-              Dashboard
-            </Link>
-            {profile.is_owner && (
-              <Link
-                href="/dashboard/pets"
-                className="text-sm text-espresso-500 hover:text-espresso-700"
-              >
-                My pets
-              </Link>
-            )}
-            {profile.is_owner && (
-              <Link
-                href="/dashboard/bookings"
-                className="text-sm text-espresso-500 hover:text-espresso-700"
-              >
-                My bookings
-              </Link>
-            )}
-            {profile.is_havener && (
-              <Link
-                href="/dashboard/havener"
-                className="text-sm text-espresso-500 hover:text-espresso-700"
-              >
-                Havener profile
-              </Link>
-            )}
-            {profile.is_havener && (
-              <Link
-                href="/dashboard/havener/bookings"
-                className="text-sm text-espresso-500 hover:text-espresso-700"
-              >
-                Booking requests
-              </Link>
-            )}
-            <Link
-              href="/dashboard/calendar"
-              className="text-sm text-espresso-500 hover:text-espresso-700"
-            >
-              Calendar
-            </Link>
-            {isStaff && (
-              <Link
-                href="/dashboard/admin"
-                className="text-sm text-espresso-500 hover:text-espresso-700"
-              >
-                Panel administrativo
-              </Link>
-            )}
-          </nav>
-
-          <div className="flex items-center gap-4">
-            <span className="hidden text-sm text-espresso-500 sm:inline">
-              {profile.display_name ?? profile.first_name ?? 'Your account'}
-            </span>
-            <form action="/auth/signout" method="post">
-              <button
-                type="submit"
-                className="rounded-full border border-espresso-700/15 px-4 py-1.5 text-sm text-espresso-600 transition-colors hover:border-espresso-700/30 hover:text-espresso-700"
-              >
-                Log out
-              </button>
-            </form>
-          </div>
+      <header className="sticky top-0 z-40 bg-hv-ink text-hv-cream">
+        <div className="relative mx-auto flex h-14 max-w-[1440px] items-center px-5 lg:px-[clamp(20px,4.6vw,66px)]">
+          <LogoLink tone="cream" width={156} />
+          <DashboardNav
+            links={links}
+            name={profile.display_name ?? profile.first_name ?? 'Your account'}
+          />
         </div>
       </header>
 

@@ -65,7 +65,7 @@ export function OnboardingHeading({
   return (
     <div className="mb-8">
       <h1 className="text-3xl leading-tight">{title}</h1>
-      <p className="mt-3 text-[15px] leading-relaxed text-espresso-500">
+      <p className="mt-3 text-[17px] leading-relaxed text-espresso-500">
         {description}
       </p>
     </div>
@@ -82,7 +82,7 @@ export function Fieldset({
   children: React.ReactNode;
 }) {
   return (
-    <fieldset className="rounded-3xl border border-espresso-700/8 bg-white p-6 shadow-card sm:p-7">
+    <fieldset className="rounded-3xl border border-espresso-700/8 bg-hv-paper p-6 shadow-card sm:p-7">
       <legend className="px-2 text-sm font-semibold uppercase tracking-[0.12em] text-olive-500">
         {legend}
       </legend>

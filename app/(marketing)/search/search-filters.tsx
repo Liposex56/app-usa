@@ -19,7 +19,7 @@ export function SearchFilters({ defaults }: { defaults: SearchDefaults }) {
   const today = new Date().toISOString().slice(0, 10);
 
   return (
-    <form className="mt-8 grid gap-4 rounded-3xl border border-espresso-700/8 bg-white p-6 shadow-card sm:grid-cols-2 lg:grid-cols-4">
+    <form className="mt-8 grid gap-4 rounded-3xl border border-espresso-700/8 bg-hv-paper p-6 shadow-card sm:grid-cols-2 lg:grid-cols-4">
       <Field
         label="Start date"
         htmlFor="startDate"

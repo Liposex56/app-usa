@@ -1,43 +1,24 @@
-import Image from 'next/image';
 import Link from 'next/link';
 
+import { HavenrLogo } from '@/components/home/logo';
 import { cn } from '@/lib/utils';
 
 type LogoProps = {
   /** `dark` = espresso lettering for light backgrounds. */
   tone?: 'dark' | 'cream';
-  /** `full` includes the dachshund above the wordmark. */
+  /** Kept for compatibility: the wordmark is the same everywhere now. */
   variant?: 'wordmark' | 'full';
   className?: string;
+  /** Approximate width in px; sets the size of the lettering. */
   width?: number;
 };
 
-const SRC = {
-  'wordmark-dark': '/brand/logo-wordmark-dark.png',
-  'wordmark-cream': '/brand/logo-wordmark-cream.png',
-  'full-dark': '/brand/logo-full-dark.png',
-  'full-cream': '/brand/logo-full-cream.png',
-} as const;
-
-/** Aspect ratios of the delivered brand files. */
-const RATIO = { wordmark: 1838 / 438, full: 1838 / 869 };
-
-export function Logo({
-  tone = 'dark',
-  variant = 'wordmark',
-  className,
-  width = 148,
-}: LogoProps) {
-  const src = SRC[`${variant}-${tone}` as keyof typeof SRC];
+/** The HAVENR wordmark of the landing, so every page carries the same logo. */
+export function Logo({ tone = 'dark', className, width = 148 }: LogoProps) {
   return (
-    <Image
-      src={src}
-      alt="Havenr"
-      width={width}
-      height={Math.round(width / RATIO[variant])}
-      priority
-      className={cn('h-auto w-auto', className)}
-      style={{ width, height: 'auto' }}
+    <HavenrLogo
+      className={cn(tone === 'cream' ? 'text-hv-cream' : 'text-hv-ink', className)}
+      style={{ fontSize: Math.round(width / 3.9) }}
     />
   );
 }

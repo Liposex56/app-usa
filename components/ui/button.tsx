@@ -3,26 +3,27 @@ import type { ButtonHTMLAttributes, ReactNode } from 'react';
 
 import { cn } from '@/lib/utils';
 
-type Variant = 'primary' | 'secondary' | 'ghost' | 'dark';
+type Variant = 'primary' | 'secondary' | 'ghost' | 'dark' | 'light';
 type Size = 'sm' | 'md' | 'lg';
 
+// Same buttons as the landing: espresso pill (primary), sky pill (secondary).
 const VARIANTS: Record<Variant, string> = {
-  primary:
-    'bg-gold-500 text-white hover:bg-gold-600 active:bg-gold-700 shadow-card',
-  secondary:
-    'bg-white text-espresso-700 border border-espresso-700/15 hover:border-espresso-700/30 hover:bg-white',
+  primary: 'bg-hv-ink text-hv-cream hover:bg-hv-cocoa active:bg-hv-cocoa',
+  secondary: 'bg-hv-sky text-hv-ink hover:bg-[#acd0f0] active:bg-[#acd0f0]',
   ghost: 'text-espresso-700 hover:bg-espresso-700/5',
-  dark: 'bg-espresso-700 text-cream hover:bg-espresso-600',
+  dark: 'bg-hv-ink text-hv-cream hover:bg-hv-cocoa active:bg-hv-cocoa',
+  // For espresso backgrounds.
+  light: 'bg-hv-cream text-hv-ink hover:bg-white active:bg-white',
 };
 
 const SIZES: Record<Size, string> = {
-  sm: 'h-9 px-4 text-sm',
-  md: 'h-11 px-5 text-[15px]',
-  lg: 'h-12 px-7 text-base',
+  sm: 'h-9 px-5 text-[16px]',
+  md: 'h-11 px-6 text-[18px]',
+  lg: 'h-12 px-8 text-[19px]',
 };
 
 const BASE =
-  'inline-flex items-center justify-center gap-2 rounded-full font-medium ' +
+  'inline-flex items-center justify-center gap-2 rounded-full font-semibold ' +
   'transition-colors duration-150 disabled:cursor-not-allowed disabled:opacity-55 ' +
   'whitespace-nowrap';
 

@@ -60,7 +60,7 @@ export function ProfileReviewButtons({
             required
             rows={2}
             placeholder="Qué debe corregir el Havener"
-            className="w-full rounded-lg border border-espresso-700/15 bg-white p-2 text-sm text-espresso-700 focus:border-gold-500 focus:outline-none"
+            className="w-full rounded-lg border border-espresso-700/15 bg-hv-paper p-2 text-sm text-espresso-700 focus:border-gold-500 focus:outline-none"
           />
           <button
             type="submit"

@@ -104,14 +104,14 @@ export function OwnerProfileTabs({
             Havener feedback ({feedback.length})
           </p>
           {feedback.length === 0 ? (
-            <p className="rounded-2xl border border-dashed border-espresso-700/15 bg-white p-8 text-center text-sm text-espresso-500">
+            <p className="rounded-2xl border border-dashed border-espresso-700/15 bg-hv-paper p-8 text-center text-sm text-espresso-500">
               No Havener feedback yet.
             </p>
           ) : (
             feedback.map((review) => (
               <div
                 key={review.id}
-                className="rounded-2xl border border-espresso-700/8 bg-white p-5"
+                className="rounded-2xl border border-espresso-700/8 bg-hv-paper p-5"
               >
                 <div className="flex items-center justify-between gap-3">
                   <p className="text-sm font-medium text-espresso-700">
@@ -139,7 +139,7 @@ export function OwnerProfileTabs({
             Pets ({pets.length})
           </p>
           {pets.length === 0 ? (
-            <p className="rounded-2xl border border-dashed border-espresso-700/15 bg-white p-8 text-center text-sm text-espresso-500">
+            <p className="rounded-2xl border border-dashed border-espresso-700/15 bg-hv-paper p-8 text-center text-sm text-espresso-500">
               No pets on file yet.
             </p>
           ) : (
@@ -148,7 +148,7 @@ export function OwnerProfileTabs({
               return (
                 <div
                   key={pet.id}
-                  className="flex items-center gap-4 rounded-2xl border border-espresso-700/8 bg-white p-4"
+                  className="flex items-center gap-4 rounded-2xl border border-espresso-700/8 bg-hv-paper p-4"
                 >
                   <div className="h-14 w-14 shrink-0 overflow-hidden rounded-full bg-sky-100">
                     {pet.photo_url ? (

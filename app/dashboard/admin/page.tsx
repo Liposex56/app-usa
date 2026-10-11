@@ -33,7 +33,7 @@ export default async function AdminOverviewPage() {
     <div className="grid gap-6 sm:grid-cols-2">
       <Link
         href="/dashboard/admin/havener-profiles"
-        className="rounded-2xl border border-espresso-700/10 bg-white p-6 shadow-card transition-colors hover:border-gold-500/50"
+        className="rounded-2xl border border-espresso-700/10 bg-hv-paper p-6 shadow-card transition-colors hover:border-gold-500/50"
       >
         <IconShield className="h-6 w-6 text-gold-600" />
         <p className="mt-4 text-2xl font-semibold text-espresso-700">
@@ -47,7 +47,7 @@ export default async function AdminOverviewPage() {
 
       <Link
         href="/dashboard/admin/insurance"
-        className="rounded-2xl border border-espresso-700/10 bg-white p-6 shadow-card transition-colors hover:border-gold-500/50"
+        className="rounded-2xl border border-espresso-700/10 bg-hv-paper p-6 shadow-card transition-colors hover:border-gold-500/50"
       >
         <IconShield className="h-6 w-6 text-gold-600" />
         <p className="mt-4 text-2xl font-semibold text-espresso-700">
@@ -61,7 +61,7 @@ export default async function AdminOverviewPage() {
 
       <Link
         href="/dashboard/admin/settings"
-        className="rounded-2xl border border-espresso-700/10 bg-white p-6 shadow-card transition-colors hover:border-gold-500/50"
+        className="rounded-2xl border border-espresso-700/10 bg-hv-paper p-6 shadow-card transition-colors hover:border-gold-500/50"
       >
         <IconCard className="h-6 w-6 text-gold-600" />
         <p className="mt-4 text-2xl font-semibold text-espresso-700">

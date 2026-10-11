@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 
 import { IconAlert, IconCheck, IconLock, IconShield } from '@/components/icons';
-import { Section, SectionHeading } from '@/components/marketing/section';
+import { PageHero, Section, SectionHeading } from '@/components/marketing/section';
 import { ButtonLink } from '@/components/ui/button';
 
 export const metadata: Metadata = {
@@ -46,13 +46,11 @@ const PRIVACY = [
 export default function TrustAndSafetyPage() {
   return (
     <>
-      <Section tone="cream" className="py-16 sm:py-20">
-        <SectionHeading
-          eyebrow="Trust & safety"
-          title="Earning the keys to your home"
-          description="Leaving a pet with a stranger is a big ask. Here is everything we do before we ask it."
-        />
-      </Section>
+      <PageHero
+        eyebrow="Trust & safety"
+        title="Earning the keys to your home"
+        description="Leaving a pet with a stranger is a big ask. Here is everything we do before we ask it."
+      />
 
       {/* Verification */}
       <Section tone="bone">
@@ -62,7 +60,7 @@ export default function TrustAndSafetyPage() {
               <IconShield width={24} height={24} />
             </span>
             <h2 className="mt-6 text-3xl">Five things we verify</h2>
-            <p className="mt-4 text-[15px] leading-relaxed text-espresso-500">
+            <p className="mt-4 text-[17px] leading-relaxed text-espresso-500">
               A Havener who clears all of these carries the{' '}
               <strong className="font-medium text-espresso-700">
                 Certified Havener
@@ -75,7 +73,7 @@ export default function TrustAndSafetyPage() {
             {CHECKS.map((check) => (
               <div
                 key={check.title}
-                className="rounded-2xl border border-espresso-700/8 bg-white p-6 shadow-card"
+                className="rounded-2xl border border-espresso-700/8 bg-hv-paper p-6 shadow-card"
               >
                 <h3 className="flex items-center gap-2.5 text-lg text-espresso-700">
                   <IconCheck width={19} height={19} className="text-gold-500" />
@@ -113,7 +111,7 @@ export default function TrustAndSafetyPage() {
                   height={20}
                   className="mt-0.5 shrink-0 text-gold-400"
                 />
-                <span className="text-[15px] leading-relaxed text-cream/75">
+                <span className="text-[17px] leading-relaxed text-cream/75">
                   {item}
                 </span>
               </li>

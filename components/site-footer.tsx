@@ -1,6 +1,6 @@
 import Link from 'next/link';
 
-import { Logo } from '@/components/logo';
+import { HavenrLogo } from '@/components/home/logo';
 import { SERVICES } from '@/lib/services';
 
 const COLUMNS = [
@@ -28,11 +28,11 @@ const COLUMNS = [
 
 export function SiteFooter() {
   return (
-    <footer className="bg-espresso-700 text-cream/80">
-      <div className="container-page grid gap-12 py-16 md:grid-cols-[1.4fr_1fr_1fr_1fr]">
+    <footer className="bg-hv-ink text-hv-cream">
+      <div className="mx-auto grid max-w-[1440px] gap-12 px-5 py-16 md:grid-cols-[1.4fr_1fr_1fr_1fr] lg:px-[clamp(20px,4.6vw,66px)]">
         <div className="max-w-xs">
-          <Logo tone="cream" variant="full" width={150} />
-          <p className="mt-5 text-sm leading-relaxed text-cream/60">
+          <HavenrLogo className="text-[40px] text-hv-cream" />
+          <p className="mt-5 text-[17px] font-medium leading-snug text-hv-cream/70">
             Trusted pet care, booked in minutes. Every Havener is background
             checked, interviewed, home verified and insured before they can
             take a booking.
@@ -41,7 +41,7 @@ export function SiteFooter() {
 
         {COLUMNS.map((column) => (
           <div key={column.title}>
-            <h3 className="text-xs font-semibold uppercase tracking-[0.16em] text-cream/45">
+            <h3 className="text-[15px] font-bold uppercase tracking-[0.14em] text-hv-sky">
               {column.title}
             </h3>
             <ul className="mt-4 space-y-2.5">
@@ -49,7 +49,7 @@ export function SiteFooter() {
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="text-sm text-cream/75 transition-colors hover:text-cream"
+                    className="text-[18px] font-medium text-hv-cream/85 transition-colors hover:text-hv-sky"
                   >
                     {link.label}
                   </Link>
@@ -60,8 +60,8 @@ export function SiteFooter() {
         ))}
       </div>
 
-      <div className="border-t border-cream/10">
-        <div className="container-page flex flex-col gap-2 py-6 text-xs text-cream/45 sm:flex-row sm:items-center sm:justify-between">
+      <div className="border-t border-hv-cream/15">
+        <div className="mx-auto flex max-w-[1440px] flex-col gap-2 px-5 py-5 text-[15px] font-medium text-hv-cream/55 sm:flex-row sm:items-center sm:justify-between lg:px-[clamp(20px,4.6vw,66px)]">
           <p>© {new Date().getFullYear()} Havenr. All rights reserved.</p>
           <p>
             Havenr does not sell or share your address, location, bookings or

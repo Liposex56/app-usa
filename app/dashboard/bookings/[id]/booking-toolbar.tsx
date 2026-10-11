@@ -40,7 +40,7 @@ function SafetyTips({ onConfirm, onClose }: { onConfirm: () => void; onClose: ()
       onClick={onClose}
     >
       <div
-        className="w-full max-w-md rounded-2xl bg-white p-6 shadow-lift"
+        className="w-full max-w-md rounded-2xl bg-hv-paper p-6 shadow-lift"
         onClick={(event) => event.stopPropagation()}
       >
         <h2 id="tips-title" className="text-lg font-semibold text-espresso-700">
@@ -156,7 +156,7 @@ function ModifyPanel({
       </div>
 
       {defaults.allowsTransport && (
-        <label className="flex cursor-pointer items-center justify-between gap-4 rounded-xl border border-espresso-700/12 bg-white px-4 py-3 text-sm text-espresso-700">
+        <label className="flex cursor-pointer items-center justify-between gap-4 rounded-xl border border-espresso-700/12 bg-hv-paper px-4 py-3 text-sm text-espresso-700">
           Sitter pick-up and drop-off
           <input
             type="checkbox"
@@ -210,7 +210,7 @@ function ReportPanel({ bookingId, onDone }: { bookingId: string; onDone: () => v
           required
           rows={3}
           maxLength={2000}
-          className="mt-1 w-full rounded-lg border border-espresso-700/15 bg-white p-2.5 text-sm text-espresso-700 focus:border-gold-500 focus:outline-none"
+          className="mt-1 w-full rounded-lg border border-espresso-700/15 bg-hv-paper p-2.5 text-sm text-espresso-700 focus:border-gold-500 focus:outline-none"
         />
       </label>
       <div className="flex gap-2">
