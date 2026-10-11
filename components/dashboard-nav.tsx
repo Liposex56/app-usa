@@ -4,9 +4,8 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
+import type { NavLink } from '@/lib/nav';
 import { cn } from '@/lib/utils';
-
-type NavLink = { href: string; label: string };
 
 /**
  * Top navigation of the signed-in area. Same espresso bar as the public site;
@@ -26,8 +25,10 @@ export function DashboardNav({
   useEffect(() => setOpen(false), [pathname]);
 
   // The most specific link that prefixes the current path is the active one.
+  const matches = (prefix: string) =>
+    pathname === prefix || pathname.startsWith(`${prefix}/`);
   const active = links
-    .filter((l) => pathname === l.href || pathname.startsWith(`${l.href}/`))
+    .filter((l) => [l.href, ...(l.also ?? [])].some(matches))
     .sort((a, b) => b.href.length - a.href.length)[0]?.href;
 
   const signOut = (
@@ -43,7 +44,7 @@ export function DashboardNav({
 
   return (
     <>
-      <nav className="ml-6 hidden items-center gap-[clamp(1rem,2.2vw,2.25rem)] text-[clamp(16px,1.25vw,19px)] font-semibold whitespace-nowrap xl:flex">
+      <nav className="ml-6 hidden items-center gap-[clamp(0.9rem,1.7vw,2rem)] text-[clamp(15px,1.15vw,18px)] font-semibold whitespace-nowrap xl:flex">
         {links.map((link) => (
           <Link
             key={link.href}

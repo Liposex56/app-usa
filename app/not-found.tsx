@@ -1,11 +1,14 @@
 import Image from 'next/image';
 import Link from 'next/link';
 
+import { AppHeader } from '@/components/app-header';
 import { ButtonLink } from '@/components/ui/button';
 
 export default function NotFound() {
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-bone px-6 text-center">
+    <div className="flex min-h-screen flex-col bg-bone">
+      <AppHeader />
+      <div className="flex flex-1 flex-col items-center justify-center px-6 py-16 text-center">
       <Image
         src="/brand/mark-dog.png"
         alt=""
@@ -30,6 +33,7 @@ export default function NotFound() {
       >
         Go to my dashboard
       </Link>
+      </div>
     </div>
   );
 }

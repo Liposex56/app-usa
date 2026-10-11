@@ -1,8 +1,7 @@
 import { Nanum_Pen_Script } from 'next/font/google';
 import Link from 'next/link';
 
-import { SiteHeader } from '@/components/site-header';
-import { createClient } from '@/lib/supabase/server';
+import { AppHeader } from '@/components/app-header';
 
 /** The hand-written notes of the hero and the closing illustration. */
 const hand = Nanum_Pen_Script({
@@ -19,16 +18,11 @@ const LEGAL = [
 ];
 
 export default async function HomeLayout({ children }: { children: React.ReactNode }) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
   return (
     <div
       className={`${hand.variable} hv-home flex min-h-screen flex-col bg-hv-cream font-display text-hv-ink antialiased`}
     >
-      <SiteHeader isSignedIn={Boolean(user)} />
+      <AppHeader />
       <main className="flex-1 overflow-x-clip">{children}</main>
 
       {/* Slim legal strip — the landing design ends with the sand banner. */}
