@@ -12,8 +12,10 @@ import type {
   WalkLocationRow,
 } from '@/lib/database.types';
 import { requireProfile } from '@/lib/auth';
+import { clockRange } from '@/lib/booking-notes';
 import { bookingPhase } from '@/lib/booking-phase';
-import { serviceName } from '@/lib/services';
+import { bookingQuantity } from '@/lib/pricing';
+import { SERVICE_BY_TYPE, serviceName } from '@/lib/services';
 import {
   SERVICE_BUCKET,
   completionRequirements,
@@ -25,6 +27,7 @@ import { formatCents, formatDate } from '@/lib/utils';
 
 import { sendMessageAction } from '../actions';
 import { BookingActions } from './booking-actions';
+import { BookingTabs, type BookingPanel } from './booking-tabs';
 import { BookingToolbar } from './booking-toolbar';
 import { CallWindow } from './call-window';
 import { Chat } from './chat';
@@ -37,6 +40,45 @@ import { WalkMap } from './walk-map';
 import { WalkTracker } from './walk-tracker';
 
 export const metadata: Metadata = { title: 'Booking' };
+
+const UNIT_LABEL: Record<string, string> = {
+  night: 'night',
+  day: 'day',
+  walk: 'walk',
+  visit: 'visit',
+};
+
+function Section({
+  title,
+  children,
+}: {
+  title: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="border-t border-espresso-700/8 px-5 py-4 first:border-t-0">
+      <h3 className="text-xs font-bold uppercase tracking-[0.14em] text-olive-500">{title}</h3>
+      <div className="mt-2 text-[18px] leading-snug text-espresso-700">{children}</div>
+    </div>
+  );
+}
+
+function ChargeRow({
+  label,
+  value,
+  strong,
+}: {
+  label: string;
+  value: string;
+  strong?: boolean;
+}) {
+  return (
+    <div className="flex items-baseline justify-between gap-4">
+      <span className={strong ? 'font-semibold' : 'text-espresso-600'}>{label}</span>
+      <span className={strong ? 'text-xl font-bold' : 'font-medium'}>{value}</span>
+    </div>
+  );
+}
 
 export default async function BookingDetailPage({
   params,
@@ -112,20 +154,22 @@ export default async function BookingDetailPage({
   const meetGreets = (meetGreetRows ?? []) as MeetGreetRow[];
   const walkLocations = (walkLocationRows ?? []) as WalkLocationRow[];
   const serviceUpdates = (updateRows ?? []) as ServiceUpdateRow[];
+  const myReview = reviews.find((r) => r.reviewer_id === profile.id);
+  const counterpartyId = viewerRole === 'owner' ? booking.sitter_id : booking.owner_id;
 
   // Photos and videos live in a private bucket — signed links, valid long
   // enough to read the page.
   const mediaUrls: Record<string, string> = {};
-  const mediaPaths = serviceUpdates.filter((u) => u.media_path);
-  if (mediaPaths.length > 0) {
+  const withMedia = serviceUpdates.filter((u) => u.media_path);
+  if (withMedia.length > 0) {
     const { data: signed } = await supabase.storage
       .from(SERVICE_BUCKET)
       .createSignedUrls(
-        mediaPaths.map((u) => u.media_path as string),
+        withMedia.map((u) => u.media_path as string),
         60 * 60
       );
     for (const item of signed ?? []) {
-      const update = mediaPaths.find((u) => u.media_path === item.path);
+      const update = withMedia.find((u) => u.media_path === item.path);
       if (update && item.signedUrl) mediaUrls[update.id] = item.signedUrl;
     }
   }
@@ -134,138 +178,202 @@ export default async function BookingDetailPage({
     serviceUpdates,
     walkLocations.length
   );
-  const myReview = reviews.find((r) => r.reviewer_id === profile.id);
-  const counterpartyId = viewerRole === 'owner' ? booking.sitter_id : booking.owner_id;
 
   const backHref =
     viewerRole === 'owner' ? '/dashboard/bookings' : '/dashboard/havener/bookings';
+  const counterpartyName = counterparty?.display_name ?? '—';
+  const firstName = counterpartyName.split(' ')[0];
+
+  // ---- the request, laid out like a receipt ---------------------------------
+  const definition = SERVICE_BY_TYPE[booking.service_type];
+  const quantity = bookingQuantity(definition.rateUnit, booking.start_date, booking.end_date);
+  const unit = UNIT_LABEL[definition.rateUnit] ?? definition.rateUnit;
+  const baseCents = booking.base_rate_cents * quantity;
+  const extraPetsCents =
+    Math.max(0, pets.length - 1) * booking.additional_pet_rate_cents * quantity;
+  const transportCents = Math.max(0, booking.extra_fees_cents - extraPetsCents);
+  const dropoff = clockRange(booking.dropoff_from, booking.dropoff_to);
+  const pickup = clockRange(booking.pickup_from, booking.pickup_to);
+
+  // Until a booking is confirmed a Havener can't open the pet's profile, so
+  // fall back to the line the request itself carried.
+  const petsLine =
+    pets.length > 0
+      ? pets
+          .map((p) =>
+            [p.name, p.species === 'dog' ? 'Dog' : 'Cat', p.breed].filter(Boolean).join(' · ')
+          )
+          .join('; ')
+      : (booking.owner_notes
+          ?.split('\n')
+          .find((line) => line.startsWith('Pets:'))
+          ?.replace('Pets: ', '') ?? '—');
+
+  const showUpdates =
+    booking.status === 'in_progress' ||
+    booking.status === 'completed' ||
+    serviceUpdates.length > 0;
+  const walking = booking.service_type === 'dog_walking';
+
+  const panels: BookingPanel[] = [
+    {
+      id: 'messages',
+      label: 'Messages',
+      badge: undefined,
+      content: (
+        <Chat
+          bookingId={booking.id}
+          viewerId={profile.id}
+          initialMessages={messages}
+          sendAction={sendMessageAction.bind(null, booking.id, counterpartyId)}
+          counterpartyName={counterpartyName}
+          counterpartyAvatarUrl={counterparty?.avatar_url ?? null}
+          readOnly={!isParticipant}
+        />
+      ),
+    },
+  ];
+
+  if (showUpdates) {
+    panels.push({
+      id: 'updates',
+      label: 'Service updates',
+      badge: serviceUpdates.length || undefined,
+      content: (
+        <div className="min-h-0 flex-1 space-y-5 overflow-y-auto bg-bone/60 p-4 sm:p-6">
+          {walking && (booking.status === 'in_progress' || walkLocations.length > 0) && (
+            <div className="space-y-3">
+              <h2 className="text-lg text-espresso-700">Walk route</h2>
+              {viewerRole === 'sitter' && isParticipant && booking.status === 'in_progress' && (
+                <WalkTracker bookingId={booking.id} />
+              )}
+              <WalkMap
+                bookingId={booking.id}
+                initialLocations={walkLocations}
+                live={booking.status === 'in_progress'}
+              />
+            </div>
+          )}
+
+          {viewerRole === 'sitter' && isParticipant && booking.status === 'in_progress' && (
+            <ServiceLog
+              bookingId={booking.id}
+              sitterId={profile.id}
+              service={booking.service_type}
+              requirements={requirements}
+            />
+          )}
+
+          {(booking.status === 'in_progress' || booking.status === 'completed') && (
+            <ServiceReport
+              bookingId={booking.id}
+              updates={serviceUpdates}
+              mediaUrls={mediaUrls}
+              status={booking.status}
+              startedAt={booking.started_at}
+              completedAt={booking.completed_at}
+              walkMiles={
+                walking && walkLocations.length > 1 ? routeDistanceMiles(walkLocations) : null
+              }
+              canRemove={
+                viewerRole === 'sitter' && isParticipant && booking.status === 'in_progress'
+              }
+            />
+          )}
+        </div>
+      ),
+    });
+  }
+
+  const modifyDefaults = {
+    startDate: booking.start_date,
+    endDate: booking.end_date,
+    dropoffFrom: booking.dropoff_from,
+    dropoffTo: booking.dropoff_to,
+    pickupFrom: booking.pickup_from,
+    pickupTo: booking.pickup_to,
+    wantsPickupDropoff: booking.wants_pickup_dropoff,
+    allowsTransport: booking.service_type === 'boarding' || booking.service_type === 'daycare',
+  };
 
   return (
-    <div className="mx-auto max-w-2xl">
-      <Link href={backHref} className="text-sm text-espresso-500 hover:text-espresso-700">
+    <div className="mx-auto max-w-6xl">
+      <Link href={backHref} className="text-[17px] font-semibold text-espresso-500 hover:text-espresso-700">
         ← Back to bookings
       </Link>
 
-      {/* Compact header — just who, what, and the status. All the "boarding
-          data" (dates, pets, price, payment, cancel/decline reasons) lives
-          behind the "View details" toggle below instead of dominating the
-          page above the chat. */}
-      <div className="mt-6 rounded-3xl border border-espresso-700/8 bg-hv-paper p-5 shadow-card">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <div className="h-11 w-11 shrink-0 overflow-hidden rounded-full bg-sky-100">
-              {counterparty?.avatar_url ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={counterparty.avatar_url}
-                  alt={counterparty.display_name ?? ''}
-                  className="h-full w-full object-cover"
-                />
-              ) : (
-                <div className="flex h-full w-full items-center justify-center text-base font-medium text-espresso-500">
-                  {(counterparty?.display_name ?? '—').slice(0, 1)}
-                </div>
+      <div className="mt-5 grid gap-6 lg:grid-cols-[minmax(300px,380px)_minmax(0,1fr)] lg:items-start">
+        {/* ------------------------------------------------ Request details */}
+        <aside className="overflow-hidden rounded-3xl border border-espresso-700/8 bg-hv-paper shadow-card lg:col-start-1 lg:row-start-1">
+          <div className="px-5 py-5">
+            <span className={`inline-flex rounded-full px-3 py-1 text-sm font-bold ${phase.tone}`}>
+              {phase.label}
+            </span>
+            <h1 className="mt-3 text-[clamp(28px,2.4vw,34px)] leading-[1.05]">
+              {serviceName(booking.service_type)}
+            </h1>
+            {phase.hint && <p className="mt-2 text-[17px] text-olive-600">{phase.hint}</p>}
+          </div>
+
+          <Section title="Service schedule">
+            <p className="font-semibold">
+              {formatDate(booking.start_date)}
+              {booking.end_date && booking.end_date !== booking.start_date
+                ? ` – ${formatDate(booking.end_date)}`
+                : ''}
+            </p>
+            {dropoff && <p className="text-espresso-600">Drop-off {dropoff}</p>}
+            {pickup && <p className="text-espresso-600">Pick-up {pickup}</p>}
+            <p className="text-espresso-600">{definition.where}</p>
+          </Section>
+
+          <Section title="Pets">
+            <p>{petsLine}</p>
+          </Section>
+
+          <Section title="Services & charges">
+            <div className="space-y-1.5">
+              <ChargeRow
+                label={`${serviceName(booking.service_type)} · ${quantity} ${unit}${quantity === 1 ? '' : 's'} × ${formatCents(booking.base_rate_cents)}`}
+                value={formatCents(baseCents)}
+              />
+              {extraPetsCents > 0 && (
+                <ChargeRow label="Additional pets" value={formatCents(extraPetsCents)} />
+              )}
+              {transportCents > 0 && (
+                <ChargeRow label="Pick-up and drop-off" value={formatCents(transportCents)} />
+              )}
+              <div className="border-t border-espresso-700/10 pt-2">
+                <ChargeRow label="Total" value={formatCents(booking.total_cents)} strong />
+              </div>
+              {/* The platform fee isn't part of the booking details; owners only
+                  see it as a percentage at the moment they pay. */}
+              {viewerRole === 'sitter' && (
+                <ChargeRow label="Your earnings" value={formatCents(booking.sitter_payout_cents)} />
               )}
             </div>
-            <div>
-              <p className="font-medium text-espresso-700">
-                {viewerRole === 'sitter' ? (
-                  <Link
-                    href={`/dashboard/bookings/${booking.id}/owner`}
-                    className="hover:underline"
-                  >
-                    {counterparty?.display_name ?? '—'}
-                  </Link>
-                ) : (
-                  counterparty?.display_name ?? '—'
-                )}
-              </p>
-              <p className="text-xs text-espresso-500">
-                {serviceName(booking.service_type)}
-              </p>
-            </div>
-          </div>
-          <span className={`rounded-full px-3 py-1 text-xs font-medium ${phase.tone}`}>
-            {phase.label}
-          </span>
-        </div>
+          </Section>
 
-        {phase.hint && <p className="mt-3 text-sm text-olive-600">{phase.hint}</p>}
-
-        <details
-          id="booking-details"
-          open={booking.status === 'requested'}
-          className="group mt-4 border-t border-espresso-700/8 pt-3"
-        >
-          <summary className="cursor-pointer list-none text-sm font-medium text-gold-600 hover:text-gold-700">
-            <span className="group-open:hidden">View details</span>
-            <span className="hidden group-open:inline">Hide details</span>
-          </summary>
-
-          <dl className="mt-4 grid gap-4 text-sm sm:grid-cols-2">
-            <div>
-              <dt className="text-xs uppercase tracking-wider text-espresso-500/60">
-                Dates
-              </dt>
-              <dd className="mt-1 text-espresso-700">
-                {formatDate(booking.start_date)}
-                {booking.end_date ? ` – ${formatDate(booking.end_date)}` : ''}
-              </dd>
-            </div>
-            <div>
-              <dt className="text-xs uppercase tracking-wider text-espresso-500/60">
-                Pets
-              </dt>
-              <dd className="mt-1 text-espresso-700">
-                {pets.map((p) => p.name).join(', ') || '—'}
-              </dd>
-            </div>
-            <div>
-              <dt className="text-xs uppercase tracking-wider text-espresso-500/60">
-                Total
-              </dt>
-              <dd className="mt-1 text-espresso-700">
-                {formatCents(booking.total_cents)}
-              </dd>
-            </div>
-            {/* The platform fee isn't part of the booking details; owners only
-                see it as a percentage at the moment they pay. */}
-            {viewerRole === 'sitter' && (
-              <div>
-                <dt className="text-xs uppercase tracking-wider text-espresso-500/60">
-                  You earn
-                </dt>
-                <dd className="mt-1 text-espresso-700">
-                  {formatCents(booking.sitter_payout_cents)}
-                </dd>
-              </div>
-            )}
-          </dl>
-
-          {booking.owner_notes && (
-            <div className="mt-4 rounded-xl bg-bone p-4 text-sm text-espresso-600">
-              <p className="text-xs uppercase tracking-wider text-espresso-500/60">
-                Request details
-              </p>
-              <p className="mt-1.5 whitespace-pre-line">{booking.owner_notes}</p>
-            </div>
-          )}
-          {booking.decline_reason && (
-            <p className="mt-4 rounded-xl bg-red-50 p-4 text-sm text-red-800">
-              Declined: {booking.decline_reason}
-            </p>
-          )}
-          {booking.cancellation_reason && (
-            <p className="mt-4 rounded-xl bg-red-50 p-4 text-sm text-red-800">
-              Cancelled: {booking.cancellation_reason}
-            </p>
+          {(booking.decline_reason || booking.cancellation_reason) && (
+            <Section title="Reason">
+              {booking.decline_reason && (
+                <p className="rounded-xl bg-red-50 p-3 text-[17px] text-red-800">
+                  Declined: {booking.decline_reason}
+                </p>
+              )}
+              {booking.cancellation_reason && (
+                <p className="rounded-xl bg-red-50 p-3 text-[17px] text-red-800">
+                  Cancelled: {booking.cancellation_reason}
+                </p>
+              )}
+            </Section>
           )}
 
           {viewerRole === 'owner' &&
             booking.payment_status !== 'paid' &&
             ['confirmed', 'in_progress', 'completed'].includes(booking.status) && (
-              <div className="mt-4 rounded-xl border border-gold-500/30 bg-gold-50 p-4">
-                <p className="text-sm text-espresso-700">
+              <Section title="Payment">
+                <p className="text-[17px]">
                   {booking.payment_status === 'processing'
                     ? 'Payment is processing…'
                     : 'This booking is confirmed but not paid yet.'}
@@ -273,153 +381,144 @@ export default async function BookingDetailPage({
                 {booking.payment_status !== 'processing' && (
                   <div className="mt-3">
                     <PayButton bookingId={booking.id} totalCents={booking.total_cents} />
-                    <p className="mt-2 text-xs text-espresso-500">
+                    <p className="mt-2 text-sm text-espresso-500">
                       Includes a {booking.commission_percent}% Havenr service fee.
                     </p>
                   </div>
                 )}
-              </div>
+              </Section>
             )}
           {viewerRole === 'owner' && booking.payment_status === 'paid' && (
-            <p className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-800">
-              Paid
-            </p>
+            <Section title="Payment">
+              <span className="inline-flex rounded-full bg-green-100 px-3 py-1 text-[16px] font-semibold text-green-800">
+                Paid
+              </span>
+            </Section>
           )}
 
-          <div className="mt-5 border-t border-espresso-700/8 pt-5">
-            <CallWindow
-              bookingId={booking.id}
-              counterpartyName={counterparty?.display_name ?? 'them'}
-              initialValue={booking.call_window}
-            />
-          </div>
-        </details>
-
-        {isParticipant && (
-          <div className="mt-4 border-t border-espresso-700/8 pt-4">
-            <BookingActions
-              bookingId={booking.id}
-              status={booking.status}
-              viewerRole={viewerRole}
-            />
-          </div>
-        )}
-      </div>
-
-      {booking.service_type === 'dog_walking' &&
-        (booking.status === 'in_progress' || walkLocations.length > 0) && (
-          <div className="mt-6 space-y-3">
-            <h2 className="text-lg text-espresso-700">Walk route</h2>
-            {viewerRole === 'sitter' && booking.status === 'in_progress' && (
-              <WalkTracker bookingId={booking.id} />
-            )}
-            <WalkMap
-              bookingId={booking.id}
-              initialLocations={walkLocations}
-              live={booking.status === 'in_progress'}
-            />
-          </div>
-        )}
-
-      {viewerRole === 'sitter' && isParticipant && booking.status === 'in_progress' && (
-        <div className="mt-6">
-          <ServiceLog
-            bookingId={booking.id}
-            sitterId={profile.id}
-            service={booking.service_type}
-            requirements={requirements}
-          />
-        </div>
-      )}
-
-      {(booking.status === 'in_progress' || booking.status === 'completed') && (
-        <div className="mt-6">
-          <ServiceReport
-            bookingId={booking.id}
-            updates={serviceUpdates}
-            mediaUrls={mediaUrls}
-            status={booking.status}
-            startedAt={booking.started_at}
-            completedAt={booking.completed_at}
-            walkMiles={
-              booking.service_type === 'dog_walking' && walkLocations.length > 1
-                ? routeDistanceMiles(walkLocations)
-                : null
-            }
-            canRemove={
-              viewerRole === 'sitter' && isParticipant && booking.status === 'in_progress'
-            }
-          />
-        </div>
-      )}
-
-      {isParticipant && (
-      <div className="mt-6 rounded-3xl border border-espresso-700/8 bg-hv-paper p-4 shadow-card">
-        <BookingToolbar
-          bookingId={booking.id}
-          viewerRole={viewerRole}
-          status={booking.status}
-          ownerBooked={Boolean(booking.owner_booked_at)}
-          sitterBooked={Boolean(booking.sitter_booked_at)}
-          archived={archived}
-          modifyDefaults={{
-            startDate: booking.start_date,
-            endDate: booking.end_date,
-            dropoffFrom: booking.dropoff_from,
-            dropoffTo: booking.dropoff_to,
-            pickupFrom: booking.pickup_from,
-            pickupTo: booking.pickup_to,
-            wantsPickupDropoff: booking.wants_pickup_dropoff,
-            allowsTransport:
-              booking.service_type === 'boarding' || booking.service_type === 'daycare',
-          }}
-        />
-      </div>
-      )}
-
-      <div className="mt-3">
-        <Chat
-          bookingId={booking.id}
-          viewerId={profile.id}
-          initialMessages={messages}
-          sendAction={sendMessageAction.bind(null, booking.id, counterpartyId)}
-          counterpartyName={counterparty?.display_name ?? 'them'}
-          counterpartyAvatarUrl={counterparty?.avatar_url ?? null}
-          readOnly={!isParticipant}
-        />
-      </div>
-
-      {isParticipant && (
-        <div className="mt-3 rounded-3xl border border-espresso-700/8 bg-hv-paper shadow-card">
-          <MeetGreetPanel
-            bookingId={booking.id}
-            viewerId={profile.id}
-            initialMeetGreets={meetGreets}
-          />
-        </div>
-      )}
-
-      {isParticipant && booking.status === 'completed' && (
-        <div className="mt-8 rounded-3xl border border-espresso-700/8 bg-hv-paper p-7 shadow-card">
-          <h2 className="text-lg text-espresso-700">Review</h2>
-          {myReview ? (
-            <p className="mt-2 text-sm text-espresso-500">
-              You submitted your review.{' '}
-              {myReview.published_at
-                ? 'Both reviews are now visible.'
-                : 'It will publish once the other side reviews too.'}
-            </p>
-          ) : (
-            <div className="mt-4">
-              <ReviewForm
+          {isParticipant && (
+            <div className="space-y-3 border-t border-espresso-700/8 px-5 py-5">
+              <BookingToolbar
+                parts="book"
                 bookingId={booking.id}
-                revieweeId={counterpartyId}
-                revieweeLabel={counterparty?.display_name ?? 'them'}
+                viewerRole={viewerRole}
+                status={booking.status}
+                ownerBooked={Boolean(booking.owner_booked_at)}
+                sitterBooked={Boolean(booking.sitter_booked_at)}
+                archived={archived}
+                modifyDefaults={modifyDefaults}
+              />
+              <BookingActions
+                bookingId={booking.id}
+                status={booking.status}
+                viewerRole={viewerRole}
               />
             </div>
           )}
+        </aside>
+
+        {/* ------------------------------------------------- Conversation */}
+        <section className="flex h-[80vh] min-h-[34rem] flex-col overflow-hidden rounded-3xl border border-espresso-700/8 bg-hv-paper shadow-card lg:sticky lg:top-20 lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:h-[calc(100vh-7.5rem)]">
+          <div className="flex items-center gap-3 border-b border-espresso-700/8 px-4 py-3 sm:px-6">
+            <div className="h-12 w-12 shrink-0 overflow-hidden rounded-full bg-sky-100">
+              {counterparty?.avatar_url ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={counterparty.avatar_url}
+                  alt={counterpartyName}
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                <div className="flex h-full w-full items-center justify-center text-xl font-semibold text-espresso-500">
+                  {counterpartyName.slice(0, 1)}
+                </div>
+              )}
+            </div>
+            <div className="min-w-0">
+              <p className="truncate text-xl font-bold text-espresso-700">
+                {viewerRole === 'sitter' && isParticipant ? (
+                  <Link
+                    href={`/dashboard/bookings/${booking.id}/owner`}
+                    className="hover:underline"
+                  >
+                    {counterpartyName}
+                  </Link>
+                ) : (
+                  counterpartyName
+                )}
+              </p>
+              <p className="truncate text-[16px] text-espresso-500">
+                {serviceName(booking.service_type)} · {phase.label}
+              </p>
+            </div>
+            {isParticipant && (
+              <div className="ml-auto shrink-0">
+                <BookingToolbar
+                  parts="chat"
+                  bookingId={booking.id}
+                  viewerRole={viewerRole}
+                  status={booking.status}
+                  ownerBooked={Boolean(booking.owner_booked_at)}
+                  sitterBooked={Boolean(booking.sitter_booked_at)}
+                  archived={archived}
+                  modifyDefaults={modifyDefaults}
+                />
+              </div>
+            )}
+          </div>
+
+          <BookingTabs
+            panels={panels}
+            initial={booking.status === 'in_progress' && viewerRole === 'sitter' ? 'updates' : 'messages'}
+            className="flex-1"
+          />
+        </section>
+
+        {/* ---------------------------------------------------- Below it */}
+        <div className="space-y-4 lg:col-start-1 lg:row-start-2">
+          {isParticipant && (
+            <div className="rounded-3xl border border-espresso-700/8 bg-hv-paper shadow-card">
+              <MeetGreetPanel
+                bookingId={booking.id}
+                viewerId={profile.id}
+                initialMeetGreets={meetGreets}
+              />
+            </div>
+          )}
+
+          {isParticipant && (
+            <div className="rounded-3xl border border-espresso-700/8 bg-hv-paper p-5 shadow-card">
+              <CallWindow
+                bookingId={booking.id}
+                counterpartyName={firstName === '—' ? 'them' : counterpartyName}
+                initialValue={booking.call_window}
+              />
+            </div>
+          )}
+
+          {isParticipant && booking.status === 'completed' && (
+            <div className="rounded-3xl border border-espresso-700/8 bg-hv-paper p-6 shadow-card">
+              <h2 className="text-xl text-espresso-700">Review</h2>
+              {myReview ? (
+                <p className="mt-2 text-[17px] text-espresso-500">
+                  You submitted your review.{' '}
+                  {myReview.published_at
+                    ? 'Both reviews are now visible.'
+                    : 'It will publish once the other side reviews too.'}
+                </p>
+              ) : (
+                <div className="mt-4">
+                  <ReviewForm
+                    bookingId={booking.id}
+                    revieweeId={counterpartyId}
+                    revieweeLabel={counterpartyName}
+                  />
+                </div>
+              )}
+            </div>
+          )}
         </div>
-      )}
+      </div>
     </div>
   );
 }

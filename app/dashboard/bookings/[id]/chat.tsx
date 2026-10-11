@@ -4,21 +4,33 @@ import { useEffect, useRef, useState } from 'react';
 import { useFormStatus } from 'react-dom';
 
 import { Button } from '@/components/ui/button';
+import { dateInAppZone, timeInAppZone } from '@/lib/dates';
 import type { MessageRow } from '@/lib/database.types';
 import { createClient } from '@/lib/supabase/client';
-import { cn } from '@/lib/utils';
+import { cn, formatDate } from '@/lib/utils';
 
 import type { SendMessageState } from '../actions';
 
 function SendButton() {
   const { pending } = useFormStatus();
   return (
-    <Button type="submit" size="sm" disabled={pending}>
+    <Button type="submit" size="md" disabled={pending}>
       {pending ? 'Sending…' : 'Send'}
     </Button>
   );
 }
 
+function dayLabel(iso: string): string {
+  const day = dateInAppZone(iso);
+  if (day === dateInAppZone(new Date())) return 'Today';
+  return formatDate(day);
+}
+
+/**
+ * The conversation: day separators, a timestamp under every bubble, and a
+ * composer pinned to the bottom. It fills whatever height its parent gives it
+ * (the booking page makes it a tall panel beside the request details).
+ */
 export function Chat({
   bookingId,
   viewerId,
@@ -111,106 +123,112 @@ export function Chat({
   }
 
   return (
-    <div className="rounded-3xl border border-espresso-700/8 bg-hv-paper shadow-card">
-      <div className="flex items-center gap-2.5 border-b border-espresso-700/8 px-5 py-3">
-        <div className="h-8 w-8 shrink-0 overflow-hidden rounded-full bg-sky-100">
-          {counterpartyAvatarUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={counterpartyAvatarUrl}
-              alt={counterpartyName}
-              className="h-full w-full object-cover"
-            />
-          ) : (
-            <div className="flex h-full w-full items-center justify-center text-xs font-medium text-espresso-500">
-              {counterpartyName.slice(0, 1)}
-            </div>
-          )}
-        </div>
-        <p className="text-sm font-medium text-espresso-700">{counterpartyName}</p>
-      </div>
+    <div className="flex min-h-0 flex-1 flex-col">
       <div
         ref={listRef}
-        className="max-h-96 min-h-[10rem] space-y-3 overflow-y-auto p-5"
+        className="min-h-0 flex-1 space-y-1 overflow-y-auto bg-bone/60 px-4 py-5 sm:px-6"
       >
         {messages.length === 0 ? (
-          <p className="text-center text-sm text-espresso-500">
-            No messages yet — say hello.
-          </p>
+          <div className="flex h-full flex-col items-center justify-center gap-1 py-10 text-center">
+            <p className="text-lg font-semibold text-espresso-700">No messages yet</p>
+            <p className="text-[17px] text-espresso-500">
+              Say hello to {counterpartyName.split(' ')[0]} — questions about the
+              routine, the yard or the other pets are all welcome.
+            </p>
+          </div>
         ) : (
           messages.map((message, index) => {
             const mine = message.sender_id === viewerId;
-            // Only show the avatar on the last bubble of a consecutive run
-            // from the other person — same "grouped" pattern as
-            // Instagram/Messenger, instead of repeating it on every bubble.
-            const nextIsSameSender = messages[index + 1]?.sender_id === message.sender_id;
-            const showAvatar = !mine && !nextIsSameSender;
+            const previous = messages[index - 1];
+            const next = messages[index + 1];
+            const newDay =
+              !previous || dateInAppZone(previous.created_at) !== dateInAppZone(message.created_at);
+            // Same-sender runs are tucked together; the time shows on the last bubble.
+            const endsRun = !next || next.sender_id !== message.sender_id ||
+              dateInAppZone(next.created_at) !== dateInAppZone(message.created_at);
+            const startsRun = newDay || !previous || previous.sender_id !== message.sender_id;
 
             return (
-              <div
-                key={message.id}
-                className={cn(
-                  'flex items-end gap-2',
-                  mine ? 'justify-end' : 'justify-start'
+              <div key={message.id}>
+                {newDay && (
+                  <p className="mb-3 mt-4 text-center text-xs font-semibold uppercase tracking-[0.12em] text-espresso-500/70 first:mt-0">
+                    {dayLabel(message.created_at)}
+                  </p>
                 )}
-              >
-                {!mine && (
-                  <div className="h-6 w-6 shrink-0 overflow-hidden rounded-full bg-sky-100">
-                    {showAvatar &&
-                      (counterpartyAvatarUrl ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img
-                          src={counterpartyAvatarUrl}
-                          alt={counterpartyName}
-                          className="h-full w-full object-cover"
-                        />
-                      ) : (
-                        <div className="flex h-full w-full items-center justify-center text-[13px] font-medium text-espresso-500">
-                          {counterpartyName.slice(0, 1)}
-                        </div>
-                      ))}
-                  </div>
-                )}
-                <p
+                <div
                   className={cn(
-                    'max-w-[75%] rounded-2xl px-4 py-2 text-[17px] leading-snug',
-                    mine
-                      ? 'bg-hv-ink text-hv-cream'
-                      : 'bg-bone text-espresso-700'
+                    'flex items-end gap-2',
+                    mine ? 'justify-end' : 'justify-start',
+                    startsRun ? 'mt-3' : 'mt-0.5'
                   )}
                 >
-                  {message.body}
-                </p>
+                  {!mine && (
+                    <div className="h-8 w-8 shrink-0 overflow-hidden rounded-full bg-sky-100">
+                      {endsRun &&
+                        (counterpartyAvatarUrl ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src={counterpartyAvatarUrl}
+                            alt={counterpartyName}
+                            className="h-full w-full object-cover"
+                          />
+                        ) : (
+                          <div className="flex h-full w-full items-center justify-center text-sm font-semibold text-espresso-500">
+                            {counterpartyName.slice(0, 1)}
+                          </div>
+                        ))}
+                    </div>
+                  )}
+                  <div className={cn('flex max-w-[78%] flex-col', mine ? 'items-end' : 'items-start')}>
+                    <p
+                      className={cn(
+                        'whitespace-pre-line break-words rounded-3xl px-4 py-2.5 text-[18px] leading-snug',
+                        mine
+                          ? 'rounded-br-lg bg-hv-ink text-hv-cream'
+                          : 'rounded-bl-lg bg-hv-paper text-espresso-700 shadow-card'
+                      )}
+                    >
+                      {message.body}
+                    </p>
+                    {endsRun && (
+                      <span className="mt-1 px-1 text-xs text-espresso-500/80">
+                        {timeInAppZone(message.created_at)}
+                      </span>
+                    )}
+                  </div>
+                </div>
               </div>
             );
           })
         )}
       </div>
+
       {sendError && (
-        <p className="border-t border-espresso-700/8 bg-red-50 px-4 py-2 text-xs text-red-800">
+        <p className="border-t border-espresso-700/8 bg-red-50 px-5 py-2 text-sm text-red-800">
           {sendError}
         </p>
       )}
+
       {readOnly ? (
-        <p className="border-t border-espresso-700/8 px-4 py-3 text-sm text-espresso-500">
+        <p className="border-t border-espresso-700/8 px-5 py-3 text-[17px] text-espresso-500">
           You’re reading this conversation as Havenr staff.
         </p>
       ) : (
-      <form
-        ref={formRef}
-        action={handleSubmit}
-        className="flex items-center gap-2 border-t border-espresso-700/8 p-3"
-      >
-        <input
-          type="text"
-          name="body"
-          required
-          maxLength={4000}
-          placeholder="Message…"
-          className="flex-1 rounded-full border border-hv-ink/20 bg-hv-paper px-4 py-2 text-[17px] font-medium text-espresso-700 placeholder:text-espresso-700/40 focus:border-hv-ink focus:outline-none focus:ring-2 focus:ring-hv-mustard/40"
-        />
-        <SendButton />
-      </form>
+        <form
+          ref={formRef}
+          action={handleSubmit}
+          className="flex items-center gap-3 border-t border-espresso-700/8 bg-hv-paper p-3 sm:p-4"
+        >
+          <input
+            type="text"
+            name="body"
+            required
+            maxLength={4000}
+            placeholder={`Message ${counterpartyName.split(' ')[0]}…`}
+            className="min-w-0 flex-1 rounded-full border border-hv-ink/20 bg-bone px-5 py-2.5 text-[18px] font-medium text-espresso-700 placeholder:text-espresso-700/40 focus:border-hv-ink focus:outline-none focus:ring-2 focus:ring-hv-mustard/40"
+          />
+          <SendButton />
+        </form>
       )}
     </div>
   );

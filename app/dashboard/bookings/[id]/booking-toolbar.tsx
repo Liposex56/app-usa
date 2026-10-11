@@ -225,7 +225,13 @@ function ReportPanel({ bookingId, onDone }: { bookingId: string; onDone: () => v
   );
 }
 
+/**
+ * The booking's actions, split across the page: `book` (Book, Cancel request,
+ * Modify request — under the request details) and `chat` (Archive, Report —
+ * in the conversation's header). Each part keeps its own panels.
+ */
 export function BookingToolbar({
+  parts,
   bookingId,
   viewerRole,
   status,
@@ -234,6 +240,7 @@ export function BookingToolbar({
   archived,
   modifyDefaults,
 }: {
+  parts: 'book' | 'chat';
   bookingId: string;
   viewerRole: 'owner' | 'sitter';
   status: string;
@@ -267,25 +274,60 @@ export function BookingToolbar({
     else runBook();
   }
 
-  function showDetails() {
-    const details = document.getElementById('booking-details') as HTMLDetailsElement | null;
-    if (!details) return;
-    details.open = true;
-    details.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  if (parts === 'chat') {
+    return (
+      <div className="relative">
+        <div className="flex items-center gap-2">
+          <Button
+            size="sm"
+            variant="secondary"
+            disabled={isPending}
+            onClick={() =>
+              startTransition(async () => {
+                const result = await toggleArchiveAction(bookingId);
+                setError(result.error);
+              })
+            }
+          >
+            {archived ? 'Unarchive' : 'Archive'}
+          </Button>
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => setPanel(panel === 'report' ? null : 'report')}
+          >
+            Report
+          </Button>
+        </div>
+
+        {error && (
+          <p role="alert" className="absolute right-0 top-full z-30 mt-2 w-64 rounded-xl bg-red-50 p-3 text-sm text-red-800 shadow-lift">
+            {error}
+          </p>
+        )}
+
+        {panel === 'report' && (
+          <div className="absolute right-0 top-full z-30 mt-2 w-[min(24rem,calc(100vw-2.5rem))] rounded-2xl shadow-lift">
+            <ReportPanel bookingId={bookingId} onDone={() => setPanel(null)} />
+          </div>
+        )}
+      </div>
+    );
   }
 
   return (
     <div>
-      <div className="flex flex-wrap items-center gap-2">
+      <div className="flex flex-col gap-2">
         {open && !iHaveBooked && (
-          <Button size="sm" disabled={isPending} onClick={onBookClick}>
+          <Button size="lg" className="w-full" disabled={isPending} onClick={onBookClick}>
             {isPending ? 'Booking…' : 'Book'}
           </Button>
         )}
         {open && iHaveBooked && viewerRole === 'sitter' && (
           <Button
-            size="sm"
+            size="lg"
             variant="secondary"
+            className="w-full"
             disabled={isPending}
             onClick={() =>
               startTransition(async () => {
@@ -298,43 +340,21 @@ export function BookingToolbar({
           </Button>
         )}
         {open && iHaveBooked && viewerRole === 'owner' && (
-          <span className="rounded-full bg-green-100 px-3 py-1.5 text-xs font-medium text-green-800">
-            You’ve booked
-          </span>
+          <p className="rounded-full bg-green-100 px-4 py-2.5 text-center text-[17px] font-semibold text-green-800">
+            You’ve booked — waiting on the Havener
+          </p>
         )}
 
         {open && (
           <Button
-            size="sm"
+            size="lg"
             variant="secondary"
+            className="w-full"
             onClick={() => setPanel(panel === 'modify' ? null : 'modify')}
           >
             Modify request
           </Button>
         )}
-        <Button
-          size="sm"
-          variant="secondary"
-          disabled={isPending}
-          onClick={() =>
-            startTransition(async () => {
-              const result = await toggleArchiveAction(bookingId);
-              setError(result.error);
-            })
-          }
-        >
-          {archived ? 'Unarchive' : 'Archive'}
-        </Button>
-        <Button size="sm" variant="secondary" onClick={showDetails}>
-          Details
-        </Button>
-        <Button
-          size="sm"
-          variant="ghost"
-          onClick={() => setPanel(panel === 'report' ? null : 'report')}
-        >
-          Report
-        </Button>
       </div>
 
       {error && (
@@ -351,7 +371,6 @@ export function BookingToolbar({
           onDone={() => setPanel(null)}
         />
       )}
-      {panel === 'report' && <ReportPanel bookingId={bookingId} onDone={() => setPanel(null)} />}
 
       {showTips && (
         <SafetyTips

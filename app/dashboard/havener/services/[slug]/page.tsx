@@ -60,7 +60,7 @@ export default async function ServiceSettingsPage({
   if (!sitterProfile) redirect('/dashboard/havener/edit');
 
   return (
-    <div className="mx-auto max-w-2xl">
+    <div className="max-w-3xl">
       <Link
         href="/dashboard/havener/services"
         className="text-sm text-espresso-500 hover:text-espresso-700"

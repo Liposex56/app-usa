@@ -16,7 +16,7 @@ import type {
   Skill,
   SitterServiceRow,
 } from '@/lib/database.types';
-import { serviceName } from '@/lib/services';
+import { SERVICE_BY_TYPE, serviceName } from '@/lib/services';
 import { cn, formatCents } from '@/lib/utils';
 
 const SKILL_LABELS: Record<Skill, string> = {
@@ -71,7 +71,7 @@ function HomeFacts({ sitter }: { sitter: PublicSitterRow }) {
       {facts.filter(Boolean).map((fact) => (
         <li
           key={fact}
-          className="flex items-center gap-2.5 text-sm text-espresso-700"
+          className="flex items-center gap-2.5 text-[18px] text-espresso-700"
         >
           <IconPaw className="h-4 w-4 shrink-0 text-olive-500" />
           {fact}
@@ -97,7 +97,7 @@ export type HomeMediaItem = { url: string; kind: 'photo' | 'video' };
 function HomeGallery({ media }: { media: HomeMediaItem[] }) {
   return (
     <section>
-      <h2 className="text-lg font-semibold text-espresso-700">Meet the home</h2>
+      <h2 className="text-2xl text-espresso-700">Meet the home</h2>
       <p className="mt-1 text-sm text-espresso-500">
         Where your pet would stay while you&rsquo;re away.
       </p>
@@ -149,6 +149,15 @@ export function SitterProfileTabs({
   const [tab, setTab] = useState<'info' | 'reviews' | 'services'>('info');
   const skills = (sitter.skills ?? []) as Skill[];
 
+  // The lowest rate across the services this Havener offers, for the card.
+  const cheapestRow = [...services].sort((a, b) => a.base_rate_cents - b.base_rate_cents)[0];
+  const cheapest = cheapestRow
+    ? {
+        cents: cheapestRow.base_rate_cents,
+        unit: SERVICE_BY_TYPE[cheapestRow.service_type]?.rateUnit ?? 'visit',
+      }
+    : null;
+
   // Carries the search (dates + service) forward into the contact summary.
   const contactQuery = new URLSearchParams();
   if (startDate) {
@@ -160,11 +169,11 @@ export function SitterProfileTabs({
   const contactHref = `/sitters/${sitter.id}/contact${contactQueryString ? `?${contactQueryString}` : ''}`;
 
   return (
-    <div className="container-page py-10 sm:py-14">
-      <div className="mx-auto max-w-3xl">
+    <div className="mx-auto w-full max-w-6xl px-5 py-10 sm:px-10 sm:py-14">
+      <div>
         {/* ------------------------------------------------------- Header */}
-        <div className="flex flex-col items-center gap-4 text-center sm:flex-row sm:items-start sm:text-left">
-          <div className="h-24 w-24 shrink-0 overflow-hidden rounded-full bg-sky-100">
+        <div className="flex flex-col items-center gap-5 text-center sm:flex-row sm:items-center sm:text-left">
+          <div className="h-28 w-28 shrink-0 overflow-hidden rounded-full bg-sky-100 shadow-card sm:h-32 sm:w-32">
             {sitter.avatar_url ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
@@ -173,28 +182,28 @@ export function SitterProfileTabs({
                 className="h-full w-full object-cover"
               />
             ) : (
-              <div className="flex h-full w-full items-center justify-center text-2xl font-medium text-espresso-500">
+              <div className="flex h-full w-full items-center justify-center text-4xl font-semibold text-espresso-500">
                 {(sitter.display_name ?? 'H').slice(0, 1)}
               </div>
             )}
           </div>
           <div className="min-w-0">
-            <div className="flex flex-wrap items-center justify-center gap-2 sm:justify-start">
-              <h1 className="text-2xl font-semibold text-espresso-700">
+            <div className="flex flex-wrap items-center justify-center gap-3 sm:justify-start">
+              <h1 className="text-[clamp(34px,4vw,52px)] leading-none">
                 {sitter.display_name ?? 'Havener'}
               </h1>
               {sitter.is_certified && (
-                <span className="inline-flex items-center gap-1 rounded-full bg-gold-500/15 px-2.5 py-0.5 text-xs font-medium text-gold-700">
-                  <IconStar className="h-3 w-3" /> Certified Havener
+                <span className="inline-flex items-center gap-1 rounded-full bg-gold-500/15 px-3 py-1 text-[15px] font-semibold text-gold-700">
+                  <IconStar className="h-3.5 w-3.5" /> Certified Havener
                 </span>
               )}
             </div>
             {sitter.headline && (
-              <p className="mt-1 text-espresso-600">{sitter.headline}</p>
+              <p className="mt-2 text-xl text-espresso-600">{sitter.headline}</p>
             )}
-            <div className="mt-2 flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-sm text-espresso-500 sm:justify-start">
+            <div className="mt-3 flex flex-wrap items-center justify-center gap-x-5 gap-y-1 text-[17px] font-medium text-espresso-500 sm:justify-start">
               {(sitter.service_city || sitter.service_state) && (
-                <span className="inline-flex items-center gap-1">
+                <span className="inline-flex items-center gap-1.5">
                   <IconMapPin className="h-4 w-4" />
                   {[sitter.service_city, sitter.service_state]
                     .filter(Boolean)
@@ -206,28 +215,81 @@ export function SitterProfileTabs({
                 {sitter.review_count} review{sitter.review_count === 1 ? '' : 's'}
               </span>
             </div>
-            <div className="mt-3 flex flex-wrap justify-center gap-2 sm:justify-start">
+            <div className="mt-4 flex flex-wrap justify-center gap-2 sm:justify-start">
               {sitter.is_insured && (
-                <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">
-                  <IconShield className="h-3 w-3" /> Insured
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-green-100 px-3 py-1 text-[15px] font-semibold text-green-800">
+                  <IconShield className="h-3.5 w-3.5" /> Insured
                 </span>
               )}
               {sitter.background_checked && (
-                <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">
-                  <IconCheck className="h-3 w-3" /> Background checked
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-green-100 px-3 py-1 text-[15px] font-semibold text-green-800">
+                  <IconCheck className="h-3.5 w-3.5" /> Background checked
                 </span>
               )}
             </div>
-            {!isOwnProfile && (
-              <div className="mt-5">
-                <ButtonLink href={contactHref} size="md">
-                  Contact this Havener
-                </ButtonLink>
-              </div>
-            )}
           </div>
         </div>
 
+        <div className="mt-10 grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(300px,360px)] lg:items-start">
+        {/* The booking card comes first on phones, to the side on desktop. */}
+        <aside className="order-first rounded-3xl border border-espresso-700/8 bg-hv-paper p-6 shadow-card lg:order-last lg:sticky lg:top-20">
+          {cheapest ? (
+            <p className="text-espresso-600">
+              <span className="text-sm font-bold uppercase tracking-[0.12em] text-olive-500">
+                From{' '}
+              </span>
+              <span className="text-4xl font-bold text-espresso-700">
+                {formatCents(cheapest.cents)}
+              </span>
+              <span className="text-[17px]"> / {cheapest.unit}</span>
+            </p>
+          ) : (
+            <p className="text-[17px] text-espresso-500">No services published yet.</p>
+          )}
+
+          {services.length > 0 && (
+            <ul className="mt-4 space-y-2 border-t border-espresso-700/8 pt-4">
+              {services.map((row) => (
+                <li
+                  key={row.id}
+                  className="flex items-baseline justify-between gap-3 text-[17px]"
+                >
+                  <span className="text-espresso-700">{serviceName(row.service_type)}</span>
+                  <span className="font-semibold text-espresso-700">
+                    {formatCents(row.base_rate_cents)}
+                    <span className="font-medium text-espresso-500">
+                      {' '}
+                      / {SERVICE_BY_TYPE[row.service_type]?.rateUnit ?? 'visit'}
+                    </span>
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+
+          {isOwnProfile ? (
+            <div className="mt-5 space-y-3">
+              <p className="rounded-2xl bg-hv-butter p-3 text-[16px] text-olive-700">
+                This is how owners see your profile.
+              </p>
+              <ButtonLink href="/dashboard/havener/edit" size="lg" className="w-full">
+                Edit my profile
+              </ButtonLink>
+            </div>
+          ) : (
+            <div className="mt-5">
+              <ButtonLink href={contactHref} size="lg" className="w-full">
+                Contact this Havener
+              </ButtonLink>
+              <p className="mt-3 text-center text-[15px] text-espresso-500">
+                You won’t be charged yet — send a request and agree on the
+                details first.
+              </p>
+            </div>
+          )}
+        </aside>
+
+        <div className="min-w-0">
         {/* --------------------------------------------------------- Tabs */}
         <div className="mt-8 flex gap-6 border-b border-espresso-700/10">
           {(
@@ -242,7 +304,7 @@ export function SitterProfileTabs({
               type="button"
               onClick={() => setTab(key)}
               className={cn(
-                'border-b-2 pb-3 text-sm font-medium transition-colors',
+                'border-b-2 pb-3 text-[19px] font-semibold transition-colors',
                 tab === key
                   ? 'border-gold-500 text-espresso-700'
                   : 'border-transparent text-espresso-500 hover:text-espresso-700'
@@ -258,10 +320,10 @@ export function SitterProfileTabs({
           <div className="mt-8 space-y-8">
             {sitter.bio && (
               <section>
-                <h2 className="text-lg font-semibold text-espresso-700">
+                <h2 className="text-2xl text-espresso-700">
                   Pet care experience
                 </h2>
-                <p className="mt-2 whitespace-pre-line text-sm leading-relaxed text-espresso-600">
+                <p className="mt-2 whitespace-pre-line text-[18px] leading-relaxed text-espresso-600">
                   {sitter.bio}
                 </p>
               </section>
@@ -269,10 +331,10 @@ export function SitterProfileTabs({
 
             {sitter.routine_description && (
               <section>
-                <h2 className="text-lg font-semibold text-espresso-700">
+                <h2 className="text-2xl text-espresso-700">
                   A typical day with {sitter.display_name ?? 'this Havener'}
                 </h2>
-                <p className="mt-2 whitespace-pre-line text-sm leading-relaxed text-espresso-600">
+                <p className="mt-2 whitespace-pre-line text-[18px] leading-relaxed text-espresso-600">
                   {sitter.routine_description}
                 </p>
               </section>
@@ -280,8 +342,8 @@ export function SitterProfileTabs({
 
             {sitter.schedule_description && (
               <section>
-                <h2 className="text-lg font-semibold text-espresso-700">Schedule</h2>
-                <p className="mt-2 whitespace-pre-line text-sm leading-relaxed text-espresso-600">
+                <h2 className="text-2xl text-espresso-700">Schedule</h2>
+                <p className="mt-2 whitespace-pre-line text-[18px] leading-relaxed text-espresso-600">
                   {sitter.schedule_description}
                 </p>
               </section>
@@ -289,10 +351,10 @@ export function SitterProfileTabs({
 
             {sitter.home_environment_description && (
               <section>
-                <h2 className="text-lg font-semibold text-espresso-700">
+                <h2 className="text-2xl text-espresso-700">
                   Safety, trust &amp; environment
                 </h2>
-                <p className="mt-2 whitespace-pre-line text-sm leading-relaxed text-espresso-600">
+                <p className="mt-2 whitespace-pre-line text-[18px] leading-relaxed text-espresso-600">
                   {sitter.home_environment_description}
                 </p>
               </section>
@@ -300,12 +362,12 @@ export function SitterProfileTabs({
 
             {skills.length > 0 && (
               <section>
-                <h2 className="text-lg font-semibold text-espresso-700">Skills</h2>
+                <h2 className="text-2xl text-espresso-700">Skills</h2>
                 <ul className="mt-3 space-y-2">
                   {skills.map((skill) => (
                     <li
                       key={skill}
-                      className="flex items-center gap-2.5 text-sm text-espresso-700"
+                      className="flex items-center gap-2.5 text-[18px] text-espresso-700"
                     >
                       <IconCheck className="h-4 w-4 shrink-0 text-green-600" />
                       {SKILL_LABELS[skill] ?? skill}
@@ -317,10 +379,10 @@ export function SitterProfileTabs({
 
             {sitter.accepts_cats && sitter.cat_bio && (
               <section>
-                <h2 className="text-lg font-semibold text-espresso-700">
+                <h2 className="text-2xl text-espresso-700">
                   Cat experience
                 </h2>
-                <p className="mt-2 whitespace-pre-line text-sm leading-relaxed text-espresso-600">
+                <p className="mt-2 whitespace-pre-line text-[18px] leading-relaxed text-espresso-600">
                   {sitter.cat_bio}
                 </p>
                 {sitter.cat_years_experience != null && (
@@ -336,7 +398,7 @@ export function SitterProfileTabs({
             {homeMedia.length > 0 && <HomeGallery media={homeMedia} />}
             {homeMedia.length === 0 && isOwnProfile && (
               <section className="rounded-2xl border border-dashed border-espresso-700/15 bg-hv-paper p-5">
-                <h2 className="text-lg font-semibold text-espresso-700">Meet the home</h2>
+                <h2 className="text-2xl text-espresso-700">Meet the home</h2>
                 <p className="mt-1 text-sm text-espresso-500">
                   Owners choosing boarding want to see where their pet will
                   stay. Add photos or a short video of your home.
@@ -353,7 +415,7 @@ export function SitterProfileTabs({
             )}
 
             <section>
-              <h2 className="text-lg font-semibold text-espresso-700">Home</h2>
+              <h2 className="text-2xl text-espresso-700">Home</h2>
               <div className="mt-3">
                 <HomeFacts sitter={sitter} />
               </div>
@@ -361,7 +423,7 @@ export function SitterProfileTabs({
 
             {(sitter.service_city || sitter.service_state) && (
               <section>
-                <h2 className="text-lg font-semibold text-espresso-700">Location</h2>
+                <h2 className="text-2xl text-espresso-700">Location</h2>
                 <p className="mt-2 text-sm text-espresso-600">
                   {[sitter.service_city, sitter.service_state]
                     .filter(Boolean)
@@ -417,7 +479,7 @@ export function SitterProfileTabs({
                     </div>
                   </div>
                   {review.body && (
-                    <p className="mt-3 text-sm leading-relaxed text-espresso-600">
+                    <p className="mt-3 text-[18px] leading-relaxed text-espresso-600">
                       {review.body}
                     </p>
                   )}
@@ -474,6 +536,8 @@ export function SitterProfileTabs({
             ))}
           </div>
         )}
+        </div>
+        </div>
       </div>
     </div>
   );

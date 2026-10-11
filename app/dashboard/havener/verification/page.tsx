@@ -107,7 +107,7 @@ export default async function HavenerVerificationPage() {
   const checkrReady = checkrConfigured();
 
   return (
-    <div className="mx-auto max-w-xl">
+    <div className="max-w-3xl">
       <Link
         href="/dashboard/havener"
         className="text-sm text-espresso-500 hover:text-espresso-700"
