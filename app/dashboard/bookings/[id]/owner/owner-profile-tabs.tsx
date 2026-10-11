@@ -87,14 +87,7 @@ export function OwnerProfileTabs({
 
       {tab === 'about' && (
         <div className="mt-8 space-y-6">
-          <div className="flex flex-wrap gap-x-8 gap-y-3 text-[18px] text-espresso-600">
-            <p>Joined Havenr {formatDate(owner.joined_at)}</p>
-            <p>
-              {owner.past_bookings_count} past booking
-              {owner.past_bookings_count === 1 ? '' : 's'}
-            </p>
-          </div>
-          <div className="space-y-2 border-t border-espresso-700/8 pt-5">
+          <div className="space-y-2">
             <p className="text-xs font-medium uppercase tracking-wider text-espresso-500/60">
               Verification
             </p>

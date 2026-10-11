@@ -238,9 +238,10 @@ resto del sitio).
   (Photon/OpenStreetMap vía `/api/places`; cambiar de proveedor es editar
   `lib/places.ts`). Solo aparecen Haveners dentro de su radio de servicio; el
   Havener queda ubicado en el mapa al guardar su perfil.
-- **Registro/inicio con Google, Facebook o Apple**: los botones ya están; hay
-  que activar cada proveedor en Supabase → Authentication → Providers con las
-  credenciales de ese proveedor.
+- **Registro/inicio con Google o Facebook**: los botones ya están; cada
+  proveedor se activa en Supabase → Authentication → Providers con las
+  credenciales de ese proveedor (Google ya está activo). Apple se quitó: pide
+  cuenta de desarrollador de pago (99 USD/año) y no es necesario para lanzar.
 - **Chat** (`/dashboard/bookings/[id]`) en vivo vía Supabase Realtime, con
   filtro de contacto externo (`lib/chat-filter.ts`).
 - **Meet & Greet**: cualquiera de las dos partes propone fecha/hora desde el

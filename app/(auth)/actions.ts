@@ -83,13 +83,12 @@ export async function signUpAction(
   redirect('/onboarding');
 }
 
-const OAUTH_PROVIDERS = ['google', 'facebook', 'apple'] as const;
+const OAUTH_PROVIDERS = ['google', 'facebook'] as const;
 type OAuthProvider = (typeof OAUTH_PROVIDERS)[number];
 
 const PROVIDER_NAMES: Record<OAuthProvider, string> = {
   google: 'Google',
   facebook: 'Facebook',
-  apple: 'Apple',
 };
 
 /** Which social providers are switched on in this Supabase project. */
@@ -111,7 +110,7 @@ async function providerIsEnabled(provider: OAuthProvider): Promise<boolean> {
 }
 
 /**
- * "Continue with Google / Facebook / Apple". Each provider has to be turned
+ * "Continue with Google / Facebook". Each provider has to be turned
  * on in Supabase (Authentication → Providers) with credentials from that
  * provider; until it is, the user gets a plain message and can use email.
  * Whoever comes back lands on /dashboard, which routes brand-new accounts

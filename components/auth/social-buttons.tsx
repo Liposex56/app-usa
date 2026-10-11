@@ -31,20 +31,12 @@ function GoogleIcon() {
   );
 }
 
-function AppleIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden fill="currentColor">
-      <path d="M16.37 1.43c0 1.14-.46 2.22-1.2 3-.78.83-2.05 1.47-3.08 1.39-.13-1.1.4-2.26 1.14-3.03.82-.86 2.2-1.5 3.14-1.36ZM20.5 17.1c-.55 1.27-.82 1.84-1.53 2.96-.99 1.57-2.39 3.52-4.12 3.53-1.54.02-1.94-1-4.03-.99-2.09.01-2.53 1.01-4.07.99-1.73-.02-3.05-1.78-4.04-3.35C.01 16.07-.28 10.9 1.43 8.27c1.2-1.86 3.1-2.95 4.88-2.95 1.82 0 2.96 1 4.46 1 1.46 0 2.35-1 4.45-1 1.58 0 3.26.86 4.46 2.35-3.92 2.15-3.28 7.74.82 9.43Z" />
-    </svg>
-  );
-}
-
 function ProviderButton({
   provider,
   className,
   children,
 }: {
-  provider: 'facebook' | 'google' | 'apple';
+  provider: 'facebook' | 'google';
   className: string;
   children: React.ReactNode;
 }) {
@@ -62,7 +54,7 @@ function ProviderButton({
   );
 }
 
-/** "Continue with Facebook / Google / Apple" — the quick way in, ahead of the email form. */
+/** "Continue with Facebook / Google" — the quick way in, ahead of the email form. */
 export function SocialButtons() {
   const [state, formAction] = useActionState(oauthSignInAction, INITIAL);
 
@@ -76,10 +68,6 @@ export function SocialButtons() {
       <ProviderButton provider="google" className="bg-[#1A73E8] text-white">
         <GoogleIcon />
         Continue with Google
-      </ProviderButton>
-      <ProviderButton provider="apple" className="bg-black text-white">
-        <AppleIcon />
-        Continue with Apple
       </ProviderButton>
     </form>
   );

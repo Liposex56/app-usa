@@ -38,7 +38,8 @@ const POTTY_LABELS: Record<string, string> = {
 function HomeFacts({ sitter }: { sitter: PublicSitterRow }) {
   const facts: string[] = [];
   if (sitter.home_type) {
-    facts.push(`Lives in a ${sitter.home_type}`);
+    const article = /^[aeiou]/i.test(sitter.home_type) ? 'an' : 'a';
+    facts.push(`Lives in ${article} ${sitter.home_type}`);
   }
   if (sitter.has_yard) {
     facts.push(sitter.yard_is_fenced ? 'Has a fenced yard' : 'Has an unfenced yard');
