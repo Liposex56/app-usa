@@ -1,5 +1,7 @@
 import { createHmac, timingSafeEqual } from 'node:crypto';
 
+import type { CheckStatus } from '@/lib/database.types';
+
 /**
  * Criminal-background screening through Checkr (the standard US provider for
  * marketplaces like this one).
@@ -114,6 +116,30 @@ export type BackgroundCheckStatus =
   | 'consider'
   | 'rejected'
   | 'expired';
+
+/**
+ * The status to show for a Havener. Haveners approved before the
+ * background_checks table existed only have the profile column, so fall back
+ * to it when there is no row.
+ */
+export function effectiveBackgroundStatus(
+  row: { status: BackgroundCheckStatus } | null,
+  profileStatus: CheckStatus | null | undefined
+): BackgroundCheckStatus {
+  if (row) return row.status;
+  switch (profileStatus) {
+    case 'approved':
+      return 'clear';
+    case 'pending':
+      return 'processing';
+    case 'rejected':
+      return 'rejected';
+    case 'expired':
+      return 'expired';
+    default:
+      return 'not_started';
+  }
+}
 
 /** What a Checkr event means for a Havenr background check, if anything. */
 export function statusFromCheckrEvent(

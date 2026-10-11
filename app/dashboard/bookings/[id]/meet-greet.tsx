@@ -3,6 +3,7 @@
 import { useActionState, useEffect, useState, useTransition } from 'react';
 
 import { Button } from '@/components/ui/button';
+import { APP_TIME_ZONE } from '@/lib/dates';
 import { AddressAutocomplete } from '@/components/ui/address-autocomplete';
 import { FormError } from '@/components/ui/field';
 import { TimeSelect } from '@/components/ui/time-select';
@@ -19,7 +20,8 @@ import {
 const INITIAL_PROPOSE: MeetGreetState = { error: null, meetGreet: null };
 
 function formatWhen(iso: string) {
-  return new Date(iso).toLocaleString(undefined, {
+  return new Date(iso).toLocaleString('en-US', {
+    timeZone: APP_TIME_ZONE,
     weekday: 'short',
     month: 'short',
     day: 'numeric',

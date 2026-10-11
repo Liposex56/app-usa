@@ -9,7 +9,7 @@ import { createClient } from '@/lib/supabase/server';
 
 import { ConnectButton } from './connect-button';
 
-export const metadata: Metadata = { title: 'Payments and payouts — Havenr' };
+export const metadata: Metadata = { title: 'Payments and payouts' };
 
 export default async function HavenerPaymentsPage() {
   const profile = await requireProfile();

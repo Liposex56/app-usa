@@ -4,14 +4,18 @@ import { redirect } from 'next/navigation';
 
 import type { CheckStatus, SitterProfileRow } from '@/lib/database.types';
 import { requireProfile } from '@/lib/auth';
-import { checkrConfigured, type BackgroundCheckStatus } from '@/lib/checkr';
+import {
+  checkrConfigured,
+  effectiveBackgroundStatus,
+  type BackgroundCheckStatus,
+} from '@/lib/checkr';
 import { getStripe } from '@/lib/stripe';
 import { createClient } from '@/lib/supabase/server';
 
 import { BackgroundCheckButton } from './background-button';
 import { VerifyButton } from './verify-button';
 
-export const metadata: Metadata = { title: 'Verification — Havenr' };
+export const metadata: Metadata = { title: 'Verification' };
 
 type BackgroundRow = {
   status: BackgroundCheckStatus;
@@ -84,10 +88,11 @@ export default async function HavenerVerificationPage() {
     .select('status, invitation_url, note')
     .eq('sitter_id', profile.id)
     .maybeSingle();
-  const background = (backgroundRow as BackgroundRow | null) ?? {
-    status: 'not_started' as const,
-    invitation_url: null,
-    note: null,
+  const stored = backgroundRow as BackgroundRow | null;
+  const background: BackgroundRow = {
+    status: effectiveBackgroundStatus(stored, sitter?.background_check_status),
+    invitation_url: stored?.invitation_url ?? null,
+    note: stored?.note ?? null,
   };
 
   // `identity_status` is only written by the webhook; while a session is open

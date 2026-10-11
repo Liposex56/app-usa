@@ -8,7 +8,7 @@ import { createClient } from '@/lib/supabase/server';
 
 import { InsuranceForm } from './insurance-form';
 
-export const metadata: Metadata = { title: 'Insurance — Havenr' };
+export const metadata: Metadata = { title: 'Insurance' };
 
 const STATUS_COPY: Record<CheckStatus, { label: string; tone: string }> = {
   not_started: { label: 'Not submitted', tone: 'bg-espresso-700/8 text-espresso-600' },

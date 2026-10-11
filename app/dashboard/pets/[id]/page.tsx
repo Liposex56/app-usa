@@ -20,7 +20,7 @@ export async function generateMetadata({
     .select('name')
     .eq('id', id)
     .maybeSingle();
-  return { title: pet?.name ? `${pet.name} · Havenr` : 'Pet profile · Havenr' };
+  return { title: pet?.name ? pet.name : 'Pet profile' };
 }
 
 export default async function PetProfilePage({

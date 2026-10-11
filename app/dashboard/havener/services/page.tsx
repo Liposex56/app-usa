@@ -9,7 +9,7 @@ import { SERVICES } from '@/lib/services';
 import { createClient } from '@/lib/supabase/server';
 import { formatCents } from '@/lib/utils';
 
-export const metadata: Metadata = { title: 'Your services · Havenr' };
+export const metadata: Metadata = { title: 'Your services' };
 
 export default async function HavenerServicesPage() {
   const profile = await requireProfile();

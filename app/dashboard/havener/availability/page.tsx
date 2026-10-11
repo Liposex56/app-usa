@@ -10,7 +10,7 @@ import { formatDate } from '@/lib/utils';
 import { BlockDatesForm } from './block-dates-form';
 import { UnblockButton } from './unblock-button';
 
-export const metadata: Metadata = { title: 'My availability — Havenr' };
+export const metadata: Metadata = { title: 'My availability' };
 
 type Range = { startDate: string; endDate: string; note: string | null };
 

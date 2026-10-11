@@ -1,7 +1,11 @@
 import type { Metadata } from 'next';
 
 import type { CheckStatus, ProfileRow, SitterProfileRow } from '@/lib/database.types';
-import { checkrConfigured, type BackgroundCheckStatus } from '@/lib/checkr';
+import {
+  checkrConfigured,
+  effectiveBackgroundStatus,
+  type BackgroundCheckStatus,
+} from '@/lib/checkr';
 import { createClient } from '@/lib/supabase/server';
 import { formatDate } from '@/lib/utils';
 
@@ -73,7 +77,7 @@ export default async function AdminBackgroundChecksPage() {
     .map((sitter) => ({
       sitter,
       check: checks.get(sitter.id) ?? null,
-      status: (checks.get(sitter.id)?.status ?? 'not_started') as BackgroundCheckStatus,
+      status: effectiveBackgroundStatus(checks.get(sitter.id) ?? null, sitter.background_check_status),
     }))
     .sort((a, b) => ORDER.indexOf(a.status) - ORDER.indexOf(b.status));
 

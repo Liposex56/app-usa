@@ -7,7 +7,7 @@ import type { PetRow } from '@/lib/database.types';
 import { requireProfile } from '@/lib/auth';
 import { createClient } from '@/lib/supabase/server';
 
-export const metadata: Metadata = { title: 'Edit pet · Havenr' };
+export const metadata: Metadata = { title: 'Edit pet' };
 
 export default async function EditPetPage({
   params,

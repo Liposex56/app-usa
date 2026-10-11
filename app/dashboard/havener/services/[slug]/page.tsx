@@ -17,7 +17,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   const service = serviceBySlug(slug);
-  return { title: service ? `${service.name} settings · Havenr` : 'Havenr' };
+  return { title: service ? `${service.name} settings` : 'Service settings' };
 }
 
 export default async function ServiceSettingsPage({

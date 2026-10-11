@@ -72,12 +72,17 @@ export default async function SearchPage({
   let rateBySitter = new Map<string, number>();
   let distanceBySitter = new Map<string, number>();
   if (ready && origin) {
+    // A Havener searching as an owner never sees their own listing.
+    const {
+      data: { user: viewer },
+    } = await supabase.auth.getUser();
     const result = await findMatchingSitters(supabase, {
       service: service as ServiceType,
       startDate,
       endDate,
       species,
       origin,
+      excludeId: viewer?.id,
     });
     sitters = result.sitters;
     rateBySitter = result.rateBySitter;

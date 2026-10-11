@@ -409,7 +409,7 @@ export function SitterProfileTabs({
                         {'★'.repeat(review.rating)}
                         {'☆'.repeat(5 - review.rating)}
                         {' · '}
-                        {new Date(review.created_at).toLocaleDateString(undefined, {
+                        {new Date(review.created_at).toLocaleDateString('en-US', {
                           month: 'short',
                           year: 'numeric',
                         })}

@@ -150,6 +150,9 @@ export async function contactHavenerAction(
   formData: FormData
 ): Promise<ContactState> {
   const profile = await requireProfile();
+  if (sitterId === profile.id) {
+    return { error: 'You can’t send a request to your own Havener profile.' };
+  }
   const supabase = await createClient();
 
   const serviceType = text(formData, 'serviceType') as ServiceType | null;
