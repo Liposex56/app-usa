@@ -581,12 +581,13 @@ export default async function DashboardPage({
               </span>
               <h3 className="mt-4 text-lg text-cream">Verification</h3>
               <p className="mt-1.5 text-sm leading-relaxed text-cream/60">
-                All four must be complete before you can take bookings.
+                Verify your identity, then all four checks must be complete before you can take bookings.
               </p>
 
               <ul className="mt-5 space-y-3">
                 {(
                   [
+                    ['Identity', sitterProfile?.identity_status],
                     ['Background check', sitterProfile?.background_check_status],
                     ['Interview', sitterProfile?.interview_status],
                     ['Home verification', sitterProfile?.home_check_status],
@@ -655,10 +656,12 @@ export default async function DashboardPage({
 
       {/* --------------------------------------------------------- Roadmap */}
       <section className="rounded-3xl border border-sky-200 bg-sky-50 p-7">
-        <h2 className="text-lg text-espresso-700">Coming next</h2>
+        <h2 className="text-lg text-espresso-700">What’s live</h2>
         <p className="mt-2 text-sm leading-relaxed text-espresso-600">
-          Search, bookings, in-app chat and reviews are live. Payments through
-          Havenr and GPS-tracked walks with service reports are next.
+          Search, requests and bookings, in-app chat, Meet &amp; Greets,
+          GPS-tracked walks, live service updates with photos and a final
+          report, and reviews are all live. Paying through Havenr is the last
+          piece, coming soon.
         </p>
         <div className="mt-4 flex flex-wrap gap-3">
           <ButtonLink href="/dashboard/calendar" variant="secondary" size="sm">

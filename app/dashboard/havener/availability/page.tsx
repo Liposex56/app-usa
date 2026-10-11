@@ -10,7 +10,7 @@ import { formatDate } from '@/lib/utils';
 import { BlockDatesForm } from './block-dates-form';
 import { UnblockButton } from './unblock-button';
 
-export const metadata: Metadata = { title: 'Mi disponibilidad — Havenr' };
+export const metadata: Metadata = { title: 'My availability — Havenr' };
 
 type Range = { startDate: string; endDate: string; note: string | null };
 
@@ -58,22 +58,22 @@ export default async function HavenerAvailabilityPage() {
         href="/dashboard/havener"
         className="text-sm text-espresso-500 hover:text-espresso-700"
       >
-        ← Volver a mi perfil de Havener
+        ← Back to my Havener profile
       </Link>
 
       <h1 className="mt-6 text-xl font-semibold text-espresso-700">
-        Mi disponibilidad
+        My availability
       </h1>
       <p className="mt-2 text-sm text-espresso-500">
-        Bloquea los días en los que no puedes recibir reservas — vacaciones,
-        compromisos personales, lo que sea. Mientras un día no esté
-        bloqueado ni tengas otra reserva confirmada esas fechas, los dueños
-        te van a poder encontrar y reservar directamente.
+        Block the days you can’t take bookings — vacations, personal
+        commitments, anything. As long as a day isn’t blocked and you have no
+        other confirmed booking on those dates, owners can find you and send
+        you requests.
       </p>
 
       <div className="mt-8 rounded-2xl border border-espresso-700/10 bg-hv-paper p-6">
         <h2 className="text-sm font-medium text-espresso-700">
-          Bloquear fechas
+          Block dates
         </h2>
         <div className="mt-4">
           <BlockDatesForm />
@@ -82,11 +82,11 @@ export default async function HavenerAvailabilityPage() {
 
       <div className="mt-8">
         <h2 className="text-sm font-medium text-espresso-700">
-          Días bloqueados ({ranges.length})
+          Blocked days ({ranges.length})
         </h2>
         {ranges.length === 0 ? (
           <p className="mt-3 rounded-2xl border border-dashed border-espresso-700/15 bg-hv-paper p-6 text-center text-sm text-espresso-500">
-            No tienes ningún día bloqueado.
+            You have no blocked days.
           </p>
         ) : (
           <div className="mt-3 space-y-2">

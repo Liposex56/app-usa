@@ -26,7 +26,7 @@ export async function saveInsuranceAction(
 
   if (!provider || !policyNumber || !expiresAt) {
     return {
-      error: 'Indica al menos la aseguradora, el número de póliza y la fecha de vencimiento.',
+      error: 'Enter at least the insurance company, the policy number and the expiry date.',
     };
   }
 

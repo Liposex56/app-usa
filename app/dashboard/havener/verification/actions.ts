@@ -9,13 +9,11 @@ import { createClient } from '@/lib/supabase/server';
 export type VerifyActionState = { error: string | null };
 
 /**
- * Automated document review (§12's "background check"): Stripe Identity
- * checks a government ID against a live selfie. It's a real identity check,
- * not a full criminal-history background check — the badge/status name is
- * kept as `background_check_status` because that's what the rest of the
- * app (and the public "Background checked" badge) already reads, but treat
- * this as verified identity, and swap in a dedicated background-check
- * vendor later if the business needs more than that.
+ * Identity verification: Stripe Identity checks a government ID against a
+ * live selfie and reports back through the webhook, which sets
+ * `identity_status`. This is *identity* only — the criminal-record check is a
+ * separate step (background-actions.ts) and is what the public "Background
+ * checked" badge reads.
  */
 export async function createIdentitySessionAction(): Promise<VerifyActionState> {
   const profile = await requireProfile();
@@ -44,7 +42,6 @@ export async function createIdentitySessionAction(): Promise<VerifyActionState> 
     .update({
       stripe_identity_session_id: session.id,
       stripe_identity_status: 'processing',
-      background_check_status: 'pending',
     })
     .eq('id', profile.id);
   if (error) return { error: error.message };

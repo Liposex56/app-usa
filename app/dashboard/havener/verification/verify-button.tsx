@@ -14,7 +14,7 @@ function Submit({ label }: { label: string }) {
   const { pending } = useFormStatus();
   return (
     <Button type="submit" disabled={pending}>
-      {pending ? 'Abriendo…' : label}
+      {pending ? 'Opening…' : label}
     </Button>
   );
 }

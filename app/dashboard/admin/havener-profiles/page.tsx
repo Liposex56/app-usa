@@ -6,14 +6,14 @@ import { createClient } from '@/lib/supabase/server';
 
 import { ProfileReviewButtons } from './review-buttons';
 
-export const metadata: Metadata = { title: 'Perfiles de Havener — Panel administrativo' };
+export const metadata: Metadata = { title: 'Havener profiles — Admin panel' };
 
 const STATUS_COPY: Record<string, { label: string; tone: string }> = {
-  draft: { label: 'Borrador', tone: 'bg-espresso-700/8 text-espresso-600' },
-  pending_review: { label: 'En revisión', tone: 'bg-cream text-olive-600' },
-  approved: { label: 'Aprobado', tone: 'bg-green-100 text-green-800' },
-  rejected: { label: 'Rechazado', tone: 'bg-red-100 text-red-800' },
-  suspended: { label: 'Suspendido', tone: 'bg-red-100 text-red-800' },
+  draft: { label: 'Draft', tone: 'bg-espresso-700/8 text-espresso-600' },
+  pending_review: { label: 'In review', tone: 'bg-cream text-olive-600' },
+  approved: { label: 'Approved', tone: 'bg-green-100 text-green-800' },
+  rejected: { label: 'Rejected', tone: 'bg-red-100 text-red-800' },
+  suspended: { label: 'Suspended', tone: 'bg-red-100 text-red-800' },
 };
 
 const ORDER = ['pending_review', 'draft', 'rejected', 'suspended', 'approved'];
@@ -43,7 +43,7 @@ export default async function AdminHavenerProfilesPage() {
   if (sitters.length === 0) {
     return (
       <p className="rounded-2xl border border-espresso-700/10 bg-hv-paper p-8 text-center text-sm text-espresso-500">
-        Todavía no hay perfiles de Havener.
+        There are no Havener profiles yet.
       </p>
     );
   }
@@ -73,7 +73,7 @@ export default async function AdminHavenerProfilesPage() {
               </div>
               <p className="text-sm text-espresso-500">
                 {[sitter.service_city, sitter.service_state].filter(Boolean).join(', ') ||
-                  'Sin ciudad'}
+                  'No city'}
                 {person?.email ? ` · ${person.email}` : ''}
               </p>
               {sitter.headline && (
@@ -82,10 +82,10 @@ export default async function AdminHavenerProfilesPage() {
               <p className="text-sm text-espresso-500">
                 {services.length > 0
                   ? services.map((s) => serviceName(s.service_type)).join(' · ')
-                  : 'Sin servicios publicados'}
+                  : 'No services published'}
               </p>
               {sitter.status === 'rejected' && sitter.rejection_reason && (
-                <p className="text-sm text-red-700">Motivo: {sitter.rejection_reason}</p>
+                <p className="text-sm text-red-700">Reason: {sitter.rejection_reason}</p>
               )}
             </div>
 

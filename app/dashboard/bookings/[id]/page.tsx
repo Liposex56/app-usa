@@ -14,6 +14,12 @@ import type {
 import { requireProfile } from '@/lib/auth';
 import { bookingPhase } from '@/lib/booking-phase';
 import { serviceName } from '@/lib/services';
+import {
+  SERVICE_BUCKET,
+  completionRequirements,
+  routeDistanceMiles,
+  type ServiceUpdateRow,
+} from '@/lib/service-reports';
 import { createClient } from '@/lib/supabase/server';
 import { formatCents, formatDate } from '@/lib/utils';
 
@@ -25,6 +31,8 @@ import { Chat } from './chat';
 import { MeetGreetPanel } from './meet-greet';
 import { PayButton } from './pay-button';
 import { ReviewForm } from './review-form';
+import { ServiceLog } from './service-log';
+import { ServiceReport } from './service-report';
 import { WalkMap } from './walk-map';
 import { WalkTracker } from './walk-tracker';
 
@@ -50,6 +58,9 @@ export default async function BookingDetailPage({
 
   const viewerRole: 'owner' | 'sitter' =
     booking.owner_id === profile.id ? 'owner' : 'sitter';
+  // Staff can open any booking (reports, disputes) but only read it.
+  const isParticipant =
+    booking.owner_id === profile.id || booking.sitter_id === profile.id;
   const phase = bookingPhase(booking, viewerRole);
   const archived =
     viewerRole === 'owner' ? booking.archived_by_owner : booking.archived_by_sitter;
@@ -61,6 +72,7 @@ export default async function BookingDetailPage({
     { data: reviewRows },
     { data: meetGreetRows },
     { data: walkLocationRows },
+    { data: updateRows },
   ] = await Promise.all([
     supabase.rpc('booking_counterparty', { p_booking_id: id }),
     supabase.from('booking_pets').select('pet_id').eq('booking_id', id),
@@ -82,6 +94,11 @@ export default async function BookingDetailPage({
           .eq('booking_id', id)
           .order('recorded_at', { ascending: true })
       : Promise.resolve({ data: [] as WalkLocationRow[] }),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (supabase.from('service_updates') as any)
+      .select('*')
+      .eq('booking_id', id)
+      .order('created_at', { ascending: true }),
   ]);
 
   const counterparty = (counterpartyRows as BookingCounterparty[] | null)?.[0] ?? null;
@@ -94,6 +111,29 @@ export default async function BookingDetailPage({
   const reviews = (reviewRows ?? []) as ReviewRow[];
   const meetGreets = (meetGreetRows ?? []) as MeetGreetRow[];
   const walkLocations = (walkLocationRows ?? []) as WalkLocationRow[];
+  const serviceUpdates = (updateRows ?? []) as ServiceUpdateRow[];
+
+  // Photos and videos live in a private bucket — signed links, valid long
+  // enough to read the page.
+  const mediaUrls: Record<string, string> = {};
+  const mediaPaths = serviceUpdates.filter((u) => u.media_path);
+  if (mediaPaths.length > 0) {
+    const { data: signed } = await supabase.storage
+      .from(SERVICE_BUCKET)
+      .createSignedUrls(
+        mediaPaths.map((u) => u.media_path as string),
+        60 * 60
+      );
+    for (const item of signed ?? []) {
+      const update = mediaPaths.find((u) => u.media_path === item.path);
+      if (update && item.signedUrl) mediaUrls[update.id] = item.signedUrl;
+    }
+  }
+  const requirements = completionRequirements(
+    booking.service_type,
+    serviceUpdates,
+    walkLocations.length
+  );
   const myReview = reviews.find((r) => r.reviewer_id === profile.id);
   const counterpartyId = viewerRole === 'owner' ? booking.sitter_id : booking.owner_id;
 
@@ -255,13 +295,15 @@ export default async function BookingDetailPage({
           </div>
         </details>
 
-        <div className="mt-4 border-t border-espresso-700/8 pt-4">
-          <BookingActions
-            bookingId={booking.id}
-            status={booking.status}
-            viewerRole={viewerRole}
-          />
-        </div>
+        {isParticipant && (
+          <div className="mt-4 border-t border-espresso-700/8 pt-4">
+            <BookingActions
+              bookingId={booking.id}
+              status={booking.status}
+              viewerRole={viewerRole}
+            />
+          </div>
+        )}
       </div>
 
       {booking.service_type === 'dog_walking' &&
@@ -279,6 +321,39 @@ export default async function BookingDetailPage({
           </div>
         )}
 
+      {viewerRole === 'sitter' && isParticipant && booking.status === 'in_progress' && (
+        <div className="mt-6">
+          <ServiceLog
+            bookingId={booking.id}
+            sitterId={profile.id}
+            service={booking.service_type}
+            requirements={requirements}
+          />
+        </div>
+      )}
+
+      {(booking.status === 'in_progress' || booking.status === 'completed') && (
+        <div className="mt-6">
+          <ServiceReport
+            bookingId={booking.id}
+            updates={serviceUpdates}
+            mediaUrls={mediaUrls}
+            status={booking.status}
+            startedAt={booking.started_at}
+            completedAt={booking.completed_at}
+            walkMiles={
+              booking.service_type === 'dog_walking' && walkLocations.length > 1
+                ? routeDistanceMiles(walkLocations)
+                : null
+            }
+            canRemove={
+              viewerRole === 'sitter' && isParticipant && booking.status === 'in_progress'
+            }
+          />
+        </div>
+      )}
+
+      {isParticipant && (
       <div className="mt-6 rounded-3xl border border-espresso-700/8 bg-hv-paper p-4 shadow-card">
         <BookingToolbar
           bookingId={booking.id}
@@ -300,6 +375,7 @@ export default async function BookingDetailPage({
           }}
         />
       </div>
+      )}
 
       <div className="mt-3">
         <Chat
@@ -309,18 +385,21 @@ export default async function BookingDetailPage({
           sendAction={sendMessageAction.bind(null, booking.id, counterpartyId)}
           counterpartyName={counterparty?.display_name ?? 'them'}
           counterpartyAvatarUrl={counterparty?.avatar_url ?? null}
+          readOnly={!isParticipant}
         />
       </div>
 
-      <div className="mt-3 rounded-3xl border border-espresso-700/8 bg-hv-paper shadow-card">
-        <MeetGreetPanel
-          bookingId={booking.id}
-          viewerId={profile.id}
-          initialMeetGreets={meetGreets}
-        />
-      </div>
+      {isParticipant && (
+        <div className="mt-3 rounded-3xl border border-espresso-700/8 bg-hv-paper shadow-card">
+          <MeetGreetPanel
+            bookingId={booking.id}
+            viewerId={profile.id}
+            initialMeetGreets={meetGreets}
+          />
+        </div>
+      )}
 
-      {booking.status === 'completed' && (
+      {isParticipant && booking.status === 'completed' && (
         <div className="mt-8 rounded-3xl border border-espresso-700/8 bg-hv-paper p-7 shadow-card">
           <h2 className="text-lg text-espresso-700">Review</h2>
           {myReview ? (

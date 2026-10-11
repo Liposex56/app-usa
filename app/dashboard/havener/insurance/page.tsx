@@ -8,14 +8,14 @@ import { createClient } from '@/lib/supabase/server';
 
 import { InsuranceForm } from './insurance-form';
 
-export const metadata: Metadata = { title: 'Seguro — Havenr' };
+export const metadata: Metadata = { title: 'Insurance — Havenr' };
 
 const STATUS_COPY: Record<CheckStatus, { label: string; tone: string }> = {
-  not_started: { label: 'Sin enviar', tone: 'bg-espresso-700/8 text-espresso-600' },
-  pending: { label: 'En revisión', tone: 'bg-cream text-olive-600' },
-  approved: { label: 'Aprobado', tone: 'bg-green-100 text-green-800' },
-  rejected: { label: 'Rechazado — vuelve a enviarlo', tone: 'bg-red-100 text-red-800' },
-  expired: { label: 'Vencido — vuelve a enviarlo', tone: 'bg-red-100 text-red-800' },
+  not_started: { label: 'Not submitted', tone: 'bg-espresso-700/8 text-espresso-600' },
+  pending: { label: 'In review', tone: 'bg-cream text-olive-600' },
+  approved: { label: 'Approved', tone: 'bg-green-100 text-green-800' },
+  rejected: { label: 'Rejected — submit it again', tone: 'bg-red-100 text-red-800' },
+  expired: { label: 'Expired — submit it again', tone: 'bg-red-100 text-red-800' },
 };
 
 export default async function HavenerInsurancePage() {
@@ -38,21 +38,21 @@ export default async function HavenerInsurancePage() {
         href="/dashboard/havener"
         className="text-sm text-espresso-500 hover:text-espresso-700"
       >
-        ← Volver a mi perfil de Havener
+        ← Back to my Havener profile
       </Link>
 
       <div className="mt-6 flex items-center justify-between">
         <h1 className="text-xl font-semibold text-espresso-700">
-          Seguro de responsabilidad civil
+          Liability insurance
         </h1>
         <span className={`rounded-full px-3 py-1 text-xs font-medium ${status.tone}`}>
           {status.label}
         </span>
       </div>
       <p className="mt-2 text-sm text-espresso-500">
-        Havenr requiere que cada Havener cuente con seguro vigente. Esta
-        información es privada — los dueños sólo ven la insignia
-        &ldquo;Insured&rdquo; una vez que el staff la aprueba.
+        Havenr requires every Havener to have active insurance. This
+        information is private — owners only see the &ldquo;Insured&rdquo;
+        badge once our team approves it.
       </p>
 
       <div className="mt-8 rounded-2xl border border-espresso-700/10 bg-hv-paper p-6">

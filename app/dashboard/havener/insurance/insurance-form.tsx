@@ -24,7 +24,7 @@ export function InsuranceForm({
     <form action={formAction} className="space-y-5" encType="multipart/form-data">
       <FormError message={state.error} />
 
-      <Field label="Aseguradora" htmlFor="provider" required>
+      <Field label="Insurance company" htmlFor="provider" required>
         <Input
           id="provider"
           name="provider"
@@ -33,7 +33,7 @@ export function InsuranceForm({
         />
       </Field>
 
-      <Field label="Número de póliza" htmlFor="policyNumber" required>
+      <Field label="Policy number" htmlFor="policyNumber" required>
         <Input
           id="policyNumber"
           name="policyNumber"
@@ -42,17 +42,17 @@ export function InsuranceForm({
         />
       </Field>
 
-      <Field label="Tipo de cobertura" htmlFor="coverageType">
+      <Field label="Coverage type" htmlFor="coverageType">
         <Input
           id="coverageType"
           name="coverageType"
-          placeholder="Responsabilidad civil, por ejemplo"
+          placeholder="Liability, for example"
           defaultValue={existing?.coverage_type ?? ''}
         />
       </Field>
 
       <div className="grid gap-5 sm:grid-cols-2">
-        <Field label="Vigente desde" htmlFor="effectiveDate">
+        <Field label="Effective from" htmlFor="effectiveDate">
           <Input
             id="effectiveDate"
             name="effectiveDate"
@@ -60,7 +60,7 @@ export function InsuranceForm({
             defaultValue={existing?.effective_date ?? ''}
           />
         </Field>
-        <Field label="Vence" htmlFor="expiresAt" required>
+        <Field label="Expires" htmlFor="expiresAt" required>
           <Input
             id="expiresAt"
             name="expiresAt"
@@ -72,22 +72,22 @@ export function InsuranceForm({
       </div>
 
       <Field
-        label="Documento de la póliza"
+        label="Policy document"
         htmlFor="document"
-        hint="PDF o foto. Es privado — sólo lo revisa el staff de Havenr."
+        hint="PDF or photo. It’s private — only the Havenr team reviews it."
       >
         <Input id="document" name="document" type="file" accept=".pdf,image/*" />
       </Field>
 
       {existing?.document_path && (
         <p className="text-xs text-espresso-500/70">
-          Ya tienes un documento cargado. Sube uno nuevo sólo si quieres
-          reemplazarlo.
+          You already uploaded a document. Upload a new one only if you want
+          to replace it.
         </p>
       )}
 
       <Button type="submit" disabled={pending}>
-        {pending ? 'Enviando…' : 'Enviar para revisión'}
+        {pending ? 'Sending…' : 'Submit for review'}
       </Button>
     </form>
   );

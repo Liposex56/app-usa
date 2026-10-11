@@ -68,6 +68,7 @@ export function BookingActions({
   viewerRole: 'owner' | 'sitter';
 }) {
   const [isPending, startTransition] = useTransition();
+  const [completeError, setCompleteError] = useState<string | null>(null);
   const cancel = cancelBookingAction.bind(null, bookingId);
   const decline = declineBookingAction.bind(null, bookingId);
 
@@ -108,17 +109,21 @@ export function BookingActions({
 
   if (viewerRole === 'sitter' && status === 'in_progress') {
     return (
-      <Button
-        size="sm"
-        disabled={isPending}
-        onClick={() =>
-          startTransition(() => {
-            void completeServiceAction(bookingId);
-          })
-        }
-      >
-        Mark completed
-      </Button>
+      <div className="space-y-2">
+        <FormError message={completeError} />
+        <Button
+          size="sm"
+          disabled={isPending}
+          onClick={() =>
+            startTransition(async () => {
+              const result = await completeServiceAction(bookingId);
+              setCompleteError(result.error);
+            })
+          }
+        >
+          Mark completed
+        </Button>
+      </div>
     );
   }
 

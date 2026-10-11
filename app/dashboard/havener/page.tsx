@@ -10,11 +10,11 @@ import { createClient } from '@/lib/supabase/server';
 export const metadata: Metadata = { title: 'Havener profile' };
 
 const STATUS_COPY: Record<SitterProfileRow['status'], { label: string; tone: string }> = {
-  draft: { label: 'Borrador — aún no enviado', tone: 'bg-espresso-700/8 text-espresso-600' },
-  pending_review: { label: 'En revisión', tone: 'bg-cream text-olive-600' },
-  approved: { label: 'Aprobado — visible para dueños', tone: 'bg-green-100 text-green-800' },
-  rejected: { label: 'Rechazado — edita y reenvía', tone: 'bg-red-100 text-red-800' },
-  suspended: { label: 'Suspendido', tone: 'bg-red-100 text-red-800' },
+  draft: { label: 'Draft — not submitted yet', tone: 'bg-espresso-700/8 text-espresso-600' },
+  pending_review: { label: 'In review', tone: 'bg-cream text-olive-600' },
+  approved: { label: 'Approved — visible to owners', tone: 'bg-green-100 text-green-800' },
+  rejected: { label: 'Rejected — edit and resubmit', tone: 'bg-red-100 text-red-800' },
+  suspended: { label: 'Suspended', tone: 'bg-red-100 text-red-800' },
 };
 
 function ActionLink({ href, children }: { href: string; children: React.ReactNode }) {
@@ -53,17 +53,17 @@ export default async function HavenerProfilePage() {
       {!sitter ? (
         <div className="mt-6 rounded-3xl border border-espresso-700/10 bg-hv-paper p-8 text-center">
           <h1 className="text-xl font-semibold text-espresso-700">
-            Crea tu perfil en Havener
+            Create your Havener profile
           </h1>
           <p className="mt-2 text-sm text-espresso-500">
-            Aún no has creado tu perfil de Havener. Complétalo para empezar a
-            recibir reservas.
+            You haven’t created your Havener profile yet. Complete it to start
+            receiving bookings.
           </p>
           <Link
             href="/dashboard/havener/edit"
             className="mt-6 inline-flex items-center justify-center rounded-full bg-gold-500 px-6 py-2.5 text-sm font-medium text-espresso-900 transition-colors hover:bg-gold-600"
           >
-            Crear mi perfil
+            Create my profile
           </Link>
         </div>
       ) : (
@@ -86,7 +86,7 @@ export default async function HavenerProfilePage() {
               </div>
               <div>
                 <h1 className="text-xl font-semibold text-espresso-700">
-                  {profile.display_name ?? 'Tu perfil de Havener'}
+                  {profile.display_name ?? 'Your Havener profile'}
                 </h1>
                 {sitter.headline && (
                   <p className="text-sm text-espresso-600">{sitter.headline}</p>
@@ -117,44 +117,44 @@ export default async function HavenerProfilePage() {
           <div className="mt-6 flex flex-wrap gap-2">
             {sitter.insurance_status === 'approved' && (
               <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">
-                <IconShield className="h-3 w-3" /> Asegurado
+                <IconShield className="h-3 w-3" /> Insured
               </span>
             )}
             {sitter.background_check_status === 'approved' && (
               <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">
-                <IconCheck className="h-3 w-3" /> Antecedentes verificados
+                <IconCheck className="h-3 w-3" /> Background checked
               </span>
             )}
             {sitter.status === 'approved' && (
               <span className="inline-flex items-center gap-1 rounded-full bg-gold-500/15 px-2.5 py-0.5 text-xs font-medium text-gold-700">
-                <IconStar className="h-3 w-3" /> Perfil público activo
+                <IconStar className="h-3 w-3" /> Public profile live
               </span>
             )}
           </div>
 
           <div className="mt-8 flex flex-wrap gap-3">
-            <ActionLink href="/dashboard/havener/edit">Editar perfil</ActionLink>
+            <ActionLink href="/dashboard/havener/edit">Edit profile</ActionLink>
             {sitter.status === 'approved' && (
               <ActionLink href={`/sitters/${profile.id}`}>
-                Ver mi perfil público
+                View my public profile
               </ActionLink>
             )}
             <ActionLink href="/dashboard/havener/home">
-              Fotos y video de mi casa
+              Photos and video of my home
             </ActionLink>
             <ActionLink href="/dashboard/havener/services">
-              Gestionar mis servicios
+              Manage my services
             </ActionLink>
             <ActionLink href="/dashboard/havener/availability">
-              Mi disponibilidad
+              My availability
             </ActionLink>
             <ActionLink href="/dashboard/havener/insurance">
-              Gestionar mi seguro
+              Manage my insurance
             </ActionLink>
             <ActionLink href="/dashboard/havener/verification">
-              Verificar mi identidad
+              Verify my identity
             </ActionLink>
-            <ActionLink href="/dashboard/havener/payments">Cobros y pagos</ActionLink>
+            <ActionLink href="/dashboard/havener/payments">Payments and payouts</ActionLink>
           </div>
         </>
       )}

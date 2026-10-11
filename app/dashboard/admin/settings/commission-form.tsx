@@ -34,11 +34,11 @@ export function CommissionForm({
         action={formAction}
         className="space-y-4 rounded-2xl border border-espresso-700/10 bg-hv-paper p-6"
       >
-        <h2 className="font-semibold text-espresso-700">Comisión de la plataforma</h2>
+        <h2 className="font-semibold text-espresso-700">Platform commission</h2>
         <Field
-          label="Porcentaje para la empresa"
+          label="Company percentage"
           htmlFor="commissionPercent"
-          hint="El resto del valor del servicio se liquida al Havener."
+          hint="The rest of the service value is paid out to the Havener."
           required
         >
           <Input
@@ -56,20 +56,20 @@ export function CommissionForm({
 
         {!canEdit && (
           <p className="text-xs text-espresso-500/70">
-            Sólo un administrador puede cambiar este valor. Puedes verlo, pero
-            no editarlo con tu rol actual.
+            Only an administrator can change this value. You can see it, but
+            not edit it with your current role.
           </p>
         )}
         {state.error && <p className="text-sm text-red-700">{state.error}</p>}
 
         <Button type="submit" disabled={!canEdit || pending}>
-          {pending ? 'Guardando…' : 'Guardar comisión'}
+          {pending ? 'Saving…' : 'Save commission'}
         </Button>
       </form>
 
       <div className="space-y-4 rounded-2xl border border-espresso-700/10 bg-hv-paper p-6">
-        <h2 className="font-semibold text-espresso-700">Simulador de reparto</h2>
-        <Field label="Valor del servicio" htmlFor="sampleDollars" hint="En dólares, sólo para previsualizar el reparto.">
+        <h2 className="font-semibold text-espresso-700">Split simulator</h2>
+        <Field label="Service value" htmlFor="sampleDollars" hint="In dollars, only to preview the split.">
           <Input
             id="sampleDollars"
             type="number"
@@ -82,21 +82,21 @@ export function CommissionForm({
 
         <dl className="space-y-2 text-sm">
           <div className="flex justify-between">
-            <dt className="text-espresso-500">Total pagado por el dueño</dt>
+            <dt className="text-espresso-500">Total paid by the owner</dt>
             <dd className="font-medium text-espresso-700">
               {formatCents(split.totalCents)}
             </dd>
           </div>
           <div className="flex justify-between">
             <dt className="text-espresso-500">
-              Comisión de la empresa ({percent}%)
+              Company commission ({percent}%)
             </dt>
             <dd className="font-medium text-espresso-700">
               {formatCents(split.companyFeeCents)}
             </dd>
           </div>
           <div className="flex justify-between border-t border-espresso-700/10 pt-2">
-            <dt className="text-espresso-500">Pago al Havener</dt>
+            <dt className="text-espresso-500">Havener payout</dt>
             <dd className="font-semibold text-gold-700">
               {formatCents(split.sitterPayoutCents)}
             </dd>

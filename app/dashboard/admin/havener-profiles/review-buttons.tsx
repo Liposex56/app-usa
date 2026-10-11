@@ -35,7 +35,7 @@ export function ProfileReviewButtons({
             onClick={() => setRejecting(true)}
             className="h-9 rounded-full border border-red-300 px-4 text-sm font-medium text-red-700 transition-colors hover:bg-red-50"
           >
-            Rechazar
+            Reject
           </button>
         )}
         <form action={approveAction}>
@@ -46,7 +46,7 @@ export function ProfileReviewButtons({
             disabled={busy}
             className="h-9 rounded-full bg-gold-500 px-4 text-sm font-medium text-white transition-colors hover:bg-gold-600 disabled:cursor-not-allowed disabled:opacity-55"
           >
-            Aprobar perfil
+            Approve profile
           </button>
         </form>
       </div>
@@ -59,7 +59,7 @@ export function ProfileReviewButtons({
             name="reason"
             required
             rows={2}
-            placeholder="Qué debe corregir el Havener"
+            placeholder="What the Havener needs to fix"
             className="w-full rounded-lg border border-espresso-700/15 bg-hv-paper p-2 text-sm text-espresso-700 focus:border-gold-500 focus:outline-none"
           />
           <button
@@ -67,7 +67,7 @@ export function ProfileReviewButtons({
             disabled={busy}
             className="h-9 rounded-full bg-red-600 px-4 text-sm font-medium text-white transition-colors hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-55"
           >
-            Confirmar rechazo
+            Confirm rejection
           </button>
         </form>
       )}

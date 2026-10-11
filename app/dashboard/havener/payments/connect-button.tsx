@@ -14,7 +14,7 @@ function Submit() {
   const { pending } = useFormStatus();
   return (
     <Button type="submit" disabled={pending}>
-      {pending ? 'Conectando…' : 'Conectar con Stripe'}
+      {pending ? 'Connecting…' : 'Connect with Stripe'}
     </Button>
   );
 }

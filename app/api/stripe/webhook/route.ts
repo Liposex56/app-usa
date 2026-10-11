@@ -97,7 +97,9 @@ export async function POST(request: Request) {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           .update({
             stripe_identity_status: 'verified',
-            background_check_status: 'approved',
+            // An ID + selfie match is *identity*, not a criminal check: the
+            // "Background checked" badge comes from background_checks.
+            identity_status: 'approved',
           } as never)
           .eq('id', sitterId);
       }
@@ -113,7 +115,7 @@ export async function POST(request: Request) {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           .update({
             stripe_identity_status: 'requires_input',
-            background_check_status: 'rejected',
+            identity_status: 'rejected',
           } as never)
           .eq('id', sitterId);
       }

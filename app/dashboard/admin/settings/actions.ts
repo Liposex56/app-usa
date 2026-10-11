@@ -13,13 +13,13 @@ export async function updateCommissionAction(
 ): Promise<SettingsState> {
   const { profile, role } = await requireStaff();
   if (role !== 'admin') {
-    return { error: 'Sólo un administrador puede cambiar la comisión.' };
+    return { error: 'Only an administrator can change the commission.' };
   }
 
   const raw = formData.get('commissionPercent');
   const percent = typeof raw === 'string' ? Number.parseFloat(raw) : NaN;
   if (!Number.isFinite(percent) || percent < 0 || percent > 100) {
-    return { error: 'Ingresa un porcentaje entre 0 y 100.' };
+    return { error: 'Enter a percentage between 0 and 100.' };
   }
 
   const supabase = await createClient();

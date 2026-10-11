@@ -9,7 +9,7 @@ import { createClient } from '@/lib/supabase/server';
 
 import { ConnectButton } from './connect-button';
 
-export const metadata: Metadata = { title: 'Cobros y pagos — Havenr' };
+export const metadata: Metadata = { title: 'Payments and payouts — Havenr' };
 
 export default async function HavenerPaymentsPage() {
   const profile = await requireProfile();
@@ -63,24 +63,24 @@ export default async function HavenerPaymentsPage() {
         href="/dashboard/havener"
         className="text-sm text-espresso-500 hover:text-espresso-700"
       >
-        ← Volver a mi perfil de Havener
+        ← Back to my Havener profile
       </Link>
 
       <h1 className="mt-6 text-xl font-semibold text-espresso-700">
-        Cobros y pagos
+        Payments and payouts
       </h1>
       <p className="mt-2 text-sm text-espresso-500">
-        Havenr paga a cada Havener a través de Stripe. Conecta tu cuenta para
-        recibir tus pagos directamente en tu banco cuando se complete un
-        servicio.
+        Havenr pays each Havener through Stripe. Connect your account to
+        receive your payouts directly in your bank when a service is
+        completed.
       </p>
 
       <div className="mt-8 rounded-2xl border border-espresso-700/10 bg-hv-paper p-6">
         {!stripeConfigured ? (
           <div className="rounded-xl bg-cream p-4 text-sm text-olive-700">
-            Los pagos todavía no están activados en Havenr — falta conectar
-            la cuenta de Stripe de la empresa. En cuanto esté lista, vuelve
-            aquí para conectar tu cuenta y empezar a cobrar.
+            Payments aren’t turned on yet — Havenr still has to connect its
+            Stripe account. Once it’s ready, come back here to connect your
+            account and start getting paid.
           </div>
         ) : ready ? (
           <div className="flex items-center gap-3">
@@ -89,10 +89,10 @@ export default async function HavenerPaymentsPage() {
             </span>
             <div>
               <p className="font-medium text-espresso-700">
-                Tu cuenta está lista para cobrar
+                Your account is ready to get paid
               </p>
               <p className="text-sm text-espresso-500">
-                Stripe procesará tus pagos automáticamente.
+                Stripe will process your payouts automatically.
               </p>
             </div>
           </div>
@@ -100,8 +100,8 @@ export default async function HavenerPaymentsPage() {
           <div>
             <p className="text-sm text-espresso-600">
               {sitter?.stripe_account_id
-                ? 'Tu cuenta de Stripe está creada pero falta terminar de configurarla.'
-                : 'Aún no has conectado una cuenta de Stripe.'}
+                ? 'Your Stripe account is created but setup isn’t finished.'
+                : 'You haven’t connected a Stripe account yet.'}
             </p>
             <div className="mt-4">
               <ConnectButton />

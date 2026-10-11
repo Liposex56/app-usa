@@ -4,20 +4,68 @@ import { redirect } from 'next/navigation';
 
 import type { CheckStatus, SitterProfileRow } from '@/lib/database.types';
 import { requireProfile } from '@/lib/auth';
+import { checkrConfigured, type BackgroundCheckStatus } from '@/lib/checkr';
 import { getStripe } from '@/lib/stripe';
 import { createClient } from '@/lib/supabase/server';
 
+import { BackgroundCheckButton } from './background-button';
 import { VerifyButton } from './verify-button';
 
-export const metadata: Metadata = { title: 'Verificación de identidad — Havenr' };
+export const metadata: Metadata = { title: 'Verification — Havenr' };
 
-const STATUS_COPY: Record<CheckStatus, { label: string; tone: string }> = {
-  not_started: { label: 'Sin enviar', tone: 'bg-espresso-700/8 text-espresso-600' },
-  pending: { label: 'En proceso', tone: 'bg-cream text-olive-600' },
-  approved: { label: 'Verificado', tone: 'bg-green-100 text-green-800' },
-  rejected: { label: 'Necesita otro intento', tone: 'bg-red-100 text-red-800' },
-  expired: { label: 'Vencido — vuelve a intentarlo', tone: 'bg-red-100 text-red-800' },
+type BackgroundRow = {
+  status: BackgroundCheckStatus;
+  invitation_url: string | null;
+  note: string | null;
 };
+
+const IDENTITY_COPY: Record<CheckStatus, { label: string; tone: string }> = {
+  not_started: { label: 'Not started', tone: 'bg-espresso-700/8 text-espresso-600' },
+  pending: { label: 'In progress', tone: 'bg-hv-butter text-olive-600' },
+  approved: { label: 'Verified', tone: 'bg-green-100 text-green-800' },
+  rejected: { label: 'Needs another try', tone: 'bg-red-100 text-red-800' },
+  expired: { label: 'Expired — try again', tone: 'bg-red-100 text-red-800' },
+};
+
+const BACKGROUND_COPY: Record<BackgroundCheckStatus, { label: string; tone: string }> = {
+  not_started: { label: 'Not started', tone: 'bg-espresso-700/8 text-espresso-600' },
+  invited: { label: 'Waiting for you', tone: 'bg-hv-butter text-olive-600' },
+  processing: { label: 'In progress', tone: 'bg-hv-butter text-olive-600' },
+  clear: { label: 'Passed', tone: 'bg-green-100 text-green-800' },
+  // Deliberately neutral: a person on our team reviews it before any decision.
+  consider: { label: 'Under review', tone: 'bg-hv-butter text-olive-600' },
+  rejected: { label: 'Not approved', tone: 'bg-red-100 text-red-800' },
+  expired: { label: 'Expired — start again', tone: 'bg-red-100 text-red-800' },
+};
+
+function Step({
+  number,
+  title,
+  status,
+  children,
+}: {
+  number: number;
+  title: string;
+  status: { label: string; tone: string };
+  children: React.ReactNode;
+}) {
+  return (
+    <section className="rounded-3xl border border-espresso-700/10 bg-hv-paper p-6 shadow-card">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h2 className="flex items-center gap-3 text-xl">
+          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-hv-ink text-[17px] text-hv-cream">
+            {number}
+          </span>
+          {title}
+        </h2>
+        <span className={`rounded-full px-3 py-1 text-sm font-semibold ${status.tone}`}>
+          {status.label}
+        </span>
+      </div>
+      <div className="mt-4 space-y-3 text-[17px] text-espresso-600">{children}</div>
+    </section>
+  );
+}
 
 export default async function HavenerVerificationPage() {
   const profile = await requireProfile();
@@ -31,8 +79,27 @@ export default async function HavenerVerificationPage() {
     .maybeSingle();
   const sitter = data as SitterProfileRow | null;
 
-  const status = STATUS_COPY[sitter?.background_check_status ?? 'not_started'];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data: backgroundRow } = await (supabase.from('background_checks') as any)
+    .select('status, invitation_url, note')
+    .eq('sitter_id', profile.id)
+    .maybeSingle();
+  const background = (backgroundRow as BackgroundRow | null) ?? {
+    status: 'not_started' as const,
+    invitation_url: null,
+    note: null,
+  };
+
+  // `identity_status` is only written by the webhook; while a session is open
+  // the Havener's own `stripe_identity_status` says it's in progress.
+  const identityStatus: CheckStatus =
+    sitter?.identity_status && sitter.identity_status !== 'not_started'
+      ? sitter.identity_status
+      : sitter?.stripe_identity_status === 'processing'
+        ? 'pending'
+        : 'not_started';
   const stripeConfigured = Boolean(getStripe());
+  const checkrReady = checkrConfigured();
 
   return (
     <div className="mx-auto max-w-xl">
@@ -40,58 +107,108 @@ export default async function HavenerVerificationPage() {
         href="/dashboard/havener"
         className="text-sm text-espresso-500 hover:text-espresso-700"
       >
-        ← Volver a mi perfil de Havener
+        ← Back to my Havener profile
       </Link>
 
-      <div className="mt-6 flex items-center justify-between">
-        <h1 className="text-xl font-semibold text-espresso-700">
-          Verificación de identidad
-        </h1>
-        <span className={`rounded-full px-3 py-1 text-xs font-medium ${status.tone}`}>
-          {status.label}
-        </span>
-      </div>
-      <p className="mt-2 text-sm text-espresso-500">
-        Comparamos tu identificación oficial con una selfie en vivo — es
-        automático y toma un par de minutos. Es la base de la insignia
-        &ldquo;Background checked&rdquo; en tu perfil público.
+      <h1 className="mt-6 text-[clamp(34px,3.4vw,46px)] leading-none">Verification</h1>
+      <p className="mt-3 text-[17px] text-espresso-500">
+        Owners trust Haveners who are verified. There are two steps: confirming
+        who you are, and a criminal background check. Together with your
+        interview, home visit and insurance they earn the{' '}
+        <strong className="text-espresso-700">Certified Havener</strong> badge.
       </p>
 
-      <div className="mt-8 rounded-2xl border border-espresso-700/10 bg-hv-paper p-6">
-        {!stripeConfigured ? (
-          <p className="rounded-xl bg-cream p-4 text-sm text-olive-700">
-            La verificación todavía no está activada en Havenr — falta
-            conectar la cuenta de Stripe de la empresa. En cuanto esté lista,
-            vuelve aquí para verificarte.
+      <div className="mt-8 space-y-5">
+        <Step number={1} title="Identity" status={IDENTITY_COPY[identityStatus]}>
+          <p>
+            We compare your government ID with a live selfie. It’s automatic and
+            takes a couple of minutes.
           </p>
-        ) : sitter?.background_check_status === 'approved' ? (
-          <div className="flex items-center gap-3">
-            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-green-100 text-green-700">
-              ✓
-            </span>
-            <p className="font-medium text-espresso-700">
-              Tu identidad está verificada.
+          {!stripeConfigured ? (
+            <p className="rounded-2xl bg-hv-butter p-4 text-[16px] text-olive-700">
+              Identity verification isn’t turned on yet — Havenr still has to
+              connect its Stripe account. Once it’s ready, come back here.
             </p>
-          </div>
-        ) : (
-          <div>
-            <p className="text-sm text-espresso-600">
-              {sitter?.background_check_status === 'pending'
-                ? 'Tu verificación está en proceso.'
-                : 'Aún no has verificado tu identidad.'}
+          ) : identityStatus === 'approved' ? (
+            <p className="font-semibold text-espresso-700">Your identity is verified. ✓</p>
+          ) : (
+            <VerifyButton
+              label={
+                identityStatus === 'pending' || identityStatus === 'rejected'
+                  ? 'Try again'
+                  : 'Verify my identity'
+              }
+            />
+          )}
+        </Step>
+
+        <Step
+          number={2}
+          title="Criminal background check"
+          status={BACKGROUND_COPY[background.status]}
+        >
+          <p>
+            A standard criminal-record check run by an independent screening
+            company. You enter your details and sign the consent on their secure
+            page — Havenr never sees your Social Security number or the report,
+            only whether you passed.
+          </p>
+
+          {background.status === 'clear' && (
+            <p className="font-semibold text-espresso-700">
+              You passed — the “Background checked” badge is on your profile. ✓
             </p>
-            <div className="mt-4">
-              <VerifyButton
+          )}
+
+          {background.status === 'consider' && (
+            <p className="rounded-2xl bg-hv-butter p-4 text-[16px] text-olive-700">
+              Your check is being reviewed by our team. We’ll update this page
+              as soon as there’s a decision — you don’t need to do anything.
+            </p>
+          )}
+
+          {background.status === 'processing' && (
+            <p className="rounded-2xl bg-hv-butter p-4 text-[16px] text-olive-700">
+              Your details were received and the check is running. It usually
+              takes a few business days.
+            </p>
+          )}
+
+          {background.status === 'rejected' && (
+            <p className="rounded-2xl bg-red-50 p-4 text-[16px] text-red-800">
+              {background.note ??
+                'Your background check was not approved. If you think this is a mistake, contact support.'}
+            </p>
+          )}
+
+          {background.status === 'invited' && background.invitation_url && (
+            <a
+              href={background.invitation_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex h-11 items-center rounded-full bg-hv-ink px-6 text-[18px] font-semibold text-hv-cream hover:bg-hv-cocoa"
+            >
+              Continue my background check
+            </a>
+          )}
+
+          {(background.status === 'not_started' || background.status === 'expired') &&
+            (checkrReady ? (
+              <BackgroundCheckButton
                 label={
-                  sitter?.background_check_status === 'pending' ||
-                  sitter?.background_check_status === 'rejected'
-                    ? 'Volver a intentar'
-                    : 'Verificar mi identidad'
+                  background.status === 'expired'
+                    ? 'Start my background check again'
+                    : 'Start my background check'
                 }
               />
-            </div>
-          </div>
-        )}
+            ) : (
+              <p className="rounded-2xl bg-hv-butter p-4 text-[16px] text-olive-700">
+                Automatic background checks aren’t turned on yet. The Havenr team
+                runs yours directly — you’ll see the result here and get a
+                message when it’s done.
+              </p>
+            ))}
+        </Step>
       </div>
     </div>
   );

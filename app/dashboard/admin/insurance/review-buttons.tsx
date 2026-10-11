@@ -29,7 +29,7 @@ export function ReviewButtons({ sitterId }: { sitterId: string }) {
             disabled={rejectPending || approvePending}
             className="h-9 rounded-full border border-red-300 px-4 text-sm font-medium text-red-700 transition-colors hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-55"
           >
-            Rechazar
+            Reject
           </button>
         </form>
         <form action={approveAction}>
@@ -40,7 +40,7 @@ export function ReviewButtons({ sitterId }: { sitterId: string }) {
             disabled={rejectPending || approvePending}
             className="h-9 rounded-full bg-gold-500 px-4 text-sm font-medium text-white transition-colors hover:bg-gold-600 disabled:cursor-not-allowed disabled:opacity-55"
           >
-            Aprobar
+            Approve
           </button>
         </form>
       </div>

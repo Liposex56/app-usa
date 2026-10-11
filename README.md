@@ -118,8 +118,7 @@ Ningún cambio de código hace falta: en cuanto esas variables existan en
 Vercel y se vuelva a desplegar, `/dashboard/havener/payments`, el botón
 "Pay now" y `/dashboard/havener/verification` empiezan a funcionar.
 
-Eso te da acceso de staff en todas las políticas RLS. El panel administrativo
-en sí es una fase posterior.
+Eso te da acceso de staff en todas las políticas RLS y el menú "Admin panel".
 
 ---
 
@@ -195,20 +194,21 @@ cobertura, vigencia y sube el documento (bucket privado `verification-docs`).
 Cada envío queda en `pending`; un Havener no puede aprobarse a sí mismo
 (`sitter_insurance_protect_trust`, ver `0004_payments_settings.sql`).
 
-### Panel administrativo (arranque)
+### Panel administrativo
 
-Visible en el menú sólo para filas en `staff_members`. Por ahora sólo cubre
-lo que se pidió como primer avance del módulo de pagos/seguros:
+Visible en el menú sólo para filas en `staff_members` (todo en inglés, como el
+resto del sitio).
 
 | Ruta | Contenido |
 |---|---|
-| `/dashboard/admin` | Resumen: seguros pendientes, comisión vigente |
+| `/dashboard/admin` | Resumen: perfiles, antecedentes y seguros por revisar, reservas abiertas, usuarios, comisión |
 | `/dashboard/admin/havener-profiles` | Aprobar/rechazar perfiles de Havener (`sitter_profiles.status`) — lo que hace visibles a los Haveners en la búsqueda |
+| `/dashboard/admin/background-checks` | Cola de antecedentes penales: resultados "Needs review", registro manual mientras no haya proveedor |
 | `/dashboard/admin/insurance` | Aprobar/rechazar seguros enviados; actualiza `sitter_insurance` y la insignia pública `is_insured` |
+| `/dashboard/admin/bookings` | Todas las reservas con filtro por estado; abre la reserva en modo solo lectura (también su chat) |
+| `/dashboard/admin/users` | Usuarios con búsqueda por nombre/correo y filtro por rol |
+| `/dashboard/admin/reports` | Conversaciones reportadas |
 | `/dashboard/admin/settings` | Comisión de la empresa (`platform_settings`, sólo editable por `role = 'admin'`) y un simulador de reparto |
-
-El resto del panel (usuarios, reservas, chat, reportes — sección 15 de la
-propuesta) sigue sin construir.
 
 ### Reservas, disponibilidad, chat y Meet & Greet
 
@@ -261,13 +261,54 @@ porque falta crear la cuenta de Stripe de la empresa — en cuanto exista,
 solo hace falta cargar las llaves (ver sección 2.5) para que empiece a
 funcionar, sin tocar código.
 
-### Verificación de identidad automática
+### Verificación: identidad vs. antecedentes penales
 
-`/dashboard/havener/verification` usa Stripe Identity (documento + selfie)
-para aprobar `background_check_status` automáticamente — mismo estado: el
-código está listo, solo falta la cuenta de Stripe. Es una verificación de
-identidad, no un background check criminal completo; si la empresa
-necesita eso además, hay que sumar un proveedor tipo Checkr más adelante.
+Son dos cosas distintas y la insignia pública **"Background checked"** solo
+significa la segunda. `/dashboard/havener/verification` tiene los dos pasos:
+
+1. **Identidad** (`sitter_profiles.identity_status`): documento + selfie con
+   Stripe Identity. El código está listo; falta la cuenta de Stripe.
+2. **Antecedentes penales** (`background_checks` →
+   `sitter_profiles.background_check_status`): lo corre un proveedor de
+   screening (Checkr, ver abajo). Havenr nunca ve el SSN ni el reporte: crea
+   una invitación, el Havener completa y firma el consentimiento en la página
+   de Checkr, y de vuelta solo llega el veredicto.
+   - `clear` → insignia encendida sola.
+   - `consider` → **nunca se rechaza automáticamente**: queda en
+     `/dashboard/admin/background-checks` para que una persona decida (las
+     notificaciones de acción adversa FCRA se hacen desde Checkr).
+   - Mientras no haya `CHECKR_API_KEY`, el staff registra el resultado a mano
+     en ese mismo panel.
+
+Variables (ver `.env.local.example`): `CHECKR_API_KEY` (también firma el
+webhook), `CHECKR_PACKAGE` y opcionalmente `CHECKR_API_BASE` para staging.
+Webhook: `https://<tu-dominio>/api/checkr/webhook` con los eventos
+`invitation.completed`, `invitation.expired`, `report.created`,
+`report.completed`. Requiere también `SUPABASE_SERVICE_ROLE_KEY`.
+
+> La integración con Checkr está escrita según su documentación pública pero
+> **no se ha probado contra su API** (no hay cuenta todavía): al conectar las
+> llaves, hacer una prueba completa en su modo de pruebas antes de abrirlo.
+
+### Informes de servicio y caminatas con GPS
+
+Mientras un servicio está `in_progress`, el Havener lleva un **log** en la
+reserva (`service_updates` + bucket privado `service-updates`): fotos y
+videos, entradas de un toque (potty, comida, agua, juego, medicación, chequeo
+de bienestar…) y notas. El dueño lo sigue en vivo y, al terminar, ve el
+**informe** (duración, distancia GPS de la caminata, fotos, entradas).
+
+Para cerrar el servicio hay requisitos (`lib/service-reports.ts`, también
+validados en el servidor en `completeServiceAction`):
+
+| Servicio | Requisitos |
+|---|---|
+| Caminata | ≥1 foto, ≥1 potty break y ≥2 puntos de GPS |
+| Visita | ≥1 foto y el chequeo de bienestar |
+| Hospedaje, guardería, en casa | ≥1 foto o video |
+
+El rastreo GPS mantiene la pantalla encendida (Screen Wake Lock) y avisa si el
+navegador no lo permite — un celular deja de compartir ubicación al bloquearse.
 
 ---
 
@@ -292,17 +333,18 @@ está implementado en `0002_rls.sql`:
 
 ## 5. Lo que falta (fases siguientes)
 
-Búsqueda por disponibilidad, reservas instantáneas, chat, Meet & Greet, mapa
-GPS de caminatas, cobro con Stripe Connect y verificación de identidad con
-Stripe Identity ya están construidos (ver sección 3). Queda:
+Búsqueda por disponibilidad, solicitudes y reservas, chat, Meet & Greet, mapa
+GPS e informes de servicio, cobro con Stripe Connect, verificación de
+identidad y flujo de antecedentes penales ya están construidos (ver
+sección 3). Queda:
 
 1. **Llamada con número enmascarado** ("Connect through Havenr" en la
    reserva) — hoy solo se guarda la preferencia de horario
    (`bookings.call_window`); falta contratar un proveedor de telefonía tipo
    Twilio para el número real.
 2. **App móvil** (React Native + Expo) con GPS e informes de servicio
-3. **Panel administrativo completo** — usuarios, reservas, chat, reportes
-   (hoy sólo existen seguros y comisión, ver arriba)
+3. **Recordatorios automáticos de fotos** para hospedaje y guardería ("no ha
+   llegado ninguna foto hoy") — necesita correo/SMS transaccional.
 4. **Reels y multimedia**
 
 ### Pendientes que no son código
@@ -316,8 +358,9 @@ Stripe Identity ya están construidos (ver sección 3). Queda:
   tanto, el seguro y el background check se revisan a mano desde
   `/dashboard/admin/insurance` y `/dashboard/havener/verification`.
 - **Proveedor de telefonía** (tipo Twilio) para el número enmascarado.
-- **Background check criminal completo** (tipo Checkr) si Stripe Identity
-  (solo identidad) no es suficiente para el negocio.
+- **Cuenta de Checkr** (o similar) para los antecedentes penales
+  automáticos — el código está listo, ver "Verificación: identidad vs.
+  antecedentes penales". Hasta entonces se registran a mano en el panel.
 - **Correo transaccional** — cada uno necesita cuenta empresarial a nombre
   de Havenr.
 

@@ -6,7 +6,7 @@ import { createClient } from '@/lib/supabase/server';
 
 import { CommissionForm } from './commission-form';
 
-export const metadata: Metadata = { title: 'Comisión — Panel administrativo' };
+export const metadata: Metadata = { title: 'Commission — Admin panel' };
 
 export default async function AdminSettingsPage() {
   const { role } = await requireStaff();

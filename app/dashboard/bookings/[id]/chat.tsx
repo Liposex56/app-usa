@@ -26,6 +26,7 @@ export function Chat({
   sendAction,
   counterpartyName,
   counterpartyAvatarUrl,
+  readOnly = false,
 }: {
   bookingId: string;
   viewerId: string;
@@ -33,6 +34,8 @@ export function Chat({
   sendAction: (formData: FormData) => Promise<SendMessageState>;
   counterpartyName: string;
   counterpartyAvatarUrl: string | null;
+  /** Staff reviewing a conversation can read it but not write in it. */
+  readOnly?: boolean;
 }) {
   const [messages, setMessages] = useState(initialMessages);
   const [sendError, setSendError] = useState<string | null>(null);
@@ -170,9 +173,9 @@ export function Chat({
                 )}
                 <p
                   className={cn(
-                    'max-w-[75%] rounded-2xl px-4 py-2 text-sm leading-relaxed',
+                    'max-w-[75%] rounded-2xl px-4 py-2 text-[17px] leading-snug',
                     mine
-                      ? 'bg-gold-500 text-white'
+                      ? 'bg-hv-ink text-hv-cream'
                       : 'bg-bone text-espresso-700'
                   )}
                 >
@@ -188,6 +191,11 @@ export function Chat({
           {sendError}
         </p>
       )}
+      {readOnly ? (
+        <p className="border-t border-espresso-700/8 px-4 py-3 text-sm text-espresso-500">
+          You’re reading this conversation as Havenr staff.
+        </p>
+      ) : (
       <form
         ref={formRef}
         action={handleSubmit}
@@ -199,10 +207,11 @@ export function Chat({
           required
           maxLength={4000}
           placeholder="Message…"
-          className="flex-1 rounded-full border border-espresso-700/15 px-4 py-2 text-sm text-espresso-700 placeholder:text-espresso-700/35 focus:border-gold-500 focus:outline-none focus:ring-2 focus:ring-gold-500/25"
+          className="flex-1 rounded-full border border-hv-ink/20 bg-hv-paper px-4 py-2 text-[17px] font-medium text-espresso-700 placeholder:text-espresso-700/40 focus:border-hv-ink focus:outline-none focus:ring-2 focus:ring-hv-mustard/40"
         />
         <SendButton />
       </form>
+      )}
     </div>
   );
 }

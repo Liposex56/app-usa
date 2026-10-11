@@ -23,12 +23,12 @@ export async function reviewHavenerProfileAction(
   const sitterId = text(formData, 'sitterId');
   const decision = text(formData, 'decision');
   if (!sitterId || (decision !== 'approved' && decision !== 'rejected')) {
-    return { error: 'Solicitud inválida.' };
+    return { error: 'Invalid request.' };
   }
 
   const reason = text(formData, 'reason');
   if (decision === 'rejected' && !reason) {
-    return { error: 'Indica el motivo para que el Havener sepa qué corregir.' };
+    return { error: 'Give a reason so the Havener knows what to fix.' };
   }
 
   const supabase = await createClient();

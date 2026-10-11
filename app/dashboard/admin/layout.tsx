@@ -2,6 +2,17 @@ import Link from 'next/link';
 
 import { requireStaff } from '@/lib/auth';
 
+const LINKS = [
+  { href: '/dashboard/admin', label: 'Overview' },
+  { href: '/dashboard/admin/havener-profiles', label: 'Profiles' },
+  { href: '/dashboard/admin/background-checks', label: 'Background checks' },
+  { href: '/dashboard/admin/insurance', label: 'Insurance' },
+  { href: '/dashboard/admin/bookings', label: 'Bookings' },
+  { href: '/dashboard/admin/users', label: 'Users' },
+  { href: '/dashboard/admin/reports', label: 'Reports' },
+  { href: '/dashboard/admin/settings', label: 'Commission' },
+];
+
 export default async function AdminLayout({
   children,
 }: {
@@ -11,50 +22,19 @@ export default async function AdminLayout({
 
   return (
     <div>
-      <div className="mb-8 flex items-center justify-between">
-        <div>
-          <p className="text-xs font-medium uppercase tracking-wide text-espresso-500/70">
-            Panel administrativo
-          </p>
-          <nav className="mt-2 flex items-center gap-5">
+      <div className="mb-8">
+        <p className="eyebrow">Admin panel</p>
+        <nav className="mt-3 flex flex-wrap items-center gap-2">
+          {LINKS.map((link) => (
             <Link
-              href="/dashboard/admin"
-              className="text-sm font-medium text-espresso-700 hover:text-gold-600"
+              key={link.href}
+              href={link.href}
+              className="rounded-full bg-hv-paper px-4 py-1.5 text-[17px] font-semibold text-espresso-700 transition-colors hover:bg-hv-sky"
             >
-              Resumen
+              {link.label}
             </Link>
-            <Link
-              href="/dashboard/admin/havener-profiles"
-              className="text-sm font-medium text-espresso-700 hover:text-gold-600"
-            >
-              Perfiles
-            </Link>
-            <Link
-              href="/dashboard/admin/insurance"
-              className="text-sm font-medium text-espresso-700 hover:text-gold-600"
-            >
-              Seguros
-            </Link>
-            <Link
-              href="/dashboard/admin/reports"
-              className="text-sm font-medium text-espresso-700 hover:text-gold-600"
-            >
-              Reportes
-            </Link>
-            <Link
-              href="/dashboard/admin/settings"
-              className="text-sm font-medium text-espresso-700 hover:text-gold-600"
-            >
-              Comisión
-            </Link>
-          </nav>
-        </div>
-        <Link
-          href="/dashboard"
-          className="text-sm text-espresso-500 hover:text-espresso-700"
-        >
-          ← Volver al dashboard
-        </Link>
+          ))}
+        </nav>
       </div>
       {children}
     </div>

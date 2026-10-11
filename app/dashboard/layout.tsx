@@ -33,7 +33,7 @@ export default async function DashboardLayout({
         ]
       : []),
     { href: '/dashboard/calendar', label: 'Calendar' },
-    ...(isStaff ? [{ href: '/dashboard/admin', label: 'Panel administrativo' }] : []),
+    ...(isStaff ? [{ href: '/dashboard/admin', label: 'Admin panel' }] : []),
   ];
 
   return (

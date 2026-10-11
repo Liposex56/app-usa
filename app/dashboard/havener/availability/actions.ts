@@ -31,14 +31,14 @@ export async function blockDatesAction(
   const endDate = text(formData, 'endDate') || startDate;
   const note = text(formData, 'note');
 
-  if (!startDate) return { error: 'Elige al menos una fecha.' };
+  if (!startDate) return { error: 'Choose at least one date.' };
   if (endDate! < startDate) {
-    return { error: 'La fecha final no puede ser antes de la inicial.' };
+    return { error: 'The end date can’t be before the start date.' };
   }
 
   const dates = dateRange(startDate, endDate!);
   if (dates.length > 366) {
-    return { error: 'Ese rango es demasiado grande — inténtalo por partes.' };
+    return { error: 'That range is too large — try it in parts.' };
   }
 
   const supabase = await createClient();

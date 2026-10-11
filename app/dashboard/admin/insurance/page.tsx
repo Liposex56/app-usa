@@ -6,14 +6,14 @@ import { formatDate } from '@/lib/utils';
 
 import { ReviewButtons } from './review-buttons';
 
-export const metadata: Metadata = { title: 'Seguros — Panel administrativo' };
+export const metadata: Metadata = { title: 'Insurance — Admin panel' };
 
 const STATUS_COPY: Record<CheckStatus, { label: string; tone: string }> = {
-  not_started: { label: 'Sin enviar', tone: 'bg-espresso-700/8 text-espresso-600' },
-  pending: { label: 'Pendiente', tone: 'bg-cream text-olive-600' },
-  approved: { label: 'Aprobado', tone: 'bg-green-100 text-green-800' },
-  rejected: { label: 'Rechazado', tone: 'bg-red-100 text-red-800' },
-  expired: { label: 'Vencido', tone: 'bg-red-100 text-red-800' },
+  not_started: { label: 'Not submitted', tone: 'bg-espresso-700/8 text-espresso-600' },
+  pending: { label: 'Pending', tone: 'bg-cream text-olive-600' },
+  approved: { label: 'Approved', tone: 'bg-green-100 text-green-800' },
+  rejected: { label: 'Rejected', tone: 'bg-red-100 text-red-800' },
+  expired: { label: 'Expired', tone: 'bg-red-100 text-red-800' },
 };
 
 export default async function AdminInsurancePage() {
@@ -49,7 +49,7 @@ export default async function AdminInsurancePage() {
   if (rows.length === 0) {
     return (
       <p className="rounded-2xl border border-espresso-700/10 bg-hv-paper p-8 text-center text-sm text-espresso-500">
-        Ningún Havener ha enviado información de seguro todavía.
+        No Havener has submitted insurance information yet.
       </p>
     );
   }
@@ -80,11 +80,11 @@ export default async function AdminInsurancePage() {
                 </span>
               </div>
               <p className="text-sm text-espresso-500">
-                {row.provider ?? 'Aseguradora no indicada'} · Póliza{' '}
+                {row.provider ?? 'Insurer not provided'} · Policy{' '}
                 {row.policy_number ?? '—'}
               </p>
               <p className="text-sm text-espresso-500">
-                {row.coverage_type ?? 'Cobertura no indicada'} · Vigencia{' '}
+                {row.coverage_type ?? 'Coverage not provided'} · Valid{' '}
                 {formatDate(row.effective_date)} – {formatDate(row.expires_at)}
               </p>
               {docUrl ? (
@@ -94,10 +94,10 @@ export default async function AdminInsurancePage() {
                   rel="noopener noreferrer"
                   className="inline-block text-sm font-medium text-gold-600 hover:text-gold-700"
                 >
-                  Ver documento adjunto →
+                  View attached document →
                 </a>
               ) : (
-                <p className="text-sm text-espresso-500/70">Sin documento adjunto</p>
+                <p className="text-sm text-espresso-500/70">No document attached</p>
               )}
             </div>
 

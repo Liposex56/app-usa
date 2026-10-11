@@ -232,6 +232,7 @@ export type SitterProfileRow = {
   submitted_at: string | null;
   approved_at: string | null;
   rejection_reason: string | null;
+  identity_status: CheckStatus;
   background_check_status: CheckStatus;
   interview_status: CheckStatus;
   home_check_status: CheckStatus;

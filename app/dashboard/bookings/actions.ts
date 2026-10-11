@@ -8,6 +8,12 @@ import { sitterIdsWithConflict } from '@/lib/availability';
 import { rebuildNotes } from '@/lib/booking-notes';
 import { getStripe } from '@/lib/stripe';
 import { filterChatMessage } from '@/lib/chat-filter';
+import {
+  SERVICE_BUCKET,
+  completionRequirements,
+  type ServiceUpdateRow,
+  type UpdateKind,
+} from '@/lib/service-reports';
 import { createClient } from '@/lib/supabase/server';
 
 import { createCheckoutSessionAction } from './[id]/payment-actions';
@@ -281,9 +287,144 @@ export async function startServiceAction(bookingId: string): Promise<ActionState
   return updateBooking(bookingId, { status: 'in_progress' });
 }
 
+/**
+ * A service can only be closed once the evidence it promises is there —
+ * photos, the potty break and GPS route of a walk, the wellbeing check of a
+ * visit (see lib/service-reports.ts). The Havener's screen shows the same
+ * checklist; this is the check that can't be skipped.
+ */
 export async function completeServiceAction(bookingId: string): Promise<ActionState> {
-  await requireProfile();
+  const profile = await requireProfile();
+  const supabase = await createClient();
+
+  const { data: booking } = await supabase
+    .from('bookings')
+    .select('service_type, sitter_id, status')
+    .eq('id', bookingId)
+    .maybeSingle();
+  if (!booking || booking.sitter_id !== profile.id) {
+    return { error: 'Only the Havener on this booking can complete it.' };
+  }
+
+  const [{ data: updateRows }, { count: gpsPoints }] = await Promise.all([
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (supabase.from('service_updates') as any).select('*').eq('booking_id', bookingId),
+    supabase
+      .from('walk_locations')
+      .select('id', { count: 'exact', head: true })
+      .eq('booking_id', bookingId),
+  ]);
+
+  const missing = completionRequirements(
+    booking.service_type,
+    (updateRows ?? []) as ServiceUpdateRow[],
+    gpsPoints ?? 0
+  ).filter((requirement) => !requirement.met);
+
+  if (missing.length > 0) {
+    return {
+      error: `Before you can complete this service: ${missing
+        .map((requirement) => requirement.label.charAt(0).toLowerCase() + requirement.label.slice(1))
+        .join('; ')}.`,
+    };
+  }
+
   return updateBooking(bookingId, { status: 'completed' });
+}
+
+const UPDATE_KINDS: UpdateKind[] = [
+  'photo',
+  'note',
+  'potty',
+  'feeding',
+  'water',
+  'play',
+  'medication',
+  'litter',
+  'wellbeing',
+];
+
+/**
+ * Adds one entry to the service log. Photos and videos are uploaded by the
+ * browser straight to the private bucket (server actions cap the body size);
+ * this only records the entry. RLS limits it to the Havener on the booking
+ * while the service is in progress.
+ */
+export async function logServiceUpdateAction(
+  bookingId: string,
+  input: {
+    kind: UpdateKind;
+    body?: string | null;
+    mediaPath?: string | null;
+    mediaType?: 'image' | 'video' | null;
+  }
+): Promise<ActionState> {
+  const profile = await requireProfile();
+  if (!UPDATE_KINDS.includes(input.kind)) return { error: 'Invalid request.' };
+
+  let body = input.body?.trim() || null;
+  if (body) {
+    if (body.length > 600) return { error: 'Keep the note under 600 characters.' };
+    const filtered = filterChatMessage(body);
+    if (filtered.blocked) return { error: filtered.blockedReason };
+    body = filtered.body;
+  }
+
+  const mediaPath = input.mediaPath ?? null;
+  if (mediaPath && !mediaPath.startsWith(`${profile.id}/${bookingId}/`)) {
+    return { error: 'Invalid request.' };
+  }
+
+  const supabase = await createClient();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { error } = await (supabase.from('service_updates') as any).insert({
+    booking_id: bookingId,
+    author_id: profile.id,
+    kind: input.kind,
+    body,
+    media_path: mediaPath,
+    media_type: mediaPath ? (input.mediaType ?? 'image') : null,
+  });
+  if (error) {
+    return {
+      error: error.message.includes('row-level security')
+        ? 'You can only log updates while the service is in progress.'
+        : error.message,
+    };
+  }
+
+  revalidatePath(`/dashboard/bookings/${bookingId}`);
+  return { error: null };
+}
+
+/** Takes back a wrong entry (and its file) while the service is in progress. */
+export async function deleteServiceUpdateAction(
+  bookingId: string,
+  updateId: string
+): Promise<ActionState> {
+  const profile = await requireProfile();
+  const supabase = await createClient();
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data: row } = await (supabase.from('service_updates') as any)
+    .select('media_path, author_id')
+    .eq('id', updateId)
+    .eq('booking_id', bookingId)
+    .maybeSingle();
+  if (!row || row.author_id !== profile.id) return { error: 'Entry not found.' };
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { error } = await (supabase.from('service_updates') as any)
+    .delete()
+    .eq('id', updateId);
+  if (error) return { error: error.message };
+
+  if (row.media_path) {
+    await supabase.storage.from(SERVICE_BUCKET).remove([row.media_path as string]);
+  }
+
+  revalidatePath(`/dashboard/bookings/${bookingId}`);
+  return { error: null };
 }
 
 export async function sendMessageAction(

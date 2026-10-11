@@ -23,11 +23,11 @@ export async function reviewInsuranceAction(
   const { profile } = await requireStaff();
 
   const sitterId = text(formData, 'sitterId');
-  if (!sitterId) return { error: 'Solicitud inválida.' };
+  if (!sitterId) return { error: 'Invalid request.' };
 
   const rawDecision = text(formData, 'decision');
   if (rawDecision !== 'approved' && rawDecision !== 'rejected') {
-    return { error: 'Solicitud inválida.' };
+    return { error: 'Invalid request.' };
   }
   const decision: 'approved' | 'rejected' = rawDecision;
 

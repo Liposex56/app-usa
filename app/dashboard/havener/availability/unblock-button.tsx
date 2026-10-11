@@ -27,7 +27,7 @@ export function UnblockButton({
         })
       }
     >
-      Quitar bloqueo
+      Unblock
     </Button>
   );
 }

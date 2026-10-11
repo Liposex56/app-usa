@@ -34,7 +34,7 @@ export async function saveServiceSettingsAction(
   if (!user) redirect('/login');
 
   const serviceType = text(formData, 'serviceType') as ServiceType | null;
-  if (!serviceType) return { error: 'Solicitud inválida.' };
+  if (!serviceType) return { error: 'Invalid request.' };
 
   const cancellationPolicy = text(formData, 'cancellationPolicy');
   const safeCancellationPolicy = CANCELLATION_POLICIES.includes(

@@ -14,7 +14,7 @@ function Submit() {
   const { pending } = useFormStatus();
   return (
     <Button type="submit" size="sm" disabled={pending}>
-      {pending ? 'Bloqueando…' : 'Bloquear estas fechas'}
+      {pending ? 'Blocking…' : 'Block these dates'}
     </Button>
   );
 }
@@ -27,15 +27,15 @@ export function BlockDatesForm() {
     <form action={formAction} className="space-y-4">
       <FormError message={state.error} />
       <div className="grid gap-4 sm:grid-cols-2">
-        <Field label="Desde" htmlFor="startDate" required>
+        <Field label="From" htmlFor="startDate" required>
           <Input id="startDate" name="startDate" type="date" required min={today} />
         </Field>
-        <Field label="Hasta" htmlFor="endDate" hint="Déjalo vacío para un solo día.">
+        <Field label="To" htmlFor="endDate" hint="Leave empty for a single day.">
           <Input id="endDate" name="endDate" type="date" min={today} />
         </Field>
       </div>
-      <Field label="Motivo (opcional, solo para ti)" htmlFor="note">
-        <Textarea id="note" name="note" placeholder="Vacaciones, cita médica…" rows={2} />
+      <Field label="Reason (optional, only visible to you)" htmlFor="note">
+        <Textarea id="note" name="note" placeholder="Vacation, doctor’s appointment…" rows={2} />
       </Field>
       <Submit />
     </form>
