@@ -436,9 +436,15 @@ export default async function BookingDetailPage({
             </div>
             <div className="min-w-0">
               <p className="truncate text-xl font-bold text-espresso-700">
-                {viewerRole === 'sitter' && isParticipant ? (
+                {isParticipant ? (
                   <Link
-                    href={`/dashboard/bookings/${booking.id}/owner`}
+                    // A Havener opens the owner's profile; an owner opens the
+                    // Havener's public profile.
+                    href={
+                      viewerRole === 'sitter'
+                        ? `/dashboard/bookings/${booking.id}/owner`
+                        : `/sitters/${booking.sitter_id}`
+                    }
                     className="hover:underline"
                   >
                     {counterpartyName}
