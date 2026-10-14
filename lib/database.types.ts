@@ -278,6 +278,8 @@ export type SitterServiceRow = {
   extended_stay_rate_cents: number | null;
   bathing_rate_cents: number | null;
   pickup_dropoff_rate_cents: number | null;
+  /** What the Havener charges per extra hour (late pick-up, extended day). */
+  extra_hour_rate_cents: number | null;
   cancellation_policy: ServiceCancellationPolicy;
   created_at: string;
   updated_at: string;
@@ -344,6 +346,10 @@ export type BookingRow = {
   decline_reason: string | null;
   cancellation_reason: string | null;
   cancelled_by: string | null;
+  /** A cancellation asked for inside the window; Havenr confirms it. */
+  cancellation_requested_at: string | null;
+  cancellation_requested_by: string | null;
+  cancellation_request_reason: string | null;
 
   base_rate_cents: number;
   additional_pet_rate_cents: number;
@@ -415,6 +421,9 @@ export type MessageRow = {
   flagged: boolean;
   flagged_reason: string | null;
   read_at: string | null;
+  /** Photo or video sent in the chat (private `chat-media` bucket). */
+  media_path: string | null;
+  media_type: 'image' | 'video' | null;
   created_at: string;
 };
 

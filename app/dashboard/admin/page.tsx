@@ -37,6 +37,7 @@ export default async function AdminOverviewPage() {
     { count: pendingInsurance },
     { count: pendingProfiles },
     { count: reviewChecks },
+    { count: cancellationRequests },
     { count: users },
     { count: activeBookings },
     { data: settings },
@@ -53,6 +54,11 @@ export default async function AdminOverviewPage() {
     (supabase.from('background_checks') as any)
       .select('sitter_id', { count: 'exact', head: true })
       .eq('status', 'consider'),
+    supabase
+      .from('bookings')
+      .select('id', { count: 'exact', head: true })
+      .eq('status', 'confirmed')
+      .not('cancellation_requested_at', 'is', null),
     supabase.from('profiles').select('id', { count: 'exact', head: true }),
     supabase
       .from('bookings')
@@ -81,6 +87,12 @@ export default async function AdminOverviewPage() {
         icon={icon}
         value={reviewChecks ?? 0}
         label={`Background check${reviewChecks === 1 ? '' : 's'} needing review`}
+      />
+      <Card
+        href="/dashboard/admin/cancellations"
+        icon={icon}
+        value={cancellationRequests ?? 0}
+        label={`Cancellation request${cancellationRequests === 1 ? '' : 's'} waiting`}
       />
       <Card
         href="/dashboard/admin/insurance"

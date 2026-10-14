@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache';
 import type { BookingRow, MeetGreetRow, MessageRow } from '@/lib/database.types';
 import { requireProfile } from '@/lib/auth';
 import { sitterIdsWithConflict } from '@/lib/availability';
+import { isTimedService } from '@/lib/booking-flow';
 import { rebuildNotes } from '@/lib/booking-notes';
 import { getStripe } from '@/lib/stripe';
 import { filterChatMessage } from '@/lib/chat-filter';
@@ -49,10 +50,85 @@ export async function cancelBookingAction(
   await requireProfile();
   const reason = text(formData, 'reason');
   if (!reason) return { error: 'Please tell us why you are cancelling.' };
+
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from('bookings')
+    .select('status')
+    .eq('id', bookingId)
+    .maybeSingle();
+  if (data?.status !== 'requested') {
+    return {
+      error:
+        'A confirmed booking is cancelled by asking Havenr — use “Request cancellation”.',
+    };
+  }
+
   return updateBooking(bookingId, {
     status: 'cancelled',
     cancellation_reason: reason,
   });
+}
+
+/**
+ * A confirmed booking is cancelled by asking: the request goes to Havenr
+ * (staff queue), which confirms it according to the Havener's cancellation
+ * policy. It is only accepted inside that policy's window, counted from the
+ * day the booking was made, and never during the service — the database
+ * enforces that, this just gives it a clean message.
+ */
+export async function requestCancellationAction(
+  bookingId: string,
+  _prev: ActionState,
+  formData: FormData
+): Promise<ActionState> {
+  const profile = await requireProfile();
+  const reason = text(formData, 'reason');
+  if (!reason) return { error: 'Please tell us why you are cancelling.' };
+
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from('bookings')
+    .select('owner_id, sitter_id, status, cancellation_requested_at')
+    .eq('id', bookingId)
+    .maybeSingle();
+  if (!data || (data.owner_id !== profile.id && data.sitter_id !== profile.id)) {
+    return { error: 'Booking not found.' };
+  }
+  if (data.status === 'in_progress') {
+    return { error: 'A service that is already in progress can’t be cancelled.' };
+  }
+  if (data.status !== 'confirmed') {
+    return { error: 'Only a confirmed booking can have a cancellation requested.' };
+  }
+  if (data.cancellation_requested_at) {
+    return { error: 'A cancellation has already been requested.' };
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { error } = await (supabase.from('bookings') as any)
+    .update({
+      cancellation_requested_at: new Date().toISOString(),
+      cancellation_request_reason: reason,
+    })
+    .eq('id', bookingId);
+  if (error) return { error: error.message };
+
+  // Tell the other side in the chat so nothing happens silently.
+  const otherId = data.owner_id === profile.id ? data.sitter_id : data.owner_id;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  await (supabase.from('messages') as any).insert({
+    booking_id: bookingId,
+    sender_id: profile.id,
+    recipient_id: otherId,
+    body: 'I asked to cancel this booking. Havenr will review the request and confirm it.',
+  });
+
+  revalidatePath('/dashboard/bookings');
+  revalidatePath('/dashboard/havener/bookings');
+  revalidatePath('/dashboard/admin/cancellations');
+  revalidatePath(`/dashboard/bookings/${bookingId}`);
+  return { error: null };
 }
 
 export type BookResult = { error: string | null; notice: string | null };
@@ -223,10 +299,15 @@ export async function modifyBookingAction(
     .eq('service_type', booking.service_type)
     .maybeSingle();
 
+  const timed = isTimedService(booking.service_type);
   const dropoffFrom = text(formData, 'dropoffFrom');
-  const dropoffTo = text(formData, 'dropoffTo');
   const pickupFrom = text(formData, 'pickupFrom');
-  const pickupTo = text(formData, 'pickupTo');
+  if (timed && (!dropoffFrom || !pickupFrom)) {
+    return { error: 'Please choose both times — the service starts and ends at them.' };
+  }
+  // Timed services use one exact time each; others an optional preferred range.
+  const dropoffTo = timed ? null : text(formData, 'dropoffTo');
+  const pickupTo = null;
   const wantsPickupDropoff = bool(formData, 'wantsPickupDropoff');
 
   const notes = rebuildNotes(booking.owner_notes, {
@@ -284,6 +365,15 @@ export async function declineBookingAction(
 
 export async function startServiceAction(bookingId: string): Promise<ActionState> {
   await requireProfile();
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from('bookings')
+    .select('service_type')
+    .eq('id', bookingId)
+    .maybeSingle();
+  if (data && isTimedService(data.service_type)) {
+    return { error: 'This service starts by itself at the drop-off time.' };
+  }
   return updateBooking(bookingId, { status: 'in_progress' });
 }
 
@@ -304,6 +394,9 @@ export async function completeServiceAction(bookingId: string): Promise<ActionSt
     .maybeSingle();
   if (!booking || booking.sitter_id !== profile.id) {
     return { error: 'Only the Havener on this booking can complete it.' };
+  }
+  if (isTimedService(booking.service_type)) {
+    return { error: 'This service finishes by itself at the pick-up time.' };
   }
 
   const [{ data: updateRows }, { count: gpsPoints }] = await Promise.all([
@@ -434,9 +527,19 @@ export async function sendMessageAction(
 ): Promise<SendMessageState> {
   const profile = await requireProfile();
   const rawBody = text(formData, 'body');
-  if (!rawBody) return { error: null, message: null };
 
-  const filtered = filterChatMessage(rawBody);
+  // A photo or video was uploaded straight to the private bucket by the
+  // browser; only the path is recorded here, and only if it is this sender's.
+  const mediaPath = text(formData, 'mediaPath');
+  const mediaTypeRaw = text(formData, 'mediaType');
+  const mediaType = mediaTypeRaw === 'video' ? 'video' : mediaTypeRaw === 'image' ? 'image' : null;
+  if (mediaPath && (!mediaType || !mediaPath.startsWith(`${profile.id}/${bookingId}/`))) {
+    return { error: 'Invalid attachment.', message: null };
+  }
+  if (!rawBody && !mediaPath) return { error: null, message: null };
+
+  const caption = rawBody ?? (mediaType === 'video' ? 'Video' : 'Photo');
+  const filtered = filterChatMessage(caption);
   if (filtered.blocked) {
     return { error: filtered.blockedReason, message: null };
   }
@@ -451,6 +554,8 @@ export async function sendMessageAction(
       body: filtered.body,
       flagged: filtered.flagged,
       flagged_reason: filtered.flaggedReason,
+      media_path: mediaPath,
+      media_type: mediaPath ? mediaType : null,
     })
     .select('*')
     .single();

@@ -8,6 +8,7 @@ const LINKS = [
   { href: '/dashboard/admin/background-checks', label: 'Background checks' },
   { href: '/dashboard/admin/insurance', label: 'Insurance' },
   { href: '/dashboard/admin/bookings', label: 'Bookings' },
+  { href: '/dashboard/admin/cancellations', label: 'Cancellations' },
   { href: '/dashboard/admin/users', label: 'Users' },
   { href: '/dashboard/admin/reports', label: 'Reports' },
   { href: '/dashboard/admin/settings', label: 'Commission' },

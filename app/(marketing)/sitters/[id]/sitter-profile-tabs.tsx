@@ -539,6 +539,10 @@ export function SitterProfileTabs({
                     cents={service.extended_stay_rate_cents}
                   />
                   <RateLine
+                    label="Extra hour (late pick-up)"
+                    cents={service.extra_hour_rate_cents}
+                  />
+                  <RateLine
                     label="Bathing / grooming"
                     cents={service.bathing_rate_cents}
                   />

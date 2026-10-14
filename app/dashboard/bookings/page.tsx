@@ -18,6 +18,8 @@ export default async function OwnerBookingsPage({
   const profile = await requireProfile();
   const showArchived = (await searchParams).archived === '1';
   const supabase = await createClient();
+  // Timed services start and finish by themselves; make sure the list is current.
+  await supabase.rpc('advance_booking_statuses' as never);
 
   const { data } = await supabase
     .from('bookings')

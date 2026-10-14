@@ -7,6 +7,7 @@ import { useFormStatus } from 'react-dom';
 import { Button } from '@/components/ui/button';
 import { Field, FormError, Input, Select } from '@/components/ui/field';
 import { TimeSelect } from '@/components/ui/time-select';
+import { isTimedService, timeLabels } from '@/lib/booking-flow';
 import type { ServiceType, Species } from '@/lib/database.types';
 import { computeBookingTotals } from '@/lib/pricing';
 import { formatCents } from '@/lib/utils';
@@ -97,6 +98,8 @@ export function ContactForm({
   const [messageEdited, setMessageEdited] = useState<string | null>(null);
 
   const service = services.find((s) => s.type === serviceType) ?? null;
+  const timed = isTimedService(serviceType);
+  const labels = timeLabels(serviceType);
   const selectedPets = pets.filter((pet) => petIds.includes(pet.id));
 
   // The message is pre-written from what's been chosen so far and keeps
@@ -197,28 +200,47 @@ export function ContactForm({
           </Field>
         </div>
 
-        <div className="grid gap-3 sm:grid-cols-2">
-          <fieldset>
-            <legend className="mb-1.5 text-sm font-medium text-espresso-700">
-              Drop-off window <span className="text-espresso-500/60">(optional)</span>
-            </legend>
-            <div className="flex items-center gap-2">
-              <TimeSelect name="dropoffFrom" aria-label="Drop-off from" placeholder="Any time" />
-              <span className="text-xs text-espresso-500">to</span>
-              <TimeSelect name="dropoffTo" aria-label="Drop-off until" placeholder="Any time" />
-            </div>
-          </fieldset>
-          <fieldset>
-            <legend className="mb-1.5 text-sm font-medium text-espresso-700">
-              Pick-up window <span className="text-espresso-500/60">(optional)</span>
-            </legend>
-            <div className="flex items-center gap-2">
-              <TimeSelect name="pickupFrom" aria-label="Pick-up from" placeholder="Any time" />
-              <span className="text-xs text-espresso-500">to</span>
-              <TimeSelect name="pickupTo" aria-label="Pick-up until" placeholder="Any time" />
-            </div>
-          </fieldset>
-        </div>
+        {timed ? (
+          /* Boarding, daycare and house sitting run on these two times: the
+             service starts at the first and finishes at the second. */
+          <div className="grid gap-3 sm:grid-cols-2">
+            <Field label={labels.start} htmlFor="dropoffFrom" required>
+              <TimeSelect
+                id="dropoffFrom"
+                name="dropoffFrom"
+                aria-label={labels.start}
+                placeholder="Select time"
+                required
+              />
+            </Field>
+            <Field label={labels.end} htmlFor="pickupFrom" required>
+              <TimeSelect
+                id="pickupFrom"
+                name="pickupFrom"
+                aria-label={labels.end}
+                placeholder="Select time"
+                required
+              />
+            </Field>
+            <p className="text-sm leading-snug text-espresso-500 sm:col-span-2">
+              The service starts at the {labels.start.toLowerCase()} on the first day and
+              finishes at the {labels.end.toLowerCase()} on the last day.
+            </p>
+          </div>
+        ) : (
+          <div className="grid gap-3 sm:grid-cols-2">
+            <fieldset>
+              <legend className="mb-1.5 text-sm font-semibold uppercase tracking-[0.06em] text-espresso-700">
+                Preferred time <span className="normal-case text-espresso-500/60">(optional)</span>
+              </legend>
+              <div className="flex items-center gap-2">
+                <TimeSelect name="dropoffFrom" aria-label="Preferred time from" placeholder="Any time" />
+                <span className="text-xs text-espresso-500">to</span>
+                <TimeSelect name="dropoffTo" aria-label="Preferred time until" placeholder="Any time" />
+              </div>
+            </fieldset>
+          </div>
+        )}
 
         <fieldset>
           <legend className="mb-1.5 flex items-center justify-between text-sm font-medium text-espresso-700">

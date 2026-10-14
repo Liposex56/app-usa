@@ -13,6 +13,8 @@ import type {
 } from '@/lib/database.types';
 import { requireProfile } from '@/lib/auth';
 import { clockRange } from '@/lib/booking-notes';
+import { CHAT_BUCKET, isTimedService, timeLabels } from '@/lib/booking-flow';
+import { cancellationWindow } from '@/lib/cancellation';
 import { bookingPhase } from '@/lib/booking-phase';
 import { bookingQuantity } from '@/lib/pricing';
 import { SERVICE_BY_TYPE, serviceName } from '@/lib/services';
@@ -26,7 +28,8 @@ import { createClient } from '@/lib/supabase/server';
 import { formatCents, formatDate } from '@/lib/utils';
 
 import { sendMessageAction } from '../actions';
-import { BookingActions } from './booking-actions';
+import { PartnerShopCard } from '@/components/partner-shop-card';
+import { BookingActions, type CancellationInfo } from './booking-actions';
 import { BookingTabs, type BookingPanel } from './booking-tabs';
 import { BookingToolbar } from './booking-toolbar';
 import { CallWindow } from './call-window';
@@ -89,6 +92,9 @@ export default async function BookingDetailPage({
   const profile = await requireProfile();
   const supabase = await createClient();
 
+  // Timed services start and finish by themselves; make sure this one is current.
+  await supabase.rpc('advance_booking_statuses' as never);
+
   const { data: bookingRow } = await supabase
     .from('bookings')
     .select('*')
@@ -115,6 +121,7 @@ export default async function BookingDetailPage({
     { data: meetGreetRows },
     { data: walkLocationRows },
     { data: updateRows },
+    { data: serviceSettings },
   ] = await Promise.all([
     supabase.rpc('booking_counterparty', { p_booking_id: id }),
     supabase.from('booking_pets').select('pet_id').eq('booking_id', id),
@@ -141,6 +148,12 @@ export default async function BookingDetailPage({
       .select('*')
       .eq('booking_id', id)
       .order('created_at', { ascending: true }),
+    supabase
+      .from('sitter_services')
+      .select('cancellation_policy, extra_hour_rate_cents')
+      .eq('sitter_id', booking.sitter_id)
+      .eq('service_type', booking.service_type)
+      .maybeSingle(),
   ]);
 
   const counterparty = (counterpartyRows as BookingCounterparty[] | null)?.[0] ?? null;
@@ -157,9 +170,43 @@ export default async function BookingDetailPage({
   const myReview = reviews.find((r) => r.reviewer_id === profile.id);
   const counterpartyId = viewerRole === 'owner' ? booking.sitter_id : booking.owner_id;
 
-  // Photos and videos live in a private bucket — signed links, valid long
-  // enough to read the page.
-  const mediaUrls: Record<string, string> = {};
+  const timed = isTimedService(booking.service_type);
+
+  // Photos and videos sent in the chat (private bucket -> signed links).
+  const chatMediaUrls: Record<string, string> = {};
+  const chatMedia = messages.filter((m) => m.media_path);
+  if (chatMedia.length > 0) {
+    const { data: signedChat } = await supabase.storage
+      .from(CHAT_BUCKET)
+      .createSignedUrls(
+        chatMedia.map((m) => m.media_path as string),
+        60 * 60
+      );
+    for (const item of signedChat ?? []) {
+      const message = chatMedia.find((m) => m.media_path === item.path);
+      if (message && item.signedUrl) chatMediaUrls[message.id] = item.signedUrl;
+    }
+  }
+
+  // Boarding, daycare and house sitting: the Havener's photos go in the chat,
+  // and the report is built from them.
+  const reportUpdates: ServiceUpdateRow[] = timed
+    ? chatMedia
+        .filter((m) => m.sender_id === booking.sitter_id)
+        .map((m) => ({
+          id: m.id,
+          booking_id: m.booking_id,
+          author_id: m.sender_id,
+          kind: 'photo' as const,
+          body: m.body === 'Photo' || m.body === 'Video' ? null : m.body,
+          media_path: m.media_path,
+          media_type: m.media_type,
+          created_at: m.created_at,
+        }))
+    : serviceUpdates;
+
+  // Photos and videos of the service log live in a private bucket too.
+  const logMediaUrls: Record<string, string> = {};
   const withMedia = serviceUpdates.filter((u) => u.media_path);
   if (withMedia.length > 0) {
     const { data: signed } = await supabase.storage
@@ -170,7 +217,7 @@ export default async function BookingDetailPage({
       );
     for (const item of signed ?? []) {
       const update = withMedia.find((u) => u.media_path === item.path);
-      if (update && item.signedUrl) mediaUrls[update.id] = item.signedUrl;
+      if (update && item.signedUrl) logMediaUrls[update.id] = item.signedUrl;
     }
   }
   const requirements = completionRequirements(
@@ -178,6 +225,27 @@ export default async function BookingDetailPage({
     serviceUpdates,
     walkLocations.length
   );
+  const reportMediaUrls = timed ? chatMediaUrls : logMediaUrls;
+
+  // Cancelling: inside the Havener's window (counted from when it was booked),
+  // never during the service, and Havenr confirms it.
+  const policy = (serviceSettings as { cancellation_policy: string } | null)?.cancellation_policy;
+  const extraHourCents =
+    (serviceSettings as { extra_hour_rate_cents: number | null } | null)?.extra_hour_rate_cents ??
+    null;
+  const windowInfo = cancellationWindow(
+    policy,
+    booking.confirmed_at ?? booking.owner_booked_at ?? booking.created_at
+  );
+  const cancellation: CancellationInfo | null =
+    booking.status === 'confirmed'
+      ? {
+          requested: Boolean(booking.cancellation_requested_at),
+          open: windowInfo.open,
+          lastDayLabel: formatDate(windowInfo.lastDay),
+          policyLabel: windowInfo.policyLabel,
+        }
+      : null;
 
   const backHref =
     viewerRole === 'owner' ? '/dashboard/bookings' : '/dashboard/havener/bookings';
@@ -212,7 +280,7 @@ export default async function BookingDetailPage({
   const showUpdates =
     booking.status === 'in_progress' ||
     booking.status === 'completed' ||
-    serviceUpdates.length > 0;
+    reportUpdates.length > 0;
   const walking = booking.service_type === 'dog_walking';
 
   const panels: BookingPanel[] = [
@@ -229,6 +297,7 @@ export default async function BookingDetailPage({
           counterpartyName={counterpartyName}
           counterpartyAvatarUrl={counterparty?.avatar_url ?? null}
           readOnly={!isParticipant}
+          initialMediaUrls={chatMediaUrls}
         />
       ),
     },
@@ -238,7 +307,7 @@ export default async function BookingDetailPage({
     panels.push({
       id: 'updates',
       label: 'Service updates',
-      badge: serviceUpdates.length || undefined,
+      badge: reportUpdates.length || undefined,
       content: (
         <div className="min-h-0 flex-1 space-y-5 overflow-y-auto bg-bone/60 p-4 sm:p-6">
           {walking && (booking.status === 'in_progress' || walkLocations.length > 0) && (
@@ -255,7 +324,7 @@ export default async function BookingDetailPage({
             </div>
           )}
 
-          {viewerRole === 'sitter' && isParticipant && booking.status === 'in_progress' && (
+          {viewerRole === 'sitter' && isParticipant && booking.status === 'in_progress' && !timed && (
             <ServiceLog
               bookingId={booking.id}
               sitterId={profile.id}
@@ -267,8 +336,8 @@ export default async function BookingDetailPage({
           {(booking.status === 'in_progress' || booking.status === 'completed') && (
             <ServiceReport
               bookingId={booking.id}
-              updates={serviceUpdates}
-              mediaUrls={mediaUrls}
+              updates={reportUpdates}
+              mediaUrls={reportMediaUrls}
               status={booking.status}
               startedAt={booking.started_at}
               completedAt={booking.completed_at}
@@ -276,7 +345,10 @@ export default async function BookingDetailPage({
                 walking && walkLocations.length > 1 ? routeDistanceMiles(walkLocations) : null
               }
               canRemove={
-                viewerRole === 'sitter' && isParticipant && booking.status === 'in_progress'
+                viewerRole === 'sitter' &&
+                isParticipant &&
+                booking.status === 'in_progress' &&
+                !timed
               }
             />
           )}
@@ -294,6 +366,8 @@ export default async function BookingDetailPage({
     pickupTo: booking.pickup_to,
     wantsPickupDropoff: booking.wants_pickup_dropoff,
     allowsTransport: booking.service_type === 'boarding' || booking.service_type === 'daycare',
+    timed: isTimedService(booking.service_type),
+    serviceType: booking.service_type,
   };
 
   return (
@@ -322,9 +396,27 @@ export default async function BookingDetailPage({
                 ? ` – ${formatDate(booking.end_date)}`
                 : ''}
             </p>
-            {dropoff && <p className="text-espresso-600">Drop-off {dropoff}</p>}
-            {pickup && <p className="text-espresso-600">Pick-up {pickup}</p>}
+            {dropoff && (
+              <p className="text-espresso-600">
+                {timed ? timeLabels(booking.service_type).start : 'Preferred time'} {dropoff}
+              </p>
+            )}
+            {pickup && (
+              <p className="text-espresso-600">
+                {timed ? timeLabels(booking.service_type).end : 'Pick-up'} {pickup}
+              </p>
+            )}
             <p className="text-espresso-600">{definition.where}</p>
+            {timed && (
+              <p className="mt-1 text-[16px] text-espresso-500">
+                It starts and finishes by itself at these times.
+              </p>
+            )}
+            {timed && extraHourCents ? (
+              <p className="text-[16px] text-espresso-500">
+                Extra time: {formatCents(extraHourCents)} per hour.
+              </p>
+            ) : null}
           </Section>
 
           <Section title="Pets">
@@ -412,6 +504,8 @@ export default async function BookingDetailPage({
                 bookingId={booking.id}
                 status={booking.status}
                 viewerRole={viewerRole}
+                serviceType={booking.service_type}
+                cancellation={cancellation}
               />
             </div>
           )}
@@ -501,6 +595,12 @@ export default async function BookingDetailPage({
               />
             </div>
           )}
+
+          {viewerRole === 'owner' &&
+            isParticipant &&
+            ['confirmed', 'in_progress', 'completed'].includes(booking.status) && (
+              <PartnerShopCard petNames={pets.map((p) => p.name).join(' and ')} />
+            )}
 
           {isParticipant && booking.status === 'completed' && (
             <div className="rounded-3xl border border-espresso-700/8 bg-hv-paper p-6 shadow-card">

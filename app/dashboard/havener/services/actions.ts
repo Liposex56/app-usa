@@ -61,6 +61,7 @@ export async function saveServiceSettingsAction(
         extended_stay_rate_cents: parseDollarsToCents(
           formData.get('extendedStayRate')
         ),
+        extra_hour_rate_cents: parseDollarsToCents(formData.get('extraHourRate')),
         bathing_rate_cents: parseDollarsToCents(formData.get('bathingRate')),
         pickup_dropoff_rate_cents: parseDollarsToCents(
           formData.get('pickupDropoffRate')

@@ -16,7 +16,16 @@ export function clockRange(from: string | null, to: string | null): string | nul
   return start ?? end;
 }
 
-const OWNED_PREFIXES = ['Drop-off window:', 'Pick-up window:', 'Extras:'];
+const OWNED_PREFIXES = [
+  'Drop-off window:',
+  'Pick-up window:',
+  'Drop-off time:',
+  'Pick-up time:',
+  'Arrival time:',
+  'Departure time:',
+  'Preferred time:',
+  'Extras:',
+];
 
 type ScheduleLines = {
   dropoffFrom: string | null;
@@ -31,9 +40,13 @@ type ScheduleLines = {
 export function scheduleLines(input: ScheduleLines): string[] {
   const dropoff = clockRange(input.dropoffFrom, input.dropoffTo);
   const pickup = clockRange(input.pickupFrom, input.pickupTo);
+  // One exact time = a timed service (it starts and ends then); a from–to
+  // range is just the time the owner would prefer.
+  const dropoffLabel = input.dropoffFrom && input.dropoffTo ? 'Preferred time' : 'Drop-off time';
+  const pickupLabel = input.pickupFrom && input.pickupTo ? 'Pick-up window' : 'Pick-up time';
   return [
-    dropoff ? `Drop-off window: ${dropoff}` : null,
-    pickup ? `Pick-up window: ${pickup}` : null,
+    dropoff ? `${dropoffLabel}: ${dropoff}` : null,
+    pickup ? `${pickupLabel}: ${pickup}` : null,
     input.wantsPickupDropoff
       ? input.pickupDropoffRateCents
         ? `Extras: Havener pick-up and drop-off (+${formatCents(input.pickupDropoffRateCents)})`

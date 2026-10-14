@@ -291,6 +291,37 @@ Webhook: `https://<tu-dominio>/api/checkr/webhook` con los eventos
 > **no se ha probado contra su API** (no hay cuenta todavía): al conectar las
 > llaves, hacer una prueba completa en su modo de pruebas antes de abrirlo.
 
+### Horas exactas, inicio automático y cancelación (`0018_timed_services_and_cancellation.sql`)
+
+- **Boarding, daycare y house sitting corren con la hora.** Antes de enviar la
+  solicitud el dueño elige una hora de entrega y una de recogida (exactas,
+  obligatorias; house sitting: llegada y salida). El servicio pasa solo a
+  *En curso* a la hora de entrega del primer día y a *Finalizada* a la hora de
+  recogida del último, en la hora de Boston. No hay botones Start / Complete
+  para ellos. Lo hace `advance_booking_statuses()`: pg_cron cada pocos minutos
+  y, además, la app la llama al abrir una reserva o la lista de reservas.
+- **Caminatas y visitas** siguen con Start / Mark completed del Havener, y no se
+  pueden cerrar sin las fotos y los datos requeridos (ver abajo).
+- **Fotos de boarding/daycare/house sitting van por el chat** (clip del campo de
+  mensaje, bucket privado `chat-media`). El informe del servicio se arma con
+  las fotos que el Havener mandó por ahí.
+- **Cancelar una reserva confirmada es una solicitud**, no inmediata:
+  - solo dentro del plazo de la política de cancelación del Havener para ese
+    servicio (`same_day`/`one_day` = el día en que se reservó, `three_day` =
+    3 días contando ese día, `seven_day` = 7), contado desde que se confirmó la
+    reserva;
+  - nunca durante el servicio;
+  - la solicitud queda en `/dashboard/admin/cancellations` y la **confirma la
+    empresa** (o la rechaza y la reserva sigue). Ambas partes reciben un
+    mensaje en el chat. El plazo se valida en la base de datos
+    (`protect_booking_transitions`), no solo en la pantalla.
+  - Retirar una *solicitud* aún no confirmada sigue siendo inmediato.
+- **Hora extra:** cada Havener pone su tarifa por hora en los ajustes del
+  servicio (`extra_hour_rate_cents`); se muestra en el perfil y en la reserva.
+  El cobro automático de horas extra llega con los pagos.
+- **Tienda Pawsitive Vibes:** el dueño ve una tarjeta con enlace a la tienda en
+  su reserva confirmada (`lib/partners.ts`).
+
 ### Informes de servicio y caminatas con GPS
 
 Mientras un servicio está `in_progress`, el Havener lleva un **log** en la

@@ -4,9 +4,11 @@ import { useEffect, useRef, useState } from 'react';
 import { useFormStatus } from 'react-dom';
 
 import { Button } from '@/components/ui/button';
+import { CHAT_BUCKET } from '@/lib/booking-flow';
 import { dateInAppZone, timeInAppZone } from '@/lib/dates';
 import type { MessageRow } from '@/lib/database.types';
 import { createClient } from '@/lib/supabase/client';
+import { ACCEPTED_MEDIA, MAX_PHOTO_BYTES, MAX_VIDEO_BYTES } from '@/lib/service-reports';
 import { cn, formatDate } from '@/lib/utils';
 
 import type { SendMessageState } from '../actions';
@@ -39,6 +41,7 @@ export function Chat({
   counterpartyName,
   counterpartyAvatarUrl,
   readOnly = false,
+  initialMediaUrls = {},
 }: {
   bookingId: string;
   viewerId: string;
@@ -48,11 +51,36 @@ export function Chat({
   counterpartyAvatarUrl: string | null;
   /** Staff reviewing a conversation can read it but not write in it. */
   readOnly?: boolean;
+  /** Signed links for the photos and videos already in the conversation. */
+  initialMediaUrls?: Record<string, string>;
 }) {
   const [messages, setMessages] = useState(initialMessages);
+  const [mediaUrls, setMediaUrls] = useState<Record<string, string>>(initialMediaUrls);
   const [sendError, setSendError] = useState<string | null>(null);
+  const [file, setFile] = useState<File | null>(null);
   const listRef = useRef<HTMLDivElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  // A photo that arrives (or that we just sent) needs a signed link to show.
+  useEffect(() => {
+    const missing = messages.filter((m) => m.media_path && !mediaUrls[m.id]);
+    if (missing.length === 0) return;
+    const supabase = createClient();
+    let cancelled = false;
+    (async () => {
+      for (const message of missing) {
+        const { data } = await supabase.storage
+          .from(CHAT_BUCKET)
+          .createSignedUrl(message.media_path as string, 60 * 60);
+        if (cancelled || !data?.signedUrl) continue;
+        setMediaUrls((current) => ({ ...current, [message.id]: data.signedUrl }));
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [messages, mediaUrls]);
 
   useEffect(() => {
     const supabase = createClient();
@@ -111,6 +139,32 @@ export function Chat({
 
   async function handleSubmit(formData: FormData) {
     setSendError(null);
+
+    if (file) {
+      if (!ACCEPTED_MEDIA.includes(file.type)) {
+        setSendError('Use a JPG, PNG or WebP photo, or an MP4, MOV or WebM video.');
+        return;
+      }
+      const isVideo = file.type.startsWith('video/');
+      if (file.size > (isVideo ? MAX_VIDEO_BYTES : MAX_PHOTO_BYTES)) {
+        setSendError('That file is too large — photos up to 10 MB and videos up to 50 MB.');
+        return;
+      }
+
+      // Straight to the private bucket (server actions cap the request size).
+      const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+      const path = `${viewerId}/${bookingId}/${Date.now()}-${safeName}`;
+      const { error: uploadError } = await createClient()
+        .storage.from(CHAT_BUCKET)
+        .upload(path, file, { upsert: false, contentType: file.type });
+      if (uploadError) {
+        setSendError(uploadError.message);
+        return;
+      }
+      formData.set('mediaPath', path);
+      formData.set('mediaType', isVideo ? 'video' : 'image');
+    }
+
     const result = await sendAction(formData);
     if (result.error) {
       setSendError(result.error);
@@ -120,6 +174,8 @@ export function Chat({
       setMessages((current) => [...current, result.message as MessageRow]);
     }
     formRef.current?.reset();
+    setFile(null);
+    if (fileRef.current) fileRef.current.value = '';
   }
 
   return (
@@ -180,16 +236,47 @@ export function Chat({
                     </div>
                   )}
                   <div className={cn('flex max-w-[78%] flex-col', mine ? 'items-end' : 'items-start')}>
-                    <p
+                    <div
                       className={cn(
-                        'whitespace-pre-line break-words rounded-3xl px-4 py-2.5 text-[18px] leading-snug',
+                        'overflow-hidden rounded-3xl text-[18px] leading-snug',
                         mine
                           ? 'rounded-br-lg bg-hv-ink text-hv-cream'
                           : 'rounded-bl-lg bg-hv-paper text-espresso-700 shadow-card'
                       )}
                     >
-                      {message.body}
-                    </p>
+                      {message.media_path &&
+                        (mediaUrls[message.id] ? (
+                          message.media_type === 'video' ? (
+                            <video
+                              src={mediaUrls[message.id]}
+                              controls
+                              playsInline
+                              preload="metadata"
+                              className="max-h-72 w-full bg-espresso-700/10"
+                            />
+                          ) : (
+                            <a href={mediaUrls[message.id]} target="_blank" rel="noopener noreferrer">
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img
+                                src={mediaUrls[message.id]}
+                                alt={message.body}
+                                loading="lazy"
+                                className="max-h-72 w-full object-cover"
+                              />
+                            </a>
+                          )
+                        ) : (
+                          <div className="flex h-24 w-56 items-center justify-center text-sm opacity-70">
+                            Loading…
+                          </div>
+                        ))}
+                      {(!message.media_path ||
+                        (message.body !== 'Photo' && message.body !== 'Video')) && (
+                        <p className="whitespace-pre-line break-words px-4 py-2.5">
+                          {message.body}
+                        </p>
+                      )}
+                    </div>
                     {endsRun && (
                       <span className="mt-1 px-1 text-xs text-espresso-500/80">
                         {timeInAppZone(message.created_at)}
@@ -220,11 +307,36 @@ export function Chat({
           className="flex items-center gap-3 border-t border-espresso-700/8 bg-hv-paper p-3 sm:p-4"
         >
           <input
+            ref={fileRef}
+            type="file"
+            accept="image/*,video/*"
+            className="hidden"
+            onChange={(event) => setFile(event.target.files?.[0] ?? null)}
+          />
+          <button
+            type="button"
+            aria-label="Attach a photo or video"
+            title="Attach a photo or video"
+            onClick={() => fileRef.current?.click()}
+            className={cn(
+              'flex h-11 w-11 shrink-0 items-center justify-center rounded-full border transition-colors',
+              file
+                ? 'border-hv-ink bg-hv-sky text-hv-ink'
+                : 'border-hv-ink/20 text-espresso-600 hover:bg-hv-sky'
+            )}
+          >
+            <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="m21 12-8.6 8.6a6 6 0 0 1-8.5-8.5l9-9a4 4 0 0 1 5.7 5.7l-9.1 9.1a2 2 0 0 1-2.8-2.8l8.5-8.5" />
+            </svg>
+          </button>
+          <input
             type="text"
             name="body"
-            required
+            required={!file}
             maxLength={4000}
-            placeholder={`Message ${counterpartyName.split(' ')[0]}…`}
+            placeholder={
+              file ? `Add a note to ${file.name} (optional)` : `Message ${counterpartyName.split(' ')[0]}…`
+            }
             className="min-w-0 flex-1 rounded-full border border-hv-ink/20 bg-bone px-5 py-2.5 text-[18px] font-medium text-espresso-700 placeholder:text-espresso-700/40 focus:border-hv-ink focus:outline-none focus:ring-2 focus:ring-hv-mustard/40"
           />
           <SendButton />

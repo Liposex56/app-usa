@@ -11,6 +11,7 @@ import type {
 import { requireProfile } from '@/lib/auth';
 import { sitterIdsWithConflict } from '@/lib/availability';
 import { scheduleLines } from '@/lib/booking-notes';
+import { isTimedService, timeLabels } from '@/lib/booking-flow';
 import { filterChatMessage } from '@/lib/chat-filter';
 import { findMatchingSitters } from '@/lib/matching';
 import { commissionPercentFromSettings, computeFeeSplit } from '@/lib/payments';
@@ -169,6 +170,22 @@ export async function contactHavenerAction(
   if (petIds.length === 0) return { error: 'Please select at least one pet.' };
   if (!rawMessage) return { error: 'Please write a short message for the Havener.' };
 
+  // Boarding, daycare and house sitting run on these two times.
+  const timed = isTimedService(serviceType);
+  const dropoffFrom = text(formData, 'dropoffFrom');
+  const pickupFrom = text(formData, 'pickupFrom');
+  if (timed && (!dropoffFrom || !pickupFrom)) {
+    const labels = timeLabels(serviceType);
+    return {
+      error: `Please choose the ${labels.start.toLowerCase()} and the ${labels.end.toLowerCase()} — the service starts and ends at those times.`,
+    };
+  }
+  if (timed && !endDate && pickupFrom && dropoffFrom && pickupFrom <= dropoffFrom) {
+    return {
+      error: 'For a single day, the pick-up time has to be after the drop-off time.',
+    };
+  }
+
   const filtered = filterChatMessage(rawMessage);
   if (filtered.blocked) return { error: filtered.blockedReason };
 
@@ -213,10 +230,11 @@ export async function contactHavenerAction(
     startDate,
     endDate: endDate || null,
     pets,
-    dropoffFrom: text(formData, 'dropoffFrom'),
-    dropoffTo: text(formData, 'dropoffTo'),
-    pickupFrom: text(formData, 'pickupFrom'),
-    pickupTo: text(formData, 'pickupTo'),
+    dropoffFrom,
+    // Timed services use one exact time each; others an optional preferred range.
+    dropoffTo: timed ? null : text(formData, 'dropoffTo'),
+    pickupFrom: timed ? pickupFrom : null,
+    pickupTo: null,
     wantsPickupDropoff: bool(formData, 'wantsPickupDropoff'),
     message: filtered.body,
     flagged: filtered.flagged,

@@ -192,6 +192,21 @@ export function ServiceSettingsForm({
                 defaultValue={cents(existing?.holiday_rate_cents)}
               />
             </Field>
+            <Field
+              label="Extra hour rate (USD per hour)"
+              htmlFor="extraHourRate"
+              hint="What you charge for each extra hour — a late pick-up or a longer day."
+            >
+              <Input
+                id="extraHourRate"
+                name="extraHourRate"
+                type="number"
+                min="0"
+                step="1"
+                inputMode="decimal"
+                defaultValue={cents(existing?.extra_hour_rate_cents)}
+              />
+            </Field>
             <Field label="Extended stay rate (USD)" htmlFor="extendedStayRate">
               <Input
                 id="extendedStayRate"

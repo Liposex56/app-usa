@@ -5,6 +5,7 @@ import { useActionState, useState, useTransition } from 'react';
 import { Button } from '@/components/ui/button';
 import { Field, FormError, Input } from '@/components/ui/field';
 import { TimeSelect } from '@/components/ui/time-select';
+import { timeLabels } from '@/lib/booking-flow';
 import {
   bookAction,
   cancelBookClickAction,
@@ -26,6 +27,9 @@ export type ModifyDefaults = {
   wantsPickupDropoff: boolean;
   /** Transport only applies when the pet goes to the Havener's home. */
   allowsTransport: boolean;
+  /** Boarding, daycare and house sitting run on exact start and end times. */
+  timed: boolean;
+  serviceType: string;
 };
 
 const hhmm = (value: string | null) => value?.slice(0, 5) ?? '';
@@ -116,44 +120,49 @@ function ModifyPanel({
         </Field>
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-2">
+      {defaults.timed ? (
+        <div className="grid gap-3 sm:grid-cols-2">
+          <Field label={timeLabels(defaults.serviceType).start} htmlFor="m-dropoff" required>
+            <TimeSelect
+              id="m-dropoff"
+              name="dropoffFrom"
+              placeholder="Select time"
+              required
+              defaultValue={hhmm(defaults.dropoffFrom)}
+            />
+          </Field>
+          <Field label={timeLabels(defaults.serviceType).end} htmlFor="m-pickup" required>
+            <TimeSelect
+              id="m-pickup"
+              name="pickupFrom"
+              placeholder="Select time"
+              required
+              defaultValue={hhmm(defaults.pickupFrom)}
+            />
+          </Field>
+        </div>
+      ) : (
         <fieldset>
-          <legend className="mb-1.5 text-sm font-medium text-espresso-700">Drop-off window</legend>
+          <legend className="mb-1.5 text-sm font-semibold uppercase tracking-[0.06em] text-espresso-700">
+            Preferred time
+          </legend>
           <div className="flex items-center gap-2">
             <TimeSelect
               name="dropoffFrom"
-              aria-label="Drop-off from"
+              aria-label="Preferred time from"
               placeholder="Any time"
               defaultValue={hhmm(defaults.dropoffFrom)}
             />
             <span className="text-xs text-espresso-500">to</span>
             <TimeSelect
               name="dropoffTo"
-              aria-label="Drop-off until"
+              aria-label="Preferred time until"
               placeholder="Any time"
               defaultValue={hhmm(defaults.dropoffTo)}
             />
           </div>
         </fieldset>
-        <fieldset>
-          <legend className="mb-1.5 text-sm font-medium text-espresso-700">Pick-up window</legend>
-          <div className="flex items-center gap-2">
-            <TimeSelect
-              name="pickupFrom"
-              aria-label="Pick-up from"
-              placeholder="Any time"
-              defaultValue={hhmm(defaults.pickupFrom)}
-            />
-            <span className="text-xs text-espresso-500">to</span>
-            <TimeSelect
-              name="pickupTo"
-              aria-label="Pick-up until"
-              placeholder="Any time"
-              defaultValue={hhmm(defaults.pickupTo)}
-            />
-          </div>
-        </fieldset>
-      </div>
+      )}
 
       {defaults.allowsTransport && (
         <label className="flex cursor-pointer items-center justify-between gap-4 rounded-xl border border-espresso-700/12 bg-hv-paper px-4 py-3 text-sm text-espresso-700">
