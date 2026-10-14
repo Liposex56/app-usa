@@ -191,18 +191,21 @@ export default async function BookingDetailPage({
   // Boarding, daycare and house sitting: the Havener's photos go in the chat,
   // and the report is built from them.
   const reportUpdates: ServiceUpdateRow[] = timed
-    ? chatMedia
-        .filter((m) => m.sender_id === booking.sitter_id)
-        .map((m) => ({
-          id: m.id,
-          booking_id: m.booking_id,
-          author_id: m.sender_id,
-          kind: 'photo' as const,
-          body: m.body === 'Photo' || m.body === 'Video' ? null : m.body,
-          media_path: m.media_path,
-          media_type: m.media_type,
-          created_at: m.created_at,
-        }))
+    ? [
+        ...serviceUpdates,
+        ...chatMedia
+          .filter((m) => m.sender_id === booking.sitter_id)
+          .map((m) => ({
+            id: m.id,
+            booking_id: m.booking_id,
+            author_id: m.sender_id,
+            kind: 'photo' as const,
+            body: m.body === 'Photo' || m.body === 'Video' ? null : m.body,
+            media_path: m.media_path,
+            media_type: m.media_type,
+            created_at: m.created_at,
+          })),
+      ]
     : serviceUpdates;
 
   // Photos and videos of the service log live in a private bucket too.
@@ -225,7 +228,7 @@ export default async function BookingDetailPage({
     serviceUpdates,
     walkLocations.length
   );
-  const reportMediaUrls = timed ? chatMediaUrls : logMediaUrls;
+  const reportMediaUrls = timed ? { ...logMediaUrls, ...chatMediaUrls } : logMediaUrls;
 
   // Cancelling: inside the Havener's window (counted from when it was booked),
   // never during the service, and Havenr confirms it.
@@ -235,7 +238,7 @@ export default async function BookingDetailPage({
     null;
   const windowInfo = cancellationWindow(
     policy,
-    booking.confirmed_at ?? booking.owner_booked_at ?? booking.created_at
+    booking.confirmed_at ?? booking.created_at
   );
   const cancellation: CancellationInfo | null =
     booking.status === 'confirmed'

@@ -142,7 +142,10 @@ async function confirmIfBothBooked(bookingId: string) {
     .eq('id', bookingId)
     .maybeSingle();
   if (data && data.status === 'requested' && data.owner_booked_at && data.sitter_booked_at) {
-    await updateBooking(bookingId, { status: 'confirmed' });
+    await updateBooking(bookingId, {
+      status: 'confirmed',
+      confirmed_at: new Date().toISOString(),
+    });
   }
 }
 
@@ -374,7 +377,10 @@ export async function startServiceAction(bookingId: string): Promise<ActionState
   if (data && isTimedService(data.service_type)) {
     return { error: 'This service starts by itself at the drop-off time.' };
   }
-  return updateBooking(bookingId, { status: 'in_progress' });
+  return updateBooking(bookingId, {
+    status: 'in_progress',
+    started_at: new Date().toISOString(),
+  });
 }
 
 /**
@@ -422,7 +428,10 @@ export async function completeServiceAction(bookingId: string): Promise<ActionSt
     };
   }
 
-  return updateBooking(bookingId, { status: 'completed' });
+  return updateBooking(bookingId, {
+    status: 'completed',
+    completed_at: new Date().toISOString(),
+  });
 }
 
 const UPDATE_KINDS: UpdateKind[] = [
