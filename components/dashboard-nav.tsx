@@ -2,10 +2,83 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import type { NavLink } from '@/lib/nav';
 import { cn } from '@/lib/utils';
+
+const ACCOUNT_HREF = '/dashboard/settings';
+
+/** The person's name in the bar; opens account details and log out. */
+function AccountMenu({ name }: { name: string }) {
+  const pathname = usePathname();
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => setOpen(false), [pathname]);
+
+  useEffect(() => {
+    if (!open) return;
+    const onPointer = (event: MouseEvent) => {
+      if (!ref.current?.contains(event.target as Node)) setOpen(false);
+    };
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setOpen(false);
+    };
+    document.addEventListener('mousedown', onPointer);
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('mousedown', onPointer);
+      document.removeEventListener('keydown', onKey);
+    };
+  }, [open]);
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        type="button"
+        aria-haspopup="menu"
+        aria-expanded={open}
+        onClick={() => setOpen((value) => !value)}
+        className="flex items-center gap-2.5 rounded-full py-1 pl-1 pr-3 transition-colors hover:bg-hv-cream/10"
+      >
+        <span className="flex h-8 w-8 items-center justify-center rounded-full bg-hv-sky text-[17px] font-bold text-hv-ink">
+          {name.slice(0, 1).toUpperCase()}
+        </span>
+        <span className="max-w-[14ch] truncate text-[17px] font-medium text-hv-cream/80">
+          {name}
+        </span>
+        <span aria-hidden className="text-[11px] text-hv-cream/60">
+          ▾
+        </span>
+      </button>
+
+      {open && (
+        <div
+          role="menu"
+          className="absolute right-0 top-full z-50 mt-2 w-56 overflow-hidden rounded-2xl border border-hv-cream/15 bg-hv-ink py-2 shadow-card"
+        >
+          <Link
+            role="menuitem"
+            href={ACCOUNT_HREF}
+            className="block px-5 py-2.5 text-[17px] font-semibold transition-colors hover:bg-hv-cream/10"
+          >
+            Account
+          </Link>
+          <form action="/auth/signout" method="post">
+            <button
+              role="menuitem"
+              type="submit"
+              className="block w-full px-5 py-2.5 text-left text-[17px] font-semibold transition-colors hover:bg-hv-cream/10"
+            >
+              Log out
+            </button>
+          </form>
+        </div>
+      )}
+    </div>
+  );
+}
 
 /**
  * Top navigation of the signed-in area. Same espresso bar as the public site;
@@ -25,8 +98,9 @@ export function DashboardNav({
   useEffect(() => setOpen(false), [pathname]);
 
   // The most specific link that prefixes the current path is the active one.
+  // The dashboard home only lights up on itself, so Account and the like don't.
   const matches = (prefix: string) =>
-    pathname === prefix || pathname.startsWith(`${prefix}/`);
+    pathname === prefix || (prefix !== '/dashboard' && pathname.startsWith(`${prefix}/`));
   const active = links
     .filter((l) => [l.href, ...(l.also ?? [])].some(matches))
     .sort((a, b) => b.href.length - a.href.length)[0]?.href;
@@ -61,11 +135,8 @@ export function DashboardNav({
         ))}
       </nav>
 
-      <div className="ml-auto hidden items-center gap-5 xl:flex">
-        <span className="max-w-[16ch] truncate text-[17px] font-medium text-hv-cream/70">
-          {name}
-        </span>
-        {signOut}
+      <div className="ml-auto hidden items-center xl:flex">
+        <AccountMenu name={name} />
       </div>
 
       <button
@@ -91,6 +162,12 @@ export function DashboardNav({
               {link.label}
             </Link>
           ))}
+          <Link
+            href={ACCOUNT_HREF}
+            className={pathname === ACCOUNT_HREF ? 'text-hv-sky' : ''}
+          >
+            Account
+          </Link>
           <div className="mt-2 flex items-center justify-between gap-4 border-t border-hv-cream/15 pt-5">
             <span className="truncate text-[17px] font-medium text-hv-cream/70">{name}</span>
             {signOut}
