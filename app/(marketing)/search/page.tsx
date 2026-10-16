@@ -1,14 +1,19 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
 
-import { IconCheck, IconMapPin, IconShield, IconStar } from '@/components/icons';
 import type { PetRow, PublicSitterRow, ServiceType } from '@/lib/database.types';
-import { availabilityLabel, findMatchingSitters } from '@/lib/matching';
-import { SERVICES, serviceName } from '@/lib/services';
+import { spreadPin } from '@/lib/geo';
+import { availabilityTier, findMatchingSitters } from '@/lib/matching';
+import {
+  applyFilters,
+  parseFilterKeys,
+  parseSort,
+  sortSitters,
+} from '@/lib/search-options';
+import { SERVICE_BY_TYPE, SERVICES, serviceName } from '@/lib/services';
 import { createClient } from '@/lib/supabase/server';
-import { formatCents } from '@/lib/utils';
 
 import { SearchFilters } from './search-filters';
+import { SearchResults, type ResultItem } from './search-results';
 
 export const metadata: Metadata = { title: 'Find a Havener' };
 
@@ -20,6 +25,8 @@ type SearchParams = {
   lng?: string;
   startDate?: string;
   endDate?: string;
+  f?: string | string[];
+  sort?: string;
 };
 
 export default async function SearchPage({
@@ -41,6 +48,8 @@ export default async function SearchPage({
       : null;
   const startDate = params.startDate?.trim() ?? '';
   const endDate = params.endDate?.trim() || startDate;
+  const filters = parseFilterKeys(params.f);
+  const sort = parseSort(params.sort);
 
   // A signed-in owner's own pet is the sensible starting point for the pet
   // filter. It's only a form default — nothing is searched until dates, a
@@ -71,6 +80,7 @@ export default async function SearchPage({
   let sitters: PublicSitterRow[] = [];
   let rateBySitter = new Map<string, number>();
   let distanceBySitter = new Map<string, number>();
+  let matched = 0;
   if (ready && origin) {
     // A Havener searching as an owner never sees their own listing.
     const {
@@ -84,9 +94,15 @@ export default async function SearchPage({
       origin,
       excludeId: viewer?.id,
     });
-    sitters = result.sitters;
+    matched = result.sitters.length;
     rateBySitter = result.rateBySitter;
     distanceBySitter = result.distanceBySitter;
+    sitters = sortSitters(
+      applyFilters(result.sitters, filters),
+      sort,
+      distanceBySitter,
+      rateBySitter
+    );
   }
 
   // Carried into each profile so the contact summary starts from this search.
@@ -97,6 +113,38 @@ export default async function SearchPage({
   }
   if (service) profileQuery.set('service', service);
   const profileQueryString = profileQuery.toString();
+
+  const rateUnit = service ? SERVICE_BY_TYPE[service as ServiceType].rateUnit : 'night';
+  const items: ResultItem[] = sitters.map((sitter) => {
+    const miles = distanceBySitter.get(sitter.id);
+    const why = [
+      'Free for your dates',
+      ...(miles != null ? [`${miles < 0.1 ? '<0.1' : miles.toFixed(1)} mi away`] : []),
+      ...(availabilityTier(sitter.calendar_updated_at) === 0 ? ['Active today'] : []),
+    ];
+    return {
+      id: sitter.id,
+      name: sitter.display_name ?? 'Havener',
+      avatarUrl: sitter.avatar_url,
+      headline: sitter.headline,
+      location: [sitter.service_city, sitter.service_state].filter(Boolean).join(', ') || null,
+      rating: sitter.rating,
+      reviews: sitter.review_count,
+      stays: sitter.completed_bookings,
+      rate: rateBySitter.get(sitter.id) ?? null,
+      rateUnit,
+      miles: miles ?? null,
+      why,
+      certified: sitter.is_certified,
+      insured: sitter.is_insured,
+      backgroundChecked: sitter.background_checked,
+      href: `/sitters/${sitter.id}${profileQueryString ? `?${profileQueryString}` : ''}`,
+      pin:
+        sitter.latitude != null && sitter.longitude != null
+          ? spreadPin({ lat: sitter.latitude, lng: sitter.longitude }, sitter.id)
+          : null,
+    };
+  });
 
   return (
     <div className="container-page py-10 sm:py-14">
@@ -115,6 +163,8 @@ export default async function SearchPage({
           address,
           lat: origin?.lat ?? null,
           lng: origin?.lng ?? null,
+          filters,
+          sort,
         }}
       />
 
@@ -126,108 +176,23 @@ export default async function SearchPage({
         </p>
       ) : (
         <>
-          <p className="mt-8 text-sm text-espresso-500">
+          <p className="mb-5 mt-8 text-[17px] text-espresso-500">
             {sitters.length} Havener{sitters.length === 1 ? '' : 's'} found
             {service ? ` for ${serviceName(service as ServiceType)}` : ''} ·
             available for your dates
+            {filters.length > 0 && matched !== sitters.length
+              ? ` · ${matched - sitters.length} hidden by your filters`
+              : ''}
           </p>
 
           {sitters.length === 0 ? (
-            <p className="mt-6 rounded-3xl border border-dashed border-espresso-700/15 bg-hv-paper p-10 text-center text-sm text-espresso-500">
-              No Haveners fit those dates and filters yet. Try a different range
-              or widen your search.
+            <p className="rounded-3xl border border-dashed border-espresso-700/15 bg-hv-paper p-10 text-center text-sm text-espresso-500">
+              {filters.length > 0 && matched > 0
+                ? 'No Haveners match all of those filters. Try removing one.'
+                : 'No Haveners fit those dates yet. Try a different range or widen your search.'}
             </p>
           ) : (
-            <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {sitters.map((sitter) => {
-                const updated = availabilityLabel(sitter.calendar_updated_at);
-                const miles = distanceBySitter.get(sitter.id);
-                return (
-                  <Link
-                    key={sitter.id}
-                    href={`/sitters/${sitter.id}${profileQueryString ? `?${profileQueryString}` : ''}`}
-                    className="flex flex-col rounded-3xl border border-espresso-700/8 bg-hv-paper p-6 shadow-card transition-all hover:-translate-y-0.5 hover:border-gold-500/40 hover:shadow-lift"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="h-14 w-14 shrink-0 overflow-hidden rounded-full bg-sky-100">
-                        {sitter.avatar_url ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img
-                            src={sitter.avatar_url}
-                            alt={sitter.display_name ?? 'Havener'}
-                            className="h-full w-full object-cover"
-                          />
-                        ) : (
-                          <div className="flex h-full w-full items-center justify-center text-lg font-medium text-espresso-500">
-                            {(sitter.display_name ?? 'H').slice(0, 1)}
-                          </div>
-                        )}
-                      </div>
-                      <div className="min-w-0">
-                        <p className="truncate font-medium text-espresso-700">
-                          {sitter.display_name ?? 'Havener'}
-                        </p>
-                        {(sitter.service_city || sitter.service_state) && (
-                          <p className="inline-flex items-center gap-1 text-xs text-espresso-500">
-                            <IconMapPin className="h-3.5 w-3.5" />
-                            {[sitter.service_city, sitter.service_state]
-                              .filter(Boolean)
-                              .join(', ')}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-
-                    {sitter.headline && (
-                      <p className="mt-3 line-clamp-2 text-sm text-espresso-600">
-                        {sitter.headline}
-                      </p>
-                    )}
-
-                    <div className="mt-3 flex flex-wrap gap-1.5">
-                      {sitter.is_certified && (
-                        <span className="inline-flex items-center gap-1 rounded-full bg-gold-500/15 px-2.5 py-0.5 text-xs font-medium text-gold-700">
-                          <IconStar className="h-3 w-3" /> Certified
-                        </span>
-                      )}
-                      {sitter.is_insured && (
-                        <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">
-                          <IconShield className="h-3 w-3" /> Insured
-                        </span>
-                      )}
-                      {sitter.background_checked && (
-                        <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">
-                          <IconCheck className="h-3 w-3" /> Background checked
-                        </span>
-                      )}
-                    </div>
-
-                    {(updated || miles != null) && (
-                      <p className="mt-3 text-xs text-olive-600">
-                        {[
-                          miles != null ? `${miles < 0.1 ? '<0.1' : miles.toFixed(1)} mi away` : null,
-                          updated,
-                        ]
-                          .filter(Boolean)
-                          .join(' · ')}
-                      </p>
-                    )}
-
-                    <div className="mt-4 flex items-center justify-between border-t border-espresso-700/8 pt-3 text-sm">
-                      <span className="text-espresso-500">
-                        {sitter.rating ? `★ ${sitter.rating.toFixed(1)}` : 'New Havener'} ·{' '}
-                        {sitter.review_count} review{sitter.review_count === 1 ? '' : 's'}
-                      </span>
-                      {rateBySitter.has(sitter.id) && (
-                        <span className="font-medium text-espresso-700">
-                          from {formatCents(rateBySitter.get(sitter.id)!)}
-                        </span>
-                      )}
-                    </div>
-                  </Link>
-                );
-              })}
-            </div>
+            <SearchResults items={items} origin={origin} />
           )}
         </>
       )}

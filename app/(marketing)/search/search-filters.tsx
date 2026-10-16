@@ -2,7 +2,8 @@
 
 import { AddressAutocomplete } from '@/components/ui/address-autocomplete';
 import { Button } from '@/components/ui/button';
-import { Field, Input, Select } from '@/components/ui/field';
+import { CheckboxCard, Field, Input, Select } from '@/components/ui/field';
+import { FILTER_GROUPS, SORT_OPTIONS } from '@/lib/search-options';
 import { SERVICES, servicePickerLabel } from '@/lib/services';
 
 export type SearchDefaults = {
@@ -13,10 +14,13 @@ export type SearchDefaults = {
   address: string;
   lat: number | null;
   lng: number | null;
+  filters: string[];
+  sort: string;
 };
 
 export function SearchFilters({ defaults }: { defaults: SearchDefaults }) {
   const today = new Date().toISOString().slice(0, 10);
+  const activeCount = defaults.filters.length;
 
   return (
     <form className="mt-8 grid gap-4 rounded-3xl border border-espresso-700/8 bg-hv-paper p-6 shadow-card sm:grid-cols-2 lg:grid-cols-4">
@@ -83,10 +87,46 @@ export function SearchFilters({ defaults }: { defaults: SearchDefaults }) {
         />
       </Field>
 
-      <div className="flex items-end sm:col-span-2 lg:col-span-4">
+      <details
+        className="group rounded-2xl border border-hv-ink/15 px-5 py-3 sm:col-span-2 lg:col-span-4"
+        open={activeCount > 0}
+      >
+        <summary className="cursor-pointer select-none text-[18px] font-semibold text-espresso-700">
+          More filters{activeCount > 0 ? ` (${activeCount})` : ''}
+        </summary>
+        <div className="mt-4 grid gap-6 pb-2 lg:grid-cols-3">
+          {FILTER_GROUPS.map((group) => (
+            <fieldset key={group.title} className="space-y-2">
+              <legend className="mb-2 text-sm font-semibold uppercase tracking-[0.06em] text-espresso-700">
+                {group.title}
+              </legend>
+              {group.filters.map((filter) => (
+                <CheckboxCard
+                  key={filter.key}
+                  name="f"
+                  value={filter.key}
+                  label={filter.label}
+                  defaultChecked={defaults.filters.includes(filter.key)}
+                />
+              ))}
+            </fieldset>
+          ))}
+        </div>
+      </details>
+
+      <div className="flex flex-wrap items-end gap-4 sm:col-span-2 lg:col-span-4">
         <Button type="submit" className="w-full sm:w-auto sm:min-w-[12rem]">
           Search
         </Button>
+        <Field label="Sort by" htmlFor="sort" className="w-full sm:w-56">
+          <Select id="sort" name="sort" defaultValue={defaults.sort}>
+            {SORT_OPTIONS.map((option) => (
+              <option key={option.key} value={option.key}>
+                {option.label}
+              </option>
+            ))}
+          </Select>
+        </Field>
       </div>
     </form>
   );
