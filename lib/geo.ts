@@ -3,9 +3,10 @@ export type LatLng = { lat: number; lng: number };
 const EARTH_RADIUS_MILES = 3958.8;
 
 /**
- * Display-only nudge so Haveners who share an area don't sit on one pin. The
- * stored location is already coarse (0019), so this reveals nothing; it only
- * spreads pins by about a quarter to half a mile, the same way every time.
+ * Display-only nudge so Haveners who share an area don't sit on one pin. A
+ * Havener's stored location comes from their city and ZIP, never their street,
+ * so this reveals nothing; it only spreads pins by about a quarter to half a
+ * mile, the same way every time.
  */
 export function spreadPin(point: LatLng, seed: string): LatLng {
   let hash = 2166136261;

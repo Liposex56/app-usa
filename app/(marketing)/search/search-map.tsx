@@ -25,7 +25,7 @@ function pinHtml(rank: number, active: boolean) {
 
 /**
  * Numbered pins on free OpenStreetMap tiles, matching the numbers in the list.
- * Pin positions are approximate on purpose (see 0019 and spreadPin).
+ * Pin positions are approximate on purpose (city/ZIP level, see spreadPin).
  */
 export function SearchMap({
   pins,
@@ -118,6 +118,16 @@ export function SearchMap({
       cancelled = true;
     };
   }, [pins, origin]);
+
+  // Keep the map's idea of its size in step with the box it lives in (the box
+  // is sticky and viewport-high, and is hidden on phones until "Map" is picked).
+  useEffect(() => {
+    const element = containerRef.current;
+    if (!element || typeof ResizeObserver === 'undefined') return;
+    const observer = new ResizeObserver(() => mapRef.current?.invalidateSize());
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, []);
 
   // Remove the map with the component.
   useEffect(
