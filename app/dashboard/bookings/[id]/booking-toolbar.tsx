@@ -48,22 +48,81 @@ function SafetyTips({ onConfirm, onClose }: { onConfirm: () => void; onClose: ()
         onClick={(event) => event.stopPropagation()}
       >
         <h2 id="tips-title" className="text-lg font-semibold text-espresso-700">
-          Tips for a safe stay
+          Before you confirm
         </h2>
         <p className="mt-2 text-sm text-espresso-600">
-          Many safety incidents are easily preventable. Here are three easy ways
-          to have a great stay every time.
+          A little preparation prevents most problems. Three habits that keep
+          every pet safe and every owner at ease:
         </p>
         <ul className="mt-3 list-disc space-y-1.5 pl-5 text-sm text-espresso-600">
-          <li>Feed dogs separately to keep meal time safe.</li>
-          <li>Give each dog their own hangout space when you’re not home.</li>
           <li>
-            Closely supervise play between dogs of different sizes and dogs from
-            different households.
+            Read the pet’s notes on food, medication and routine before
+            drop-off, and ask in the chat if anything is unclear.
+          </li>
+          <li>
+            Keep the pet leashed or in a secured space at hand-offs, and never
+            leave them unsupervised with other animals until you know how they
+            get along.
+          </li>
+          <li>
+            Send the owner photos and a quick note every day — it is the
+            easiest way to build trust.
           </li>
         </ul>
         <Button type="button" size="md" className="mt-5 w-full" onClick={onConfirm}>
-          Got it!
+          Got it
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+export type DetailRow = { label: string; value: string; strong?: boolean };
+
+function DetailsDialog({ rows, onClose }: { rows: DetailRow[]; onClose: () => void }) {
+  return (
+    <div
+      className="fixed inset-0 z-40 flex items-center justify-center bg-espresso-900/50 p-4"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="details-title"
+      onClick={onClose}
+    >
+      <div
+        className="max-h-[85vh] w-full max-w-lg overflow-y-auto rounded-2xl bg-hv-paper p-6 shadow-lift"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <div className="flex items-start justify-between gap-4">
+          <h2 id="details-title" className="text-xl font-semibold text-espresso-700">
+            Booking details
+          </h2>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close"
+            className="text-2xl leading-none text-espresso-500 hover:text-espresso-700"
+          >
+            ×
+          </button>
+        </div>
+        <dl className="mt-4 divide-y divide-espresso-700/8">
+          {rows.map((row) => (
+            <div key={row.label} className="grid gap-1 py-3 sm:grid-cols-[9rem_1fr] sm:gap-4">
+              <dt className="text-xs font-bold uppercase tracking-[0.12em] text-olive-500">
+                {row.label}
+              </dt>
+              <dd
+                className={`whitespace-pre-line text-[17px] text-espresso-700 ${
+                  row.strong ? 'font-bold' : ''
+                }`}
+              >
+                {row.value}
+              </dd>
+            </div>
+          ))}
+        </dl>
+        <Button type="button" size="md" className="mt-4 w-full" onClick={onClose}>
+          Close
         </Button>
       </div>
     </div>
@@ -248,6 +307,7 @@ export function BookingToolbar({
   sitterBooked,
   archived,
   modifyDefaults,
+  details = [],
 }: {
   parts: 'book' | 'chat';
   bookingId: string;
@@ -257,10 +317,13 @@ export function BookingToolbar({
   sitterBooked: boolean;
   archived: boolean;
   modifyDefaults: ModifyDefaults;
+  /** Everything about the booking, for the Details button. */
+  details?: DetailRow[];
 }) {
   const [isPending, startTransition] = useTransition();
   const [panel, setPanel] = useState<'modify' | 'report' | null>(null);
   const [showTips, setShowTips] = useState(false);
+  const [showDetails, setShowDetails] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
 
@@ -286,7 +349,12 @@ export function BookingToolbar({
   if (parts === 'chat') {
     return (
       <div className="relative">
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          {details.length > 0 && (
+            <Button size="sm" variant="secondary" onClick={() => setShowDetails(true)}>
+              Details
+            </Button>
+          )}
           <Button
             size="sm"
             variant="secondary"
@@ -320,6 +388,8 @@ export function BookingToolbar({
             <ReportPanel bookingId={bookingId} onDone={() => setPanel(null)} />
           </div>
         )}
+
+        {showDetails && <DetailsDialog rows={details} onClose={() => setShowDetails(false)} />}
       </div>
     );
   }

@@ -15,6 +15,7 @@ import { requireProfile } from '@/lib/auth';
 import { clockRange } from '@/lib/booking-notes';
 import { CHAT_BUCKET, isTimedService, timeLabels } from '@/lib/booking-flow';
 import { cancellationWindow } from '@/lib/cancellation';
+import { timeInAppZone } from '@/lib/dates';
 import { bookingPhase } from '@/lib/booking-phase';
 import { bookingQuantity } from '@/lib/pricing';
 import { SERVICE_BY_TYPE, serviceName } from '@/lib/services';
@@ -31,9 +32,10 @@ import { sendMessageAction } from '../actions';
 import { PartnerShopCard } from '@/components/partner-shop-card';
 import { BookingActions, type CancellationInfo } from './booking-actions';
 import { BookingTabs, type BookingPanel } from './booking-tabs';
-import { BookingToolbar } from './booking-toolbar';
+import { BookingToolbar, type DetailRow } from './booking-toolbar';
 import { CallWindow } from './call-window';
 import { Chat } from './chat';
+import { ChatGallery, type GalleryItem } from './chat-gallery';
 import { MeetGreetPanel } from './meet-greet';
 import { PayButton } from './pay-button';
 import { ReviewForm } from './review-form';
@@ -188,25 +190,22 @@ export default async function BookingDetailPage({
     }
   }
 
-  // Boarding, daycare and house sitting: the Havener's photos go in the chat,
-  // and the report is built from them.
-  const reportUpdates: ServiceUpdateRow[] = timed
-    ? [
-        ...serviceUpdates,
-        ...chatMedia
-          .filter((m) => m.sender_id === booking.sitter_id)
-          .map((m) => ({
-            id: m.id,
-            booking_id: m.booking_id,
-            author_id: m.sender_id,
-            kind: 'photo' as const,
-            body: m.body === 'Photo' || m.body === 'Video' ? null : m.body,
-            media_path: m.media_path,
-            media_type: m.media_type,
-            created_at: m.created_at,
-          })),
-      ]
-    : serviceUpdates;
+  // Boarding and house sitting have no service report: the Havener's photos
+  // and videos go in the chat, and the Gallery collects them.
+  const reportUpdates = serviceUpdates;
+  const galleryItems: GalleryItem[] = chatMedia.flatMap((m) => {
+    const url = chatMediaUrls[m.id];
+    if (!url) return [];
+    return [
+      {
+        id: m.id,
+        url,
+        type: m.media_type === 'video' ? ('video' as const) : ('image' as const),
+        caption: m.body === 'Photo' || m.body === 'Video' ? null : m.body,
+        when: `${formatDate(m.created_at.slice(0, 10))} · ${timeInAppZone(m.created_at)}`,
+      },
+    ];
+  });
 
   // Photos and videos of the service log live in a private bucket too.
   const logMediaUrls: Record<string, string> = {};
@@ -228,7 +227,7 @@ export default async function BookingDetailPage({
     serviceUpdates,
     walkLocations.length
   );
-  const reportMediaUrls = timed ? { ...logMediaUrls, ...chatMediaUrls } : logMediaUrls;
+  const reportMediaUrls = logMediaUrls;
 
   // Cancelling: inside the Havener's window (counted from when it was booked),
   // never during the service, and Havenr confirms it.
@@ -280,10 +279,12 @@ export default async function BookingDetailPage({
           .find((line) => line.startsWith('Pets:'))
           ?.replace('Pets: ', '') ?? '—');
 
+  // Timed services (boarding, house sitting) have no report — only the chat.
   const showUpdates =
-    booking.status === 'in_progress' ||
-    booking.status === 'completed' ||
-    reportUpdates.length > 0;
+    !timed &&
+    (booking.status === 'in_progress' ||
+      booking.status === 'completed' ||
+      reportUpdates.length > 0);
   const walking = booking.service_type === 'dog_walking';
 
   const panels: BookingPanel[] = [
@@ -327,7 +328,7 @@ export default async function BookingDetailPage({
             </div>
           )}
 
-          {viewerRole === 'sitter' && isParticipant && booking.status === 'in_progress' && !timed && (
+          {viewerRole === 'sitter' && isParticipant && booking.status === 'in_progress' && (
             <ServiceLog
               bookingId={booking.id}
               sitterId={profile.id}
@@ -348,10 +349,7 @@ export default async function BookingDetailPage({
                 walking && walkLocations.length > 1 ? routeDistanceMiles(walkLocations) : null
               }
               canRemove={
-                viewerRole === 'sitter' &&
-                isParticipant &&
-                booking.status === 'in_progress' &&
-                !timed
+                viewerRole === 'sitter' && isParticipant && booking.status === 'in_progress'
               }
             />
           )}
@@ -359,6 +357,59 @@ export default async function BookingDetailPage({
       ),
     });
   }
+
+  // Everything about the booking in one list, for the Details button.
+  const detailRows: DetailRow[] = [
+    { label: 'Status', value: phase.label },
+    { label: 'Service', value: serviceName(booking.service_type) },
+    {
+      label: 'Dates',
+      value:
+        formatDate(booking.start_date) +
+        (booking.end_date && booking.end_date !== booking.start_date
+          ? ` – ${formatDate(booking.end_date)}`
+          : ''),
+    },
+    ...(dropoff
+      ? [
+          {
+            label: timed ? timeLabels(booking.service_type).start : 'Preferred time',
+            value: dropoff,
+          },
+        ]
+      : []),
+    ...(pickup
+      ? [
+          {
+            label: timed ? timeLabels(booking.service_type).end : 'Pick-up',
+            value: pickup,
+          },
+        ]
+      : []),
+    { label: 'Where', value: definition.where },
+    { label: 'Pets', value: petsLine },
+    {
+      label: 'Charges',
+      value: [
+        `${serviceName(booking.service_type)} · ${quantity} ${unit}${quantity === 1 ? '' : 's'} × ${formatCents(booking.base_rate_cents)} = ${formatCents(baseCents)}`,
+        ...(extraPetsCents > 0 ? [`Additional pets: ${formatCents(extraPetsCents)}`] : []),
+        ...(transportCents > 0 ? [`Pick-up and drop-off: ${formatCents(transportCents)}`] : []),
+      ].join('\n'),
+    },
+    { label: 'Total', value: formatCents(booking.total_cents), strong: true },
+    ...(viewerRole === 'sitter'
+      ? [{ label: 'Your earnings', value: formatCents(booking.sitter_payout_cents) }]
+      : []),
+    ...(timed && extraHourCents
+      ? [{ label: 'Extra time', value: `${formatCents(extraHourCents)} per hour` }]
+      : []),
+    {
+      label: 'Cancellation',
+      value: `${windowInfo.policyLabel} policy — a confirmed booking can be cancelled by request until ${formatDate(windowInfo.lastDay)}, never during the service.`,
+    },
+    ...(booking.owner_notes ? [{ label: 'Request notes', value: booking.owner_notes }] : []),
+    { label: 'Requested on', value: formatDate(booking.created_at.slice(0, 10)) },
+  ];
 
   const modifyDefaults = {
     startDate: booking.start_date,
@@ -555,7 +606,8 @@ export default async function BookingDetailPage({
               </p>
             </div>
             {isParticipant && (
-              <div className="w-full shrink-0 sm:ml-auto sm:w-auto">
+              <div className="flex w-full shrink-0 flex-wrap items-center gap-2 sm:ml-auto sm:w-auto">
+                <ChatGallery items={galleryItems} />
                 <BookingToolbar
                   parts="chat"
                   bookingId={booking.id}
@@ -565,6 +617,7 @@ export default async function BookingDetailPage({
                   sitterBooked={Boolean(booking.sitter_booked_at)}
                   archived={archived}
                   modifyDefaults={modifyDefaults}
+                  details={detailRows}
                 />
               </div>
             )}
@@ -572,7 +625,11 @@ export default async function BookingDetailPage({
 
           <BookingTabs
             panels={panels}
-            initial={booking.status === 'in_progress' && viewerRole === 'sitter' ? 'updates' : 'messages'}
+            initial={
+              showUpdates && booking.status === 'in_progress' && viewerRole === 'sitter'
+                ? 'updates'
+                : 'messages'
+            }
             className="flex-1"
           />
         </section>
@@ -621,6 +678,7 @@ export default async function BookingDetailPage({
                     bookingId={booking.id}
                     revieweeId={counterpartyId}
                     revieweeLabel={counterpartyName}
+                    serviceType={booking.service_type}
                   />
                 </div>
               )}

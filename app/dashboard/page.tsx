@@ -16,7 +16,6 @@ import type {
 } from '@/lib/database.types';
 import { onboardingPath, requireProfile } from '@/lib/auth';
 import { dateInAppZone, timeInAppZone, todayInAppZone } from '@/lib/dates';
-import { availabilityLabel } from '@/lib/matching';
 import { serviceName } from '@/lib/services';
 import { siteOrigin } from '@/lib/site';
 import { createClient } from '@/lib/supabase/server';
@@ -261,18 +260,29 @@ export default async function DashboardPage({
               </form>
             </SectionCard>
           ) : (
-            <p className="flex items-center gap-2 rounded-2xl bg-green-50 px-5 py-3 text-sm text-green-800">
-              <IconCheck width={16} height={16} />
-              {availabilityLabel(sitterProfile?.calendar_updated_at ?? null) ??
-                'Availability updated today'}
-              . You’ll be asked again tomorrow.{' '}
-              <Link
-                href="/dashboard/havener/availability"
-                className="font-medium underline underline-offset-2"
-              >
-                Block dates
-              </Link>
-            </p>
+            <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-green-50 px-5 py-3 text-green-800">
+              <p className="flex flex-wrap items-center gap-x-2 text-[17px]">
+                <IconCheck width={16} height={16} />
+                <span>
+                  Availability updated
+                  {sitterProfile?.calendar_updated_at
+                    ? ` at ${timeInAppZone(sitterProfile.calendar_updated_at)}`
+                    : ' today'}
+                  . We’ll check in again tomorrow.
+                </span>
+                <Link
+                  href="/dashboard/havener/availability"
+                  className="font-semibold underline underline-offset-2"
+                >
+                  Block dates
+                </Link>
+              </p>
+              <form action={confirmAvailabilityAction}>
+                <Button type="submit" size="sm" variant="secondary">
+                  Update availability
+                </Button>
+              </form>
+            </div>
           )}
 
           {newRequests.length > 0 && (
