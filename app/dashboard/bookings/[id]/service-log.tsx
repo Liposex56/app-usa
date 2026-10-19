@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState, useTransition } from 'react';
+import { useEffect, useRef, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 
 import { Button } from '@/components/ui/button';
@@ -8,13 +8,13 @@ import { FormError } from '@/components/ui/field';
 import type { ServiceType } from '@/lib/database.types';
 import {
   ACCEPTED_MEDIA,
-  KIND_LABEL,
   MAX_PHOTO_BYTES,
   MAX_VIDEO_BYTES,
-  QUICK_KINDS,
   SERVICE_BUCKET,
+  quickEntries,
+  type PetMix,
+  type QuickEntry,
   type Requirement,
-  type UpdateKind,
 } from '@/lib/service-reports';
 import { createClient } from '@/lib/supabase/client';
 
@@ -29,11 +29,13 @@ export function ServiceLog({
   bookingId,
   sitterId,
   service,
+  pets,
   requirements,
 }: {
   bookingId: string;
   sitterId: string;
   service: ServiceType;
+  pets: PetMix;
   requirements: Requirement[];
 }) {
   const router = useRouter();
@@ -45,10 +47,21 @@ export function ServiceLog({
 
   const allMet = requirements.every((r) => r.met);
 
-  function quick(kind: UpdateKind) {
+  // The booked time ticks on its own; re-check it once a minute until it's up.
+  const waitingOnTime = requirements.some((r) => r.key === 'duration' && !r.met);
+  useEffect(() => {
+    if (!waitingOnTime) return;
+    const timer = setInterval(() => router.refresh(), 30_000);
+    return () => clearInterval(timer);
+  }, [waitingOnTime, router]);
+
+  function quick(entry: QuickEntry) {
     setError(null);
     startTransition(async () => {
-      const result = await logServiceUpdateAction(bookingId, { kind });
+      const result = await logServiceUpdateAction(bookingId, {
+        kind: entry.kind,
+        body: entry.body ?? null,
+      });
       if (result.error) setError(result.error);
       else router.refresh();
     });
@@ -146,16 +159,16 @@ export function ServiceLog({
           One tap
         </p>
         <div className="mt-2 flex flex-wrap gap-2">
-          {QUICK_KINDS[service].map((kind) => (
+          {quickEntries(service, pets).map((entry) => (
             <Button
-              key={kind}
+              key={entry.id}
               type="button"
               size="sm"
               variant="secondary"
               disabled={isPending || busy}
-              onClick={() => quick(kind)}
+              onClick={() => quick(entry)}
             >
-              {KIND_LABEL[kind]}
+              {entry.label}
             </Button>
           ))}
         </div>

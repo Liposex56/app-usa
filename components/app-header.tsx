@@ -1,6 +1,7 @@
 import { SignedInHeader } from '@/components/signed-in-header';
 import { SiteHeader } from '@/components/site-header';
 import { buildNavLinks } from '@/lib/nav';
+import { loadUnreadCount } from '@/lib/notifications';
 import { createClient } from '@/lib/supabase/server';
 
 /**
@@ -33,6 +34,7 @@ export async function AppHeader() {
     <SignedInHeader
       links={buildNavLinks(profile, Boolean(staff))}
       name={profile.display_name ?? profile.first_name ?? 'Your account'}
+      unread={await loadUnreadCount(supabase, user.id)}
     />
   );
 }

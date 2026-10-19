@@ -2,21 +2,15 @@
 
 import { redirect } from 'next/navigation';
 
-import type {
-  PetRow,
-  PlatformSettingsRow,
-  ServiceType,
-  SitterServiceRow,
-} from '@/lib/database.types';
+import type { PetRow, ServiceType, SitterServiceRow } from '@/lib/database.types';
 import { requireProfile } from '@/lib/auth';
 import { sitterIdsWithConflict } from '@/lib/availability';
 import { scheduleLines } from '@/lib/booking-notes';
 import { isTimedService, timeLabels } from '@/lib/booking-flow';
 import { filterChatMessage } from '@/lib/chat-filter';
 import { findMatchingSitters } from '@/lib/matching';
-import { commissionPercentFromSettings, computeFeeSplit } from '@/lib/payments';
-import { computeBookingTotals } from '@/lib/pricing';
-import { SERVICE_BY_TYPE } from '@/lib/services';
+import { computeFeeSplit } from '@/lib/payments';
+import { loadCommissionPercent } from '@/lib/rate-context';
 import { createClient } from '@/lib/supabase/server';
 import { bool, list, petAge, text } from '@/lib/utils';
 
@@ -51,6 +45,8 @@ type RequestInput = {
   pickupFrom: string | null;
   pickupTo: string | null;
   wantsPickupDropoff: boolean;
+  /** 30 or 60 for walks and drop-in visits; null for the other services. */
+  durationMinutes: number | null;
   message: string;
   flagged: boolean;
   flaggedReason: string | null;
@@ -61,29 +57,28 @@ async function createContactRequest(
   input: RequestInput
 ): Promise<{ bookingId: string } | { error: string }> {
   const { service, pets, startDate, endDate } = input;
-  const definition = SERVICE_BY_TYPE[service.service_type];
 
-  const { data: settingsRow } = await supabase
-    .from('platform_settings')
-    .select('company_commission_percent')
-    .eq('id', 1)
-    .maybeSingle();
-  const commissionPercent = commissionPercentFromSettings(
-    settingsRow as Pick<PlatformSettingsRow, 'company_commission_percent'> | null
-  );
+  const commissionPercent = await loadCommissionPercent(supabase);
 
-  const totals = computeBookingTotals({
-    service,
-    rateUnit: definition.rateUnit,
-    startDate,
-    endDate,
-    petCount: pets.length,
-    wantsPickupDropoff: input.wantsPickupDropoff,
+  // The database prices the stay (holiday and extended-stay rules included),
+  // so nobody can post their own total.
+  const { data: priceRows, error: priceError } = await supabase.rpc('stay_price', {
+    p_sitter: input.sitterId,
+    p_service: service.service_type,
+    p_start: startDate,
+    p_end: endDate,
+    p_pets: pets.length,
+    p_pickup: input.wantsPickupDropoff,
   });
-  const split = computeFeeSplit(totals.totalCents, commissionPercent);
+  const price = priceRows?.[0];
+  if (priceError || !price) {
+    return { error: priceError?.message ?? 'Could not price this request.' };
+  }
+  const split = computeFeeSplit(price.total_cents, commissionPercent);
 
   const summary = [
     `Pets: ${pets.map(petSummaryLine).join('; ')}`,
+    ...(input.durationMinutes ? [`Length: ${input.durationMinutes} minutes`] : []),
     ...scheduleLines({
       dropoffFrom: input.dropoffFrom,
       dropoffTo: input.dropoffTo,
@@ -110,13 +105,15 @@ async function createContactRequest(
       pickup_from: input.pickupFrom,
       pickup_to: input.pickupTo,
       wants_pickup_dropoff: input.wantsPickupDropoff,
-      base_rate_cents: service.base_rate_cents,
-      additional_pet_rate_cents: service.additional_pet_rate_cents,
-      extra_fees_cents: totals.extraFeesCents,
+      duration_minutes: input.durationMinutes,
+      rate_kind: price.rate_kind,
+      base_rate_cents: price.unit_cents,
+      additional_pet_rate_cents: price.additional_cents,
+      extra_fees_cents: price.extra_cents,
       commission_percent: commissionPercent,
       platform_fee_cents: split.companyFeeCents,
       sitter_payout_cents: split.sitterPayoutCents,
-      total_cents: totals.totalCents,
+      total_cents: price.total_cents,
     })
     .select('id')
     .single();
@@ -170,7 +167,15 @@ export async function contactHavenerAction(
   if (petIds.length === 0) return { error: 'Please select at least one pet.' };
   if (!rawMessage) return { error: 'Please write a short message for the Havener.' };
 
-  // Boarding, daycare and house sitting run on these two times.
+  // Walks and drop-in visits have a booked length that can't be cut short.
+  const needsDuration = serviceType === 'dog_walking' || serviceType === 'drop_in_visit';
+  const durationChoice = Number(text(formData, 'durationMinutes'));
+  if (needsDuration && ![30, 60].includes(durationChoice)) {
+    return { error: 'Please choose how long you need — 30 or 60 minutes.' };
+  }
+  const durationMinutes = needsDuration ? durationChoice : null;
+
+  // Boarding and house sitting run on these two times.
   const timed = isTimedService(serviceType);
   const dropoffFrom = text(formData, 'dropoffFrom');
   const pickupFrom = text(formData, 'pickupFrom');
@@ -236,6 +241,7 @@ export async function contactHavenerAction(
     pickupFrom: timed ? pickupFrom : null,
     pickupTo: null,
     wantsPickupDropoff: bool(formData, 'wantsPickupDropoff'),
+    durationMinutes,
     message: filtered.body,
     flagged: filtered.flagged,
     flaggedReason: filtered.flaggedReason,
@@ -323,6 +329,7 @@ export async function contactAdditionalHavenersAction(
       pickupFrom: (original.pickup_from as string | null) ?? null,
       pickupTo: (original.pickup_to as string | null) ?? null,
       wantsPickupDropoff: Boolean(original.wants_pickup_dropoff),
+      durationMinutes: (original.duration_minutes as number | null) ?? null,
       message,
       flagged: false,
       flaggedReason: null,

@@ -6,6 +6,7 @@ import type { BookingRow, PetRow } from '@/lib/database.types';
 import { requireProfile } from '@/lib/auth';
 import { findMatchingSitters } from '@/lib/matching';
 import { computeBookingTotals } from '@/lib/pricing';
+import { loadRateContext } from '@/lib/rate-context';
 import { SERVICE_BY_TYPE } from '@/lib/services';
 import { createClient } from '@/lib/supabase/server';
 import { formatCents, formatDate } from '@/lib/utils';
@@ -77,6 +78,7 @@ export default async function ContactSentPage({
 
   const definition = SERVICE_BY_TYPE[booking.service_type];
   const dateQuery = `startDate=${booking.start_date}&endDate=${endDate}&service=${booking.service_type}`;
+  const { percents, holidayDays } = await loadRateContext(supabase);
 
   const suggestions: AdditionalHavener[] = sitters
     .filter((s) => !alreadyContacted.has(s.id))
@@ -86,6 +88,8 @@ export default async function ContactSentPage({
       if (!service) return [];
       const totals = computeBookingTotals({
         service,
+        percents,
+        holidayDays,
         rateUnit: definition.rateUnit,
         startDate: booking.start_date,
         endDate: booking.end_date,

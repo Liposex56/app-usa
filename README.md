@@ -293,15 +293,19 @@ Webhook: `https://<tu-dominio>/api/checkr/webhook` con los eventos
 
 ### Horas exactas, inicio automático y cancelación (`0018_timed_services_and_cancellation.sql`)
 
-- **Boarding, daycare y house sitting corren con la hora.** Antes de enviar la
+- **Boarding y house sitting corren con la hora.** Antes de enviar la
   solicitud el dueño elige una hora de entrega y una de recogida (exactas,
   obligatorias; house sitting: llegada y salida). El servicio pasa solo a
   *En curso* a la hora de entrega del primer día y a *Finalizada* a la hora de
   recogida del último, en la hora de Boston. No hay botones Start / Complete
-  para ellos. Lo hace `advance_booking_statuses()`: pg_cron cada pocos minutos
+  para ellos y **no tienen informe de servicio**: las fotos y videos van por
+  el chat (botón *Gallery* los junta) y a las 6 PM de Boston, si ese día no se
+  envió ninguna, el Havener recibe un recordatorio. Lo hace `advance_booking_statuses()`: pg_cron cada pocos minutos
   y, además, la app la llama al abrir una reserva o la lista de reservas.
-- **Caminatas y visitas** siguen con Start / Mark completed del Havener, y no se
-  pueden cerrar sin las fotos y los datos requeridos (ver abajo).
+- **Caminatas, visitas y daycare** se inician y se cierran con Start / Mark
+  completed del Havener. Caminatas y visitas tienen una **duración reservada
+  (30 o 60 min)** y no se pueden cerrar antes; ninguna de las tres se cierra sin
+  las fotos y el resumen (pipí / popó, comida, agua; arenero si es gato).
 - **Fotos de boarding/daycare/house sitting van por el chat** (clip del campo de
   mensaje, bucket privado `chat-media`). El informe del servicio se arma con
   las fotos que el Havener mandó por ahí.
@@ -321,6 +325,35 @@ Webhook: `https://<tu-dominio>/api/checkr/webhook` con los eventos
   El cobro automático de horas extra llega con los pagos.
 - **Tienda Pawsitive Vibes:** el dueño ve una tarjeta con enlace a la tienda en
   su reserva confirmada (`lib/partners.ts`).
+
+### Feriados, tarifas automáticas y notificaciones (`0019_workflow_updates.sql`)
+
+- **Feriados** (`holidays`, editable en *Admin → Rates & holidays*): una estadía
+  que toque cualquiera se cobra completa con la **tarifa de feriado** del
+  Havener. Si no, una estadía de más de una unidad puede usar su **tarifa de
+  estadía larga**. El precio lo calcula la función SQL `stay_price()` (la usan
+  la solicitud y *Modify request*); `lib/pricing.ts` solo copia la regla para
+  el estimado en vivo del formulario. La reserva guarda qué tarifa se aplicó
+  (`rate_kind`).
+- **Tarifas automáticas:** *Admin → Rates & holidays* fija tres porcentajes
+  (feriado, mascota adicional, estadía larga). Mientras alguno esté vacío, el
+  interruptor del Havener ("Use Havenr's automatic rates") queda deshabilitado.
+  Con él encendido, esas tres tarifas salen de su tarifa base (a dólares
+  enteros); las demás las pone él.
+- **Comisión real:** `platform_settings` solo la lee el staff, así que antes las
+  solicitudes usaban siempre el 20 % por defecto. Ahora todos la leen con
+  `current_commission_percent()`.
+- **Notificaciones dentro de la app** (campana en la barra, `/dashboard/notifications`):
+  nueva solicitud, mensaje (máx. una por conversación cada 15 min), le toca
+  reservar a la otra parte, confirmada, rechazada, cancelada, iniciada,
+  completada, reseña recibida y reseñas visibles. Las escriben triggers de la
+  base de datos (`notify_user()`); el usuario solo puede leerlas y marcarlas
+  leídas.
+- **Recordatorios diarios** (pg_cron `daily-reminders`, 22:00 UTC): fotos del día
+  en boarding / house sitting, y reseña pendiente a 1 y a 4 días.
+- **Correo (opcional):** con `RESEND_API_KEY`, `EMAIL_FROM` y `CRON_SECRET`, la
+  ruta `/api/cron/emails` (cron diario en `vercel.json`) envía por correo las
+  notificaciones que siguen sin leer. Sin esas variables no pasa nada.
 
 ### Informes de servicio y caminatas con GPS
 

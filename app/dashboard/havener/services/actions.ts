@@ -10,6 +10,7 @@ import type {
   ServiceCancellationPolicy,
   ServiceType,
 } from '@/lib/database.types';
+import { autoRatesAvailable, loadRateContext } from '@/lib/rate-context';
 import { SERVICE_BY_TYPE } from '@/lib/services';
 import { createClient } from '@/lib/supabase/server';
 import { bool, list, num, parseDollarsToCents, text } from '@/lib/utils';
@@ -43,6 +44,13 @@ export async function saveServiceSettingsAction(
     ? (cancellationPolicy as ServiceCancellationPolicy)
     : 'three_day';
 
+  // "Automatic rates" hands the holiday, additional-pet and extended-stay rates
+  // to Havenr's percentages — only once Havenr has set them.
+  const autoRates = bool(formData, 'autoRates');
+  if (autoRates && !autoRatesAvailable((await loadRateContext(supabase)).percents)) {
+    return { error: 'Havenr hasn’t set the automatic rates yet — set these rates yourself for now.' };
+  }
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { error: serviceError } = await (supabase.from('sitter_services') as any)
     .upsert(
@@ -55,12 +63,16 @@ export async function saveServiceSettingsAction(
         accepts_dogs: bool(formData, 'acceptsDogs'),
         accepts_cats: bool(formData, 'acceptsCats'),
         base_rate_cents: parseDollarsToCents(formData.get('baseRate')) ?? 0,
-        additional_pet_rate_cents:
-          parseDollarsToCents(formData.get('additionalPetRate')) ?? 0,
-        holiday_rate_cents: parseDollarsToCents(formData.get('holidayRate')),
-        extended_stay_rate_cents: parseDollarsToCents(
-          formData.get('extendedStayRate')
-        ),
+        auto_rates: autoRates,
+        // With automatic rates on, these three are left as they were.
+        ...(autoRates
+          ? {}
+          : {
+              additional_pet_rate_cents:
+                parseDollarsToCents(formData.get('additionalPetRate')) ?? 0,
+              holiday_rate_cents: parseDollarsToCents(formData.get('holidayRate')),
+              extended_stay_rate_cents: parseDollarsToCents(formData.get('extendedStayRate')),
+            }),
         extra_hour_rate_cents: parseDollarsToCents(formData.get('extraHourRate')),
         bathing_rate_cents: parseDollarsToCents(formData.get('bathingRate')),
         pickup_dropoff_rate_cents: parseDollarsToCents(

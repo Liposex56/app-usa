@@ -1,6 +1,7 @@
 import { SignedInHeader } from '@/components/signed-in-header';
 import { buildNavLinks } from '@/lib/nav';
 import { requireProfile } from '@/lib/auth';
+import { loadUnreadCount } from '@/lib/notifications';
 import { createClient } from '@/lib/supabase/server';
 
 export default async function DashboardLayout({
@@ -25,6 +26,7 @@ export default async function DashboardLayout({
       <SignedInHeader
         links={links}
         name={profile.display_name ?? profile.first_name ?? 'Your account'}
+        unread={await loadUnreadCount(supabase, profile.id)}
       />
 
       <main className="container-page py-10 sm:py-14">{children}</main>

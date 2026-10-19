@@ -9,6 +9,7 @@ import type {
   SitterServiceRow,
 } from '@/lib/database.types';
 import { requireProfile } from '@/lib/auth';
+import { loadRateContext } from '@/lib/rate-context';
 import { SERVICE_BY_TYPE, servicePickerLabel } from '@/lib/services';
 import { createClient } from '@/lib/supabase/server';
 
@@ -75,6 +76,7 @@ export default async function ContactSitterPage({
   const serviceRows = (services ?? []) as SitterServiceRow[];
   const petRows = (pets ?? []) as PetRow[];
   const firstName = (sitterRow.display_name ?? 'there').split(' ')[0];
+  const { percents, holidayDays } = await loadRateContext(supabase);
 
   const contactServices: ContactService[] = serviceRows.map((row) => {
     const definition = SERVICE_BY_TYPE[row.service_type];
@@ -86,6 +88,9 @@ export default async function ContactSitterPage({
       baseRateCents: row.base_rate_cents,
       additionalPetRateCents: row.additional_pet_rate_cents,
       pickupDropoffRateCents: row.pickup_dropoff_rate_cents,
+      holidayRateCents: row.holiday_rate_cents,
+      extendedStayRateCents: row.extended_stay_rate_cents,
+      autoRates: row.auto_rates,
     };
   });
 
@@ -129,6 +134,8 @@ export default async function ContactSitterPage({
           initialStartDate={query.startDate}
           initialEndDate={query.endDate}
           rebook={query.rebook === '1'}
+          percents={percents}
+          holidayDays={holidayDays}
         />
       )}
     </div>

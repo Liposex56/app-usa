@@ -9,7 +9,7 @@ import { Field, FormError, Input, Select } from '@/components/ui/field';
 import { TimeSelect } from '@/components/ui/time-select';
 import { isTimedService, timeLabels } from '@/lib/booking-flow';
 import type { ServiceType, Species } from '@/lib/database.types';
-import { computeBookingTotals } from '@/lib/pricing';
+import { computeBookingTotals, RATE_KIND_LABEL, type AutoRatePercents } from '@/lib/pricing';
 import { formatCents } from '@/lib/utils';
 
 import { contactHavenerAction, type ContactState } from './actions';
@@ -24,6 +24,9 @@ export type ContactService = {
   baseRateCents: number;
   additionalPetRateCents: number;
   pickupDropoffRateCents: number | null;
+  holidayRateCents: number | null;
+  extendedStayRateCents: number | null;
+  autoRates: boolean;
 };
 
 const UNIT_LABEL: Record<string, string> = {
@@ -73,6 +76,8 @@ export function ContactForm({
   initialStartDate,
   initialEndDate,
   rebook,
+  percents,
+  holidayDays,
 }: {
   sitterId: string;
   sitterFirstName: string;
@@ -82,6 +87,10 @@ export function ContactForm({
   initialStartDate?: string;
   initialEndDate?: string;
   rebook: boolean;
+  /** Havenr's percentages for automatic rates, for the live estimate. */
+  percents: AutoRatePercents;
+  /** Upcoming holidays ('YYYY-MM-DD'), for the live estimate. */
+  holidayDays: string[];
 }) {
   const action = contactHavenerAction.bind(null, sitterId);
   const [state, formAction] = useActionState(action, INITIAL);
@@ -95,10 +104,13 @@ export function ContactForm({
   const [endDate, setEndDate] = useState(initialEndDate ?? '');
   const [petIds, setPetIds] = useState<string[]>(pets.length === 1 ? [pets[0].id] : []);
   const [wantsPickup, setWantsPickup] = useState(false);
+  const [durationMinutes, setDurationMinutes] = useState('30');
   const [messageEdited, setMessageEdited] = useState<string | null>(null);
 
   const service = services.find((s) => s.type === serviceType) ?? null;
   const timed = isTimedService(serviceType);
+  // A walk or a drop-in visit has a booked length that can't be cut short.
+  const hasLength = serviceType === 'dog_walking' || serviceType === 'drop_in_visit';
   const labels = timeLabels(serviceType);
   const selectedPets = pets.filter((pet) => petIds.includes(pet.id));
 
@@ -121,7 +133,12 @@ export function ContactForm({
             base_rate_cents: service.baseRateCents,
             additional_pet_rate_cents: service.additionalPetRateCents,
             pickup_dropoff_rate_cents: service.pickupDropoffRateCents,
+            holiday_rate_cents: service.holidayRateCents,
+            extended_stay_rate_cents: service.extendedStayRateCents,
+            auto_rates: service.autoRates,
           },
+          percents,
+          holidayDays,
           rateUnit: service.rateUnit,
           startDate,
           endDate: endDate || null,
@@ -200,9 +217,24 @@ export function ContactForm({
           </Field>
         </div>
 
+        {hasLength && (
+          <Field label="How long?" htmlFor="durationMinutes" required>
+            <Select
+              id="durationMinutes"
+              name="durationMinutes"
+              required
+              value={durationMinutes}
+              onChange={(event) => setDurationMinutes(event.target.value)}
+            >
+              <option value="30">30 minutes</option>
+              <option value="60">60 minutes</option>
+            </Select>
+          </Field>
+        )}
+
         {timed ? (
-          /* Boarding, daycare and house sitting run on these two times: the
-             service starts at the first and finishes at the second. */
+          /* Boarding and house sitting run on these two times: the service
+             starts at the first and finishes at the second. */
           <div className="grid gap-3 sm:grid-cols-2">
             <Field label={labels.start} htmlFor="dropoffFrom" required>
               <TimeSelect
@@ -343,6 +375,9 @@ export function ContactForm({
                 </p>
                 <p className="truncate text-xs text-espresso-500">
                   {totals.quantity} × {UNIT_LABEL[service.rateUnit] ?? service.rateUnit} ·
+                  {RATE_KIND_LABEL[totals.rateKind]
+                    ? ` ${RATE_KIND_LABEL[totals.rateKind]} applied · `
+                    : ' '}
                   prices include all fees
                 </p>
               </>

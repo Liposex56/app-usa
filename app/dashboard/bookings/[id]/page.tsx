@@ -17,7 +17,7 @@ import { CHAT_BUCKET, isTimedService, timeLabels } from '@/lib/booking-flow';
 import { cancellationWindow } from '@/lib/cancellation';
 import { timeInAppZone } from '@/lib/dates';
 import { bookingPhase } from '@/lib/booking-phase';
-import { bookingQuantity } from '@/lib/pricing';
+import { bookingQuantity, RATE_KIND_LABEL } from '@/lib/pricing';
 import { SERVICE_BY_TYPE, serviceName } from '@/lib/services';
 import {
   SERVICE_BUCKET,
@@ -222,11 +222,16 @@ export default async function BookingDetailPage({
       if (update && item.signedUrl) logMediaUrls[update.id] = item.signedUrl;
     }
   }
-  const requirements = completionRequirements(
-    booking.service_type,
-    serviceUpdates,
-    walkLocations.length
-  );
+  const petMix = {
+    hasDog: pets.some((pet) => pet.species === 'dog'),
+    hasCat: pets.some((pet) => pet.species === 'cat'),
+  };
+  const requirements = completionRequirements(booking.service_type, serviceUpdates, {
+    gpsPoints: walkLocations.length,
+    pets: petMix,
+    durationMinutes: booking.duration_minutes,
+    startedAt: booking.started_at,
+  });
   const reportMediaUrls = logMediaUrls;
 
   // Cancelling: inside the Havener's window (counted from when it was booked),
@@ -259,6 +264,7 @@ export default async function BookingDetailPage({
   const quantity = bookingQuantity(definition.rateUnit, booking.start_date, booking.end_date);
   const unit = UNIT_LABEL[definition.rateUnit] ?? definition.rateUnit;
   const baseCents = booking.base_rate_cents * quantity;
+  const rateLabel = RATE_KIND_LABEL[booking.rate_kind ?? 'standard'];
   const extraPetsCents =
     Math.max(0, pets.length - 1) * booking.additional_pet_rate_cents * quantity;
   const transportCents = Math.max(0, booking.extra_fees_cents - extraPetsCents);
@@ -333,6 +339,7 @@ export default async function BookingDetailPage({
               bookingId={booking.id}
               sitterId={profile.id}
               service={booking.service_type}
+              pets={petMix}
               requirements={requirements}
             />
           )}
@@ -370,6 +377,9 @@ export default async function BookingDetailPage({
           ? ` – ${formatDate(booking.end_date)}`
           : ''),
     },
+    ...(booking.duration_minutes
+      ? [{ label: 'Length', value: `${booking.duration_minutes} minutes` }]
+      : []),
     ...(dropoff
       ? [
           {
@@ -391,7 +401,7 @@ export default async function BookingDetailPage({
     {
       label: 'Charges',
       value: [
-        `${serviceName(booking.service_type)} · ${quantity} ${unit}${quantity === 1 ? '' : 's'} × ${formatCents(booking.base_rate_cents)} = ${formatCents(baseCents)}`,
+        `${serviceName(booking.service_type)} · ${quantity} ${unit}${quantity === 1 ? '' : 's'} × ${formatCents(booking.base_rate_cents)}${rateLabel ? ` (${rateLabel.toLowerCase()})` : ''} = ${formatCents(baseCents)}`,
         ...(extraPetsCents > 0 ? [`Additional pets: ${formatCents(extraPetsCents)}`] : []),
         ...(transportCents > 0 ? [`Pick-up and drop-off: ${formatCents(transportCents)}`] : []),
       ].join('\n'),
@@ -450,6 +460,9 @@ export default async function BookingDetailPage({
                 ? ` – ${formatDate(booking.end_date)}`
                 : ''}
             </p>
+            {booking.duration_minutes ? (
+              <p className="text-espresso-600">Length: {booking.duration_minutes} minutes</p>
+            ) : null}
             {dropoff && (
               <p className="text-espresso-600">
                 {timed ? timeLabels(booking.service_type).start : 'Preferred time'} {dropoff}
@@ -480,7 +493,7 @@ export default async function BookingDetailPage({
           <Section title="Services & charges">
             <div className="space-y-1.5">
               <ChargeRow
-                label={`${serviceName(booking.service_type)} · ${quantity} ${unit}${quantity === 1 ? '' : 's'} × ${formatCents(booking.base_rate_cents)}`}
+                label={`${serviceName(booking.service_type)} · ${quantity} ${unit}${quantity === 1 ? '' : 's'} × ${formatCents(booking.base_rate_cents)}${rateLabel ? ` (${rateLabel.toLowerCase()})` : ''}`}
                 value={formatCents(baseCents)}
               />
               {extraPetsCents > 0 && (

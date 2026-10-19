@@ -11,7 +11,7 @@ const LINKS = [
   { href: '/dashboard/admin/cancellations', label: 'Cancellations' },
   { href: '/dashboard/admin/users', label: 'Users' },
   { href: '/dashboard/admin/reports', label: 'Reports' },
-  { href: '/dashboard/admin/settings', label: 'Commission' },
+  { href: '/dashboard/admin/settings', label: 'Rates & holidays' },
 ];
 
 export default async function AdminLayout({

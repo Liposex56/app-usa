@@ -4,7 +4,11 @@ import { notFound, redirect } from 'next/navigation';
 
 import type { SitterProfileRow, SitterServiceRow } from '@/lib/database.types';
 import { requireProfile } from '@/lib/auth';
-import { commissionPercentFromSettings } from '@/lib/payments';
+import {
+  autoRatesAvailable,
+  loadCommissionPercent,
+  loadRateContext,
+} from '@/lib/rate-context';
 import { serviceBySlug } from '@/lib/services';
 import { createClient } from '@/lib/supabase/server';
 
@@ -34,11 +38,8 @@ export default async function ServiceSettingsPage({
 
   const supabase = await createClient();
 
-  const [
-    { data: serviceRow },
-    { data: sitterProfile },
-    { data: settings },
-  ] = await Promise.all([
+  const [{ data: serviceRow }, { data: sitterProfile }, commissionPercent, rateContext] =
+    await Promise.all([
       supabase
         .from('sitter_services')
         .select('*')
@@ -50,11 +51,8 @@ export default async function ServiceSettingsPage({
         .select('*')
         .eq('id', profile.id)
         .maybeSingle(),
-      supabase
-        .from('platform_settings')
-        .select('company_commission_percent')
-        .eq('id', 1)
-        .maybeSingle(),
+      loadCommissionPercent(supabase),
+      loadRateContext(supabase),
     ]);
 
   if (!sitterProfile) redirect('/dashboard/havener/edit');
@@ -72,7 +70,9 @@ export default async function ServiceSettingsPage({
         service={service}
         existing={serviceRow as SitterServiceRow | null}
         sitterProfile={sitterProfile as SitterProfileRow}
-        commissionPercent={commissionPercentFromSettings(settings)}
+        commissionPercent={commissionPercent}
+        percents={rateContext.percents}
+        autoRatesAvailable={autoRatesAvailable(rateContext.percents)}
       />
     </div>
   );

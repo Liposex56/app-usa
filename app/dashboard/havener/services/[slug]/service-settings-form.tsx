@@ -22,6 +22,7 @@ import type {
   SitterServiceRow,
 } from '@/lib/database.types';
 import { computeFeeSplit } from '@/lib/payments';
+import { effectiveRates, type AutoRatePercents } from '@/lib/pricing';
 import type { ServiceDefinition } from '@/lib/services';
 import { formatCents } from '@/lib/utils';
 
@@ -65,15 +66,41 @@ export function ServiceSettingsForm({
   existing,
   sitterProfile,
   commissionPercent,
+  percents,
+  autoRatesAvailable,
 }: {
   service: ServiceDefinition;
   existing: SitterServiceRow | null;
   sitterProfile: SitterProfileRow;
   commissionPercent: number;
+  /** Havenr's percentages behind automatic rates. */
+  percents: AutoRatePercents;
+  autoRatesAvailable: boolean;
 }) {
   const [state, formAction] = useActionState(saveServiceSettingsAction, INITIAL);
 
   const [baseRate, setBaseRate] = useState(cents(existing?.base_rate_cents) || '');
+  const [autoRates, setAutoRates] = useState(
+    autoRatesAvailable && (existing?.auto_rates ?? false)
+  );
+
+  // What the three automatic rates come to for the base rate typed above.
+  const automatic = useMemo(
+    () =>
+      effectiveRates(
+        {
+          base_rate_cents: Math.round((Number.parseFloat(baseRate) || 0) * 100),
+          additional_pet_rate_cents: 0,
+          holiday_rate_cents: null,
+          extended_stay_rate_cents: null,
+          pickup_dropoff_rate_cents: null,
+          auto_rates: true,
+        },
+        percents
+      ),
+    [baseRate, percents]
+  );
+  const dollars = (value: number | null) => (value != null ? String(value / 100) : '');
   const [yardType, setYardType] = useState<'fenced' | 'unfenced' | 'none'>(
     sitterProfile.yard_is_fenced
       ? 'fenced'
@@ -164,15 +191,46 @@ export function ServiceSettingsForm({
             </p>
           )}
 
+          <label
+            className={`flex items-start gap-3 rounded-2xl border p-3.5 ${
+              autoRatesAvailable
+                ? 'cursor-pointer border-hv-ink/15 bg-hv-paper has-[:checked]:border-hv-ink has-[:checked]:bg-hv-butter'
+                : 'border-hv-ink/10 bg-espresso-700/5'
+            }`}
+          >
+            <input
+              type="checkbox"
+              name="autoRates"
+              checked={autoRates}
+              disabled={!autoRatesAvailable}
+              onChange={(event) => setAutoRates(event.target.checked)}
+              className="mt-0.5 shrink-0 accent-[#26100B]"
+              style={{ width: '1.05rem', height: '1.05rem' }}
+            />
+            <span className="min-w-0">
+              <span className="block text-[17px] font-semibold leading-tight text-espresso-700">
+                Use Havenr’s automatic rates
+              </span>
+              <span className="mt-0.5 block text-xs leading-relaxed text-espresso-500/75">
+                {autoRatesAvailable
+                  ? 'Holiday, additional pet and extended stay are worked out from your rate with Havenr’s percentages. Everything else stays yours to set.'
+                  : 'Havenr hasn’t set the automatic percentages yet — until then, set these rates yourself.'}
+              </span>
+            </span>
+          </label>
+
           <Field label="Additional pet (USD)" htmlFor="additionalPetRate">
             <Input
+              key={autoRates ? 'auto' : 'manual'}
               id="additionalPetRate"
               name="additionalPetRate"
               type="number"
               min="0"
               step="1"
               inputMode="decimal"
-              defaultValue={cents(existing?.additional_pet_rate_cents)}
+              {...(autoRates
+                ? { value: dollars(automatic.additional), disabled: true, readOnly: true }
+                : { defaultValue: cents(existing?.additional_pet_rate_cents) })}
               placeholder="0"
             />
           </Field>
@@ -181,15 +239,22 @@ export function ServiceSettingsForm({
             Additional rates
           </p>
           <div className="grid gap-5 sm:grid-cols-2">
-            <Field label="Holiday rate (USD)" htmlFor="holidayRate">
+            <Field
+              label="Holiday rate (USD)"
+              htmlFor="holidayRate"
+              hint="Charged for the whole stay when any day of it is a holiday (New Year’s Eve and Day, Memorial Day, July 4, Labor Day, Thanksgiving, Christmas Eve and Day)."
+            >
               <Input
+                key={autoRates ? 'auto' : 'manual'}
                 id="holidayRate"
                 name="holidayRate"
                 type="number"
                 min="0"
                 step="1"
                 inputMode="decimal"
-                defaultValue={cents(existing?.holiday_rate_cents)}
+                {...(autoRates
+                  ? { value: dollars(automatic.holiday), disabled: true, readOnly: true }
+                  : { defaultValue: cents(existing?.holiday_rate_cents) })}
               />
             </Field>
             <Field
@@ -207,15 +272,22 @@ export function ServiceSettingsForm({
                 defaultValue={cents(existing?.extra_hour_rate_cents)}
               />
             </Field>
-            <Field label="Extended stay rate (USD)" htmlFor="extendedStayRate">
+            <Field
+              label="Extended stay rate (USD)"
+              htmlFor="extendedStayRate"
+              hint="Used instead of your rate for a stay of more than one day (unless a holiday is in it)."
+            >
               <Input
+                key={autoRates ? 'auto' : 'manual'}
                 id="extendedStayRate"
                 name="extendedStayRate"
                 type="number"
                 min="0"
                 step="1"
                 inputMode="decimal"
-                defaultValue={cents(existing?.extended_stay_rate_cents)}
+                {...(autoRates
+                  ? { value: dollars(automatic.extended), disabled: true, readOnly: true }
+                  : { defaultValue: cents(existing?.extended_stay_rate_cents) })}
               />
             </Field>
             <Field label="Bathing / grooming (USD)" htmlFor="bathingRate">

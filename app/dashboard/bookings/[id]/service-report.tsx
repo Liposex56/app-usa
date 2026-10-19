@@ -2,6 +2,8 @@
 import { timeInAppZone } from '@/lib/dates';
 import {
   KIND_LABEL,
+  entryNote,
+  entryTitle,
   formatDuration,
   type ServiceUpdateRow,
 } from '@/lib/service-reports';
@@ -50,7 +52,13 @@ export function ServiceReport({
   const media = updates.filter((u) => u.media_path);
   const photos = media.filter((u) => u.media_type !== 'video').length;
   const videos = media.filter((u) => u.media_type === 'video').length;
-  const potty = updates.filter((u) => u.kind === 'potty').length;
+  const potty = updates.filter((u) => u.kind === 'potty');
+  const pee = potty.filter((u) => u.body === 'Pee').length;
+  const poop = potty.filter((u) => u.body === 'Poop').length;
+  const otherPotty = potty.length - pee - poop;
+  const meals = updates.filter((u) => u.kind === 'feeding').length;
+  const water = updates.filter((u) => u.kind === 'water').length;
+  const litter = updates.filter((u) => u.kind === 'litter').length;
   const duration = formatDuration(startedAt, completedAt);
 
   return (
@@ -77,7 +85,12 @@ export function ServiceReport({
             label="Photos & videos"
             value={`${photos}${videos ? ` + ${videos}` : ''}`}
           />
-          {potty > 0 && <Stat label="Potty breaks" value={String(potty)} />}
+          {pee > 0 && <Stat label="Pee" value={String(pee)} />}
+          {poop > 0 && <Stat label="Poop" value={String(poop)} />}
+          {otherPotty > 0 && <Stat label="Potty breaks" value={String(otherPotty)} />}
+          {meals > 0 && <Stat label="Meals" value={String(meals)} />}
+          {water > 0 && <Stat label="Water" value={String(water)} />}
+          {litter > 0 && <Stat label="Litter box" value={String(litter)} />}
           <Stat label="Entries" value={String(updates.length)} />
         </dl>
       )}
@@ -99,7 +112,7 @@ export function ServiceReport({
               >
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <p className="text-[17px] font-semibold text-espresso-700">
-                    {KIND_LABEL[update.kind]}
+                    {entryTitle(update)}
                   </p>
                   <p className="text-sm text-espresso-500">
                     {formatDate(update.created_at.slice(0, 10))} ·{' '}
@@ -107,9 +120,9 @@ export function ServiceReport({
                   </p>
                 </div>
 
-                {update.body && (
+                {entryNote(update) && (
                   <p className="mt-2 whitespace-pre-line text-[17px] text-espresso-600">
-                    {update.body}
+                    {entryNote(update)}
                   </p>
                 )}
 

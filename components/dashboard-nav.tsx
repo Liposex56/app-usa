@@ -8,6 +8,41 @@ import type { NavLink } from '@/lib/nav';
 import { cn } from '@/lib/utils';
 
 const ACCOUNT_HREF = '/dashboard/settings';
+const NOTIFICATIONS_HREF = '/dashboard/notifications';
+
+/** The bell: opens the notifications page; a badge counts the ones not opened yet. */
+function NotificationsLink({ unread, active }: { unread: number; active: boolean }) {
+  return (
+    <Link
+      href={NOTIFICATIONS_HREF}
+      aria-label={unread > 0 ? `Notifications, ${unread} unread` : 'Notifications'}
+      className={cn(
+        'relative flex h-10 w-10 items-center justify-center rounded-full transition-colors hover:bg-hv-cream/10',
+        active && 'bg-hv-cream/10'
+      )}
+    >
+      <svg
+        viewBox="0 0 24 24"
+        width="22"
+        height="22"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden
+      >
+        <path d="M6 9a6 6 0 0 1 12 0c0 6 2.5 7.5 2.5 7.5h-17S6 15 6 9Z" />
+        <path d="M10 20a2 2 0 0 0 4 0" />
+      </svg>
+      {unread > 0 && (
+        <span className="absolute right-0.5 top-0.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-hv-sky px-1 text-[12px] font-bold leading-none text-hv-ink">
+          {unread > 9 ? '9+' : unread}
+        </span>
+      )}
+    </Link>
+  );
+}
 
 /** The person's name in the bar; opens account details and log out. */
 function AccountMenu({ name }: { name: string }) {
@@ -88,9 +123,11 @@ function AccountMenu({ name }: { name: string }) {
 export function DashboardNav({
   links,
   name,
+  unread = 0,
 }: {
   links: NavLink[];
   name: string;
+  unread?: number;
 }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
@@ -135,7 +172,8 @@ export function DashboardNav({
         ))}
       </nav>
 
-      <div className="ml-auto hidden items-center xl:flex">
+      <div className="ml-auto hidden items-center gap-1 xl:flex">
+        <NotificationsLink unread={unread} active={pathname === NOTIFICATIONS_HREF} />
         <AccountMenu name={name} />
       </div>
 
@@ -162,6 +200,12 @@ export function DashboardNav({
               {link.label}
             </Link>
           ))}
+          <Link
+            href={NOTIFICATIONS_HREF}
+            className={pathname === NOTIFICATIONS_HREF ? 'text-hv-sky' : ''}
+          >
+            Notifications{unread > 0 ? ` (${unread})` : ''}
+          </Link>
           <Link
             href={ACCOUNT_HREF}
             className={pathname === ACCOUNT_HREF ? 'text-hv-sky' : ''}

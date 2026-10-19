@@ -395,7 +395,7 @@ export async function completeServiceAction(bookingId: string): Promise<ActionSt
 
   const { data: booking } = await supabase
     .from('bookings')
-    .select('service_type, sitter_id, status')
+    .select('service_type, sitter_id, status, duration_minutes, started_at')
     .eq('id', bookingId)
     .maybeSingle();
   if (!booking || booking.sitter_id !== profile.id) {
@@ -405,19 +405,32 @@ export async function completeServiceAction(bookingId: string): Promise<ActionSt
     return { error: 'This service finishes by itself at the pick-up time.' };
   }
 
-  const [{ data: updateRows }, { count: gpsPoints }] = await Promise.all([
+  const [{ data: updateRows }, { count: gpsPoints }, { data: petLinks }] = await Promise.all([
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (supabase.from('service_updates') as any).select('*').eq('booking_id', bookingId),
     supabase
       .from('walk_locations')
       .select('id', { count: 'exact', head: true })
       .eq('booking_id', bookingId),
+    supabase.from('booking_pets').select('pet_id').eq('booking_id', bookingId),
   ]);
+  const petIds = (petLinks ?? []).map((row) => row.pet_id as string);
+  const { data: petRows } = petIds.length
+    ? await supabase.from('pets').select('species').in('id', petIds)
+    : { data: [] as Array<{ species: string }> };
 
   const missing = completionRequirements(
     booking.service_type,
     (updateRows ?? []) as ServiceUpdateRow[],
-    gpsPoints ?? 0
+    {
+      gpsPoints: gpsPoints ?? 0,
+      pets: {
+        hasDog: (petRows ?? []).some((pet) => pet.species === 'dog'),
+        hasCat: (petRows ?? []).some((pet) => pet.species === 'cat'),
+      },
+      durationMinutes: (booking.duration_minutes as number | null) ?? null,
+      startedAt: (booking.started_at as string | null) ?? null,
+    }
   ).filter((requirement) => !requirement.met);
 
   if (missing.length > 0) {

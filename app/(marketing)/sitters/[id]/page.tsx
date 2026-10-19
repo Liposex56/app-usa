@@ -7,6 +7,8 @@ import type {
   SitterServiceRow,
 } from '@/lib/database.types';
 import { HOME_MEDIA_BUCKET, homeMediaKind } from '@/lib/home-media';
+import { effectiveRates } from '@/lib/pricing';
+import { loadRateContext } from '@/lib/rate-context';
 import { createClient } from '@/lib/supabase/server';
 
 import { SitterProfileTabs, type HomeMediaItem } from './sitter-profile-tabs';
@@ -55,6 +57,19 @@ export default async function SitterProfilePage({
 
   if (!sitter) notFound();
 
+  // With "automatic rates" on, the extra rates shown are Havenr's percentages
+  // applied to the Havener's own rate.
+  const { percents } = await loadRateContext(supabase);
+  const pricedServices = ((services ?? []) as SitterServiceRow[]).map((row) => {
+    const rates = effectiveRates(row, percents);
+    return {
+      ...row,
+      additional_pet_rate_cents: rates.additional,
+      holiday_rate_cents: rates.holiday,
+      extended_stay_rate_cents: rates.extended,
+    };
+  });
+
   // The home photos/videos live in the public `sitter-photos` bucket under
   // <havener id>/home/ — no table to keep in sync, just list the folder.
   const { data: files } = await supabase.storage
@@ -71,7 +86,7 @@ export default async function SitterProfilePage({
   return (
     <SitterProfileTabs
       sitter={sitter as PublicSitterRow}
-      services={(services ?? []) as SitterServiceRow[]}
+      services={pricedServices}
       isOwnProfile={user?.id === id}
       startDate={startDate}
       endDate={endDate}

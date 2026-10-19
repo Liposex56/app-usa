@@ -280,6 +280,8 @@ export type SitterServiceRow = {
   pickup_dropoff_rate_cents: number | null;
   /** What the Havener charges per extra hour (late pick-up, extended day). */
   extra_hour_rate_cents: number | null;
+  /** Use Havenr's percentages for the holiday, additional-pet and extended-stay rates. */
+  auto_rates: boolean;
   cancellation_policy: ServiceCancellationPolicy;
   created_at: string;
   updated_at: string;
@@ -383,6 +385,10 @@ export type BookingRow = {
   pickup_from: string | null;
   pickup_to: string | null;
   wants_pickup_dropoff: boolean;
+  /** Booked length of a walk or drop-in visit; it can't be finished earlier. */
+  duration_minutes: number | null;
+  /** Which of the Havener's rates priced this booking. */
+  rate_kind: 'standard' | 'holiday' | 'extended';
 
   created_at: string;
   updated_at: string;
@@ -496,8 +502,38 @@ export type StaffMemberRow = {
 export type PlatformSettingsRow = {
   id: 1;
   company_commission_percent: number;
+  /** Havenr's percentages behind "automatic rates"; null until they are set. */
+  auto_holiday_percent: number | null;
+  auto_additional_pet_percent: number | null;
+  auto_extended_stay_percent: number | null;
   updated_by: string | null;
   updated_at: string;
+};
+
+export type NotificationRow = {
+  id: string;
+  user_id: string;
+  kind: string;
+  title: string;
+  body: string | null;
+  href: string | null;
+  booking_id: string | null;
+  dedupe_key: string | null;
+  created_at: string;
+  read_at: string | null;
+  emailed_at: string | null;
+};
+
+export type HolidayRow = { day: string; name: string };
+
+/** What `stay_price()` returns. */
+export type StayPriceRow = {
+  unit_cents: number;
+  additional_cents: number;
+  rate_kind: 'standard' | 'holiday' | 'extended';
+  quantity: number;
+  extra_cents: number;
+  total_cents: number;
 };
 
 export type WaitlistRow = {
@@ -597,6 +633,8 @@ export type Database = {
       reviews: Table<ReviewRow, 'booking_id' | 'reviewer_id' | 'reviewee_id' | 'rating'>;
       meet_greets: Table<MeetGreetRow, 'booking_id' | 'proposed_by' | 'starts_at'>;
       walk_locations: Table<WalkLocationRow, 'booking_id' | 'latitude' | 'longitude'>;
+      notifications: Table<NotificationRow, 'user_id' | 'kind' | 'title'>;
+      holidays: Table<HolidayRow, 'day' | 'name'>;
     };
     Views: {
       public_sitters: {
@@ -624,6 +662,25 @@ export type Database = {
       booking_owner_pets: {
         Args: { p_booking_id: string };
         Returns: PetRow[];
+      };
+      stay_price: {
+        Args: {
+          p_sitter: string;
+          p_service: ServiceType;
+          p_start: string;
+          p_end: string | null;
+          p_pets: number;
+          p_pickup: boolean;
+        };
+        Returns: StayPriceRow[];
+      };
+      current_commission_percent: {
+        Args: Record<string, never>;
+        Returns: number;
+      };
+      auto_rate_percents: {
+        Args: Record<string, never>;
+        Returns: { holiday: number | null; additional_pet: number | null; extended_stay: number | null }[];
       };
     };
     Enums: {
