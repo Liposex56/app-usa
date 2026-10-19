@@ -18,6 +18,7 @@ import { cancellationWindow } from '@/lib/cancellation';
 import { timeInAppZone } from '@/lib/dates';
 import { bookingPhase } from '@/lib/booking-phase';
 import { bookingQuantity, RATE_KIND_LABEL } from '@/lib/pricing';
+import { getStripe } from '@/lib/stripe';
 import { SERVICE_BY_TYPE, serviceName } from '@/lib/services';
 import {
   SERVICE_BUCKET,
@@ -286,6 +287,7 @@ export default async function BookingDetailPage({
           ?.replace('Pets: ', '') ?? '—');
 
   // Timed services (boarding, house sitting) have no report — only the chat.
+  const paymentsOn = Boolean(getStripe());
   const showUpdates =
     !timed &&
     (booking.status === 'in_progress' ||
@@ -533,11 +535,15 @@ export default async function BookingDetailPage({
             ['confirmed', 'in_progress', 'completed'].includes(booking.status) && (
               <Section title="Payment">
                 <p className="text-[17px]">
-                  {booking.payment_status === 'processing'
-                    ? 'Payment is processing…'
-                    : 'This booking is confirmed but not paid yet.'}
+                  {!paymentsOn
+                    ? 'Online payments aren’t turned on yet, so nothing is charged for now.'
+                    : booking.payment_status === 'processing'
+                      ? 'Payment is processing…'
+                      : booking.status === 'completed'
+                        ? 'This booking hasn’t been paid yet.'
+                        : 'This booking is confirmed but not paid yet.'}
                 </p>
-                {booking.payment_status !== 'processing' && (
+                {paymentsOn && booking.payment_status !== 'processing' && (
                   <div className="mt-3">
                     <PayButton bookingId={booking.id} totalCents={booking.total_cents} />
                     <p className="mt-2 text-sm text-espresso-500">
