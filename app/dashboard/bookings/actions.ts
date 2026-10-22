@@ -9,6 +9,7 @@ import { isTimedService } from '@/lib/booking-flow';
 import { rebuildNotes } from '@/lib/booking-notes';
 import { getStripe } from '@/lib/stripe';
 import { filterChatMessage } from '@/lib/chat-filter';
+import { refundBookingPayment, type RefundResult } from '@/lib/refunds';
 import {
   SERVICE_BUCKET,
   completionRequirements,
@@ -42,6 +43,16 @@ async function updateBooking(
   return { error: null };
 }
 
+/** A refund that failed must not look like success: say so, the booking itself is already changed. */
+function withRefundNote(refund: RefundResult, what: string): ActionState {
+  if (refund.error) {
+    return {
+      error: `${what}, but the automatic refund didn’t go through (${refund.error}). Havenr will refund it by hand.`,
+    };
+  }
+  return { error: null };
+}
+
 export async function cancelBookingAction(
   bookingId: string,
   _prev: ActionState,
@@ -64,10 +75,14 @@ export async function cancelBookingAction(
     };
   }
 
-  return updateBooking(bookingId, {
+  const result = await updateBooking(bookingId, {
     status: 'cancelled',
     cancellation_reason: reason,
   });
+  if (result.error) return result;
+
+  // A request the owner already paid (paying is their "Book") is refunded.
+  return withRefundNote(await refundBookingPayment(bookingId), 'Request withdrawn');
 }
 
 /**
@@ -338,6 +353,10 @@ export async function modifyBookingAction(
   });
   if (error) return { error: error.message };
 
+  // The price was recomputed and both "Book" clicks were cleared, so a payment
+  // already made for the old terms is refunded; the owner pays again on Book.
+  const refund = await refundBookingPayment(bookingId);
+
   // Tell the other side in the chat so nothing changes silently.
   const otherId = booking.owner_id === profile.id ? booking.sitter_id : booking.owner_id;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -351,7 +370,7 @@ export async function modifyBookingAction(
   revalidatePath('/dashboard/bookings');
   revalidatePath('/dashboard/havener/bookings');
   revalidatePath(`/dashboard/bookings/${bookingId}`);
-  return { error: null };
+  return withRefundNote(refund, 'Request updated');
 }
 
 export async function declineBookingAction(
@@ -360,10 +379,14 @@ export async function declineBookingAction(
   formData: FormData
 ): Promise<ActionState> {
   await requireProfile();
-  return updateBooking(bookingId, {
+  const result = await updateBooking(bookingId, {
     status: 'declined',
     decline_reason: text(formData, 'reason'),
   });
+  if (result.error) return result;
+
+  // If the owner had already paid, they get it back.
+  return withRefundNote(await refundBookingPayment(bookingId), 'Request declined');
 }
 
 export async function startServiceAction(bookingId: string): Promise<ActionState> {

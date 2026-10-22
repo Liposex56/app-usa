@@ -30,6 +30,7 @@ import { createClient } from '@/lib/supabase/server';
 import { formatCents, formatDate } from '@/lib/utils';
 
 import { sendMessageAction } from '../actions';
+import { AutoRefresh } from '@/components/auto-refresh';
 import { PartnerShopCard } from '@/components/partner-shop-card';
 import { BookingActions, type CancellationInfo } from './booking-actions';
 import { BookingTabs, type BookingPanel } from './booking-tabs';
@@ -42,6 +43,7 @@ import { PayButton } from './pay-button';
 import { ReviewForm } from './review-form';
 import { ServiceLog } from './service-log';
 import { ServiceReport } from './service-report';
+import { TipForm } from './tip-form';
 import { WalkMap } from './walk-map';
 import { WalkTracker } from './walk-tracker';
 
@@ -88,10 +90,13 @@ function ChargeRow({
 
 export default async function BookingDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ paid?: string; tipped?: string }>;
 }) {
   const { id } = await params;
+  const { paid: paidReturn, tipped: tippedReturn } = await searchParams;
   const profile = await requireProfile();
   const supabase = await createClient();
 
@@ -288,6 +293,8 @@ export default async function BookingDetailPage({
 
   // Timed services (boarding, house sitting) have no report — only the chat.
   const paymentsOn = Boolean(getStripe());
+  // Back from Stripe Checkout: the webhook may still be on its way.
+  const justPaid = paidReturn === '1' && booking.payment_status !== 'paid';
   const showUpdates =
     !timed &&
     (booking.status === 'in_progress' ||
@@ -438,6 +445,9 @@ export default async function BookingDetailPage({
 
   return (
     <div className="mx-auto max-w-6xl">
+      {/* Back from Stripe: keep re-reading until the payment or tip is recorded. */}
+      {((justPaid && booking.status === 'requested') ||
+        (tippedReturn === '1' && booking.tip_cents === 0)) && <AutoRefresh />}
       <Link href={backHref} className="text-[17px] font-semibold text-espresso-500 hover:text-espresso-700">
         ← Back to bookings
       </Link>
@@ -537,13 +547,14 @@ export default async function BookingDetailPage({
                 <p className="text-[17px]">
                   {!paymentsOn
                     ? 'Online payments aren’t turned on yet, so nothing is charged for now.'
-                    : booking.payment_status === 'processing'
-                      ? 'Payment is processing…'
+                    : booking.payment_status === 'processing' || justPaid
+                      ? 'Payment received — confirming it with Stripe…'
                       : booking.status === 'completed'
                         ? 'This booking hasn’t been paid yet.'
                         : 'This booking is confirmed but not paid yet.'}
                 </p>
-                {paymentsOn && booking.payment_status !== 'processing' && (
+                {justPaid && <AutoRefresh />}
+                {paymentsOn && booking.payment_status !== 'processing' && !justPaid && (
                   <div className="mt-3">
                     <PayButton bookingId={booking.id} totalCents={booking.total_cents} />
                     <p className="mt-2 text-sm text-espresso-500">
@@ -701,6 +712,18 @@ export default async function BookingDetailPage({
                   />
                 </div>
               )}
+
+              {viewerRole === 'owner' && booking.tip_cents > 0 && (
+                <p className="mt-4 rounded-2xl bg-green-50 px-4 py-3 text-[17px] font-medium text-green-800">
+                  You tipped {formatCents(booking.tip_cents)} — thank you!
+                </p>
+              )}
+              {viewerRole === 'owner' &&
+                paymentsOn &&
+                booking.payment_status === 'paid' &&
+                booking.tip_cents === 0 && (
+                  <TipForm bookingId={booking.id} totalCents={booking.total_cents} />
+                )}
             </div>
           )}
         </div>

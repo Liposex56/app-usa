@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache';
 
 import { requireStaff } from '@/lib/auth';
+import { refundBookingPayment } from '@/lib/refunds';
 import { createClient } from '@/lib/supabase/server';
 import { text } from '@/lib/utils';
 
@@ -57,6 +58,10 @@ export async function decideCancellationAction(
   const { error } = await (supabase.from('bookings') as any).update(patch).eq('id', bookingId);
   if (error) return { error: error.message };
 
+  // A confirmed cancellation is inside the Havener's window, so the owner is
+  // refunded in full (the payout and Havenr's fee are taken back with it).
+  const refund = decision === 'confirm' ? await refundBookingPayment(bookingId) : null;
+
   // Tell both sides, from the person who asked so it reads naturally in the thread.
   const asker = booking.cancellation_requested_by ?? booking.owner_id;
   const other = asker === booking.owner_id ? booking.sitter_id : booking.owner_id;
@@ -74,5 +79,10 @@ export async function decideCancellationAction(
   revalidatePath('/dashboard/admin/cancellations');
   revalidatePath('/dashboard/admin');
   revalidatePath(`/dashboard/bookings/${bookingId}`);
+  if (refund?.error) {
+    return {
+      error: `Cancelled, but the automatic refund didn’t go through (${refund.error}). Refund it from the Stripe dashboard.`,
+    };
+  }
   return { error: null };
 }

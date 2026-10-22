@@ -60,7 +60,11 @@ export async function createCheckoutSessionAction(
   const base = siteUrl();
   const session = await stripe.checkout.sessions.create({
     mode: 'payment',
+    // Cards — and with them Apple Pay and Google Pay, which Stripe Checkout
+    // shows on its own on devices that have them (nothing else to switch on
+    // for Stripe-hosted Checkout). US dollars.
     payment_method_types: ['card'],
+    customer_email: profile.email ?? undefined,
     line_items: [
       {
         price_data: {
@@ -74,8 +78,10 @@ export async function createCheckoutSessionAction(
     payment_intent_data: {
       application_fee_amount: booking.platform_fee_cents,
       transfer_data: { destination: sitter.stripe_account_id },
+      description: `Havenr booking ${booking.id}`,
+      metadata: { booking_id: booking.id, kind: 'booking' },
     },
-    metadata: { booking_id: booking.id },
+    metadata: { booking_id: booking.id, kind: 'booking' },
     success_url: `${base}/dashboard/bookings/${booking.id}?paid=1`,
     cancel_url: `${base}/dashboard/bookings/${booking.id}`,
   });

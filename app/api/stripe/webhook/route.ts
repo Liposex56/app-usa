@@ -31,13 +31,24 @@ export async function POST(request: Request) {
   }
 
   const body = await request.text();
-  let event: Stripe.Event;
-  try {
-    event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
-  } catch (err) {
-    const message = err instanceof Error ? err.message : 'Invalid signature';
-    return NextResponse.json({ error: message }, { status: 400 });
+  // Stripe gives every endpoint its own signing secret. The platform's events
+  // and the connected accounts' events (account.updated) can be two endpoints
+  // on this same URL, so STRIPE_WEBHOOK_SECRET may hold several, comma-separated.
+  const secrets = webhookSecret
+    .split(',')
+    .map((secret) => secret.trim())
+    .filter(Boolean);
+  let event: Stripe.Event | null = null;
+  let failure = 'Invalid signature';
+  for (const secret of secrets) {
+    try {
+      event = stripe.webhooks.constructEvent(body, signature, secret);
+      break;
+    } catch (err) {
+      failure = err instanceof Error ? err.message : failure;
+    }
   }
+  if (!event) return NextResponse.json({ error: failure }, { status: 400 });
 
   const supabase = createServiceClient();
   if (!supabase) {
@@ -61,7 +72,40 @@ export async function POST(request: Request) {
     case 'checkout.session.completed': {
       const session = event.data.object as Stripe.Checkout.Session;
       const bookingId = session.metadata?.booking_id;
-      if (bookingId) {
+
+      // A tip is its own payment: it only adds to the booking's tip.
+      if (session.metadata?.kind === 'tip') {
+        const tip = Number(session.metadata.tip_cents);
+        if (bookingId && session.payment_status === 'paid' && Number.isFinite(tip) && tip > 0) {
+          const { data: current } = await supabase
+            .from('bookings')
+            .select('tip_cents, sitter_id')
+            .eq('id', bookingId)
+            .maybeSingle();
+          // Only the first time, so a retried event can't count it twice.
+          if (current && current.tip_cents === 0) {
+            await supabase
+              .from('bookings')
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              .update({ tip_cents: tip } as never)
+              .eq('id', bookingId);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            await (supabase as any).rpc('notify_user', {
+              p_user: current.sitter_id,
+              p_kind: 'tip',
+              p_title: 'You received a tip',
+              p_body: `A pet owner left you a $${(tip / 100).toFixed(2)} tip. It goes to your account in full.`,
+              p_href: `/dashboard/bookings/${bookingId}`,
+              p_booking: bookingId,
+              p_dedupe: `tip:${bookingId}`,
+            });
+          }
+        }
+        break;
+      }
+
+      // Paying is only real once Stripe says the money arrived.
+      if (bookingId && session.payment_status === 'paid') {
         const now = new Date().toISOString();
         const { data: current } = await supabase
           .from('bookings')

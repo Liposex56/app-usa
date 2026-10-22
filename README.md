@@ -92,31 +92,54 @@ insert into public.staff_members (user_id, role)
 select id, 'admin' from public.profiles where email = 'tu-correo@ejemplo.com';
 ```
 
-### 2.5 Stripe (cobros, payouts y verificación de identidad)
+### 2.5 Stripe (cobros, pagos a Haveners, propina y verificación de identidad)
 
-Todo el código ya está escrito y no se activa hasta que exista la cuenta de
-Stripe de la empresa — sin estas llaves, la app sigue funcionando igual,
-solo que cada pantalla de pago/verificación muestra "todavía no está
-activado" en vez de fallar. Cuando la cuenta exista:
+Todo el código ya está escrito y no se activa hasta que existan las llaves
+de Stripe: sin ellas la app sigue funcionando igual, solo que cada pantalla de
+pago dice "todavía no está activado". Qué hace cuando se activa:
 
-1. Crea la cuenta en [stripe.com](https://stripe.com) y activa **Connect**
-   (tipo Express) e **Identity** en el dashboard.
-2. En **Developers → API keys**, copia la *Secret key* → `STRIPE_SECRET_KEY`.
-3. En **Developers → Webhooks**, crea un endpoint apuntando a
-   `https://<tu-dominio>/api/stripe/webhook`, suscrito a:
-   `account.updated`, `checkout.session.completed`,
-   `identity.verification_session.verified`,
-   `identity.verification_session.requires_input`.
-   Copia el *Signing secret* → `STRIPE_WEBHOOK_SECRET`.
-4. Agrega `SUPABASE_SERVICE_ROLE_KEY` (ver 2.1) — sin ella el webhook no
-   puede escribir en `bookings` / `sitter_profiles`.
-5. Confirma que `NEXT_PUBLIC_SITE_URL` sea el dominio real en producción
-   (Vercel → Environment Variables) — Stripe redirige ahí después del
-   onboarding, el checkout y la verificación.
+- **Cobro al dueño** con Stripe Checkout, en dólares: **tarjetas, Apple Pay y
+  Google Pay** (Checkout muestra las billeteras solo, en los dispositivos que
+  las tienen). Pagar es el "Book" del dueño.
+- **Pago al Havener** con Stripe Connect (cuentas Express): el dinero va a la
+  cuenta del Havener y Havenr se queda su comisión (`application_fee`).
+- **Reembolsos automáticos** (`lib/refunds.ts`) cuando una solicitud pagada se
+  rechaza o se retira, cuando Havenr confirma una cancelación, y cuando se
+  modifica una solicitud pagada (el precio se recalcula y el dueño paga de
+  nuevo). Se devuelve también la parte del Havener y la comisión.
+- **Propina** (10 / 15 / 20 / 25 % con el monto exacto) al terminar el
+  servicio: un pago aparte, 100 % para el Havener.
+- **Stripe Identity** para el documento y la selfie del Havener. Ojo: Stripe
+  **no** revisa antecedentes penales.
 
-Ningún cambio de código hace falta: en cuanto esas variables existan en
-Vercel y se vuelva a desplegar, `/dashboard/havener/payments`, el botón
-"Pay now" y `/dashboard/havener/verification` empiezan a funcionar.
+**Pasos** (primero en *modo de prueba*; el modo real se activa al final):
+
+1. En el dashboard de Stripe elige la cuenta de Havenr (o crea una cuenta
+   nueva dentro de la misma organización) y activa **Connect** (cuentas
+   Express) e **Identity**.
+2. **Developers → API keys:** la *Secret key* (`sk_test_…`) →
+   `STRIPE_SECRET_KEY` en Vercel.
+3. **Developers → Webhooks:** crea un endpoint a
+   `https://<tu-dominio>/api/stripe/webhook` con los eventos
+   `checkout.session.completed`, `identity.verification_session.verified` y
+   `identity.verification_session.requires_input` (eventos de **tu cuenta**).
+   Su *Signing secret* (`whsec_…`) → `STRIPE_WEBHOOK_SECRET`.
+4. Si quieres que el estado de las cuentas de los Haveners se actualice solo,
+   crea un **segundo** endpoint a la misma URL con el evento
+   `account.updated` y "Listen to events on Connected accounts". Su secreto se
+   agrega al mismo `STRIPE_WEBHOOK_SECRET` **separado por coma**
+   (`whsec_a,whsec_b`). Sin él no pasa nada grave: la pantalla de pagos del
+   Havener también consulta a Stripe al abrirse.
+5. `SUPABASE_SERVICE_ROLE_KEY` (ver 2.1): sin ella el webhook y los
+   reembolsos no pueden escribir en `bookings`.
+6. `NEXT_PUBLIC_SITE_URL` debe ser el dominio real en Vercel (Stripe redirige
+   ahí al volver del checkout y del alta del Havener).
+7. Aplica `supabase/migrations/0020_payment_columns_protected.sql`: impide que
+   un dueño marque su propia reserva como pagada desde la API.
+
+Prueba con tarjetas de prueba (`4242 4242 4242 4242`, cualquier fecha futura y
+CVC). Para salir a producción: activa la cuenta (datos de la empresa y banco),
+cambia a las llaves `sk_live_…` y crea de nuevo los webhooks en modo real.
 
 Eso te da acceso de staff en todas las políticas RLS y el menú "Admin panel".
 
