@@ -1,6 +1,7 @@
 'use server';
 
 import { redirect } from 'next/navigation';
+import type Stripe from 'stripe';
 
 import { requireProfile } from '@/lib/auth';
 import { getStripe, siteUrl } from '@/lib/stripe';
@@ -34,16 +35,53 @@ export async function connectStripeAction(): Promise<ConnectActionState> {
 
   let accountId = sitter?.stripe_account_id ?? null;
 
+  const base = siteUrl();
+
   if (!accountId) {
-    const account = await stripe.accounts.create({
+    // A Havener is a person, not a business: everything Stripe would otherwise
+    // ask about "the business" (industry, website, what they sell, how charges
+    // read on a statement) is sent already filled in, so all that is left for
+    // them is who they are and where to be paid.
+    const prefilled: Stripe.AccountCreateParams = {
       type: 'express',
       email: profile.email ?? undefined,
       business_type: 'individual',
+      individual: {
+        first_name: profile.first_name ?? undefined,
+        last_name: profile.last_name ?? undefined,
+        email: profile.email ?? undefined,
+      },
+      business_profile: {
+        // 7299 = miscellaneous personal services.
+        mcc: '7299',
+        url: `${base}/sitters/${profile.id}`,
+        product_description:
+          'Pet care (boarding, house sitting, daycare, walks and drop-in visits) booked through Havenr.',
+      },
+      settings: { payments: { statement_descriptor: 'HAVENR' } },
       capabilities: {
         transfers: { requested: true },
         card_payments: { requested: true },
       },
-    });
+    };
+
+    let account: Stripe.Account;
+    try {
+      account = await stripe.accounts.create(prefilled);
+    } catch {
+      // If Stripe rejects one of the prefilled details, fall back to the bare
+      // account rather than leave the Havener unable to connect.
+      try {
+        account = await stripe.accounts.create({
+          type: 'express',
+          email: profile.email ?? undefined,
+          business_type: 'individual',
+          capabilities: prefilled.capabilities,
+        });
+      } catch (error) {
+        return { error: stripeMessage(error) };
+      }
+    }
     accountId = account.id;
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -53,13 +91,25 @@ export async function connectStripeAction(): Promise<ConnectActionState> {
     if (error) return { error: error.message };
   }
 
-  const base = siteUrl();
-  const link = await stripe.accountLinks.create({
-    account: accountId,
-    refresh_url: `${base}/dashboard/havener/payments`,
-    return_url: `${base}/dashboard/havener/payments`,
-    type: 'account_onboarding',
-  });
+  let url: string;
+  try {
+    const link = await stripe.accountLinks.create({
+      account: accountId,
+      refresh_url: `${base}/dashboard/havener/payments`,
+      return_url: `${base}/dashboard/havener/payments`,
+      type: 'account_onboarding',
+    });
+    url = link.url;
+  } catch (error) {
+    return { error: stripeMessage(error) };
+  }
 
-  redirect(link.url);
+  redirect(url);
+}
+
+/** Stripe's own explanation, shown instead of crashing the page. */
+function stripeMessage(error: unknown): string {
+  return error instanceof Error && error.message
+    ? `Stripe couldn’t start the setup: ${error.message}`
+    : 'Stripe couldn’t start the setup. Please try again in a moment.';
 }
