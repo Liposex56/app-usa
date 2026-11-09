@@ -89,6 +89,29 @@ export async function connectStripeAction(): Promise<ConnectActionState> {
       .update({ stripe_account_id: accountId })
       .eq('id', profile.id);
     if (error) return { error: error.message };
+  } else {
+    // An account created before the business details were sent already filled
+    // in: send them now, so Stripe stops asking the Havener about a "business".
+    // Whatever Stripe won't change any more is simply left as it is.
+    try {
+      await stripe.accounts.update(accountId, {
+        business_profile: {
+          mcc: '7299',
+          url: `${base}/sitters/${profile.id}`,
+          product_description:
+            'Pet care (boarding, house sitting, daycare, walks and drop-in visits) booked through Havenr.',
+        },
+      });
+    } catch {
+      /* already provided or locked by Stripe — nothing to do */
+    }
+    try {
+      await stripe.accounts.update(accountId, {
+        settings: { payments: { statement_descriptor: 'HAVENR' } },
+      });
+    } catch {
+      /* same */
+    }
   }
 
   let url: string;
