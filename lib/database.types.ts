@@ -280,7 +280,9 @@ export type SitterServiceRow = {
   pickup_dropoff_rate_cents: number | null;
   /** What the Havener charges per extra hour (late pick-up, extended day). */
   extra_hour_rate_cents: number | null;
-  /** Use Havenr's percentages for the holiday, additional-pet and extended-stay rates. */
+  /** Walks and drop-in visits: the price of a 60-minute visit (30 minutes is the base rate). */
+  sixty_minute_rate_cents: number | null;
+  /** Use Havenr's rules for the holiday, extended-stay, puppy, additional-dog and 60-minute rates. */
   auto_rates: boolean;
   cancellation_policy: ServiceCancellationPolicy;
   created_at: string;
@@ -388,7 +390,7 @@ export type BookingRow = {
   /** Booked length of a walk or drop-in visit; it can't be finished earlier. */
   duration_minutes: number | null;
   /** Which of the Havener's rates priced this booking. */
-  rate_kind: 'standard' | 'holiday' | 'extended';
+  rate_kind: 'standard' | 'holiday' | 'extended' | 'puppy';
 
   created_at: string;
   updated_at: string;
@@ -502,10 +504,15 @@ export type StaffMemberRow = {
 export type PlatformSettingsRow = {
   id: 1;
   company_commission_percent: number;
-  /** Havenr's percentages behind "automatic rates"; null until they are set. */
-  auto_holiday_percent: number | null;
-  auto_additional_pet_percent: number | null;
-  auto_extended_stay_percent: number | null;
+  /** Havenr's rules behind "automatic rates"; null until they are set. */
+  auto_stay_holiday_percent: number | null;
+  auto_stay_extended_percent: number | null;
+  auto_stay_extended_min_units: number | null;
+  auto_stay_puppy_percent: number | null;
+  auto_stay_additional_less_cents: number | null;
+  auto_visit_sixty_percent: number | null;
+  auto_visit_additional_less_percent: number | null;
+  auto_visit_puppy_percent: number | null;
   updated_by: string | null;
   updated_at: string;
 };
@@ -526,11 +533,22 @@ export type NotificationRow = {
 
 export type HolidayRow = { day: string; name: string };
 
+/** A period (Thanksgiving, Christmas…) in which the holiday rate applies. Local New York time. */
+export type HolidayPeriodRow = {
+  id: string;
+  name: string;
+  year: number;
+  starts_at: string;
+  ends_at: string;
+  active: boolean;
+  created_at: string;
+};
+
 /** What `stay_price()` returns. */
 export type StayPriceRow = {
   unit_cents: number;
   additional_cents: number;
-  rate_kind: 'standard' | 'holiday' | 'extended';
+  rate_kind: 'standard' | 'holiday' | 'extended' | 'puppy';
   quantity: number;
   extra_cents: number;
   total_cents: number;
@@ -635,6 +653,7 @@ export type Database = {
       walk_locations: Table<WalkLocationRow, 'booking_id' | 'latitude' | 'longitude'>;
       notifications: Table<NotificationRow, 'user_id' | 'kind' | 'title'>;
       holidays: Table<HolidayRow, 'day' | 'name'>;
+      holiday_periods: Table<HolidayPeriodRow, 'name' | 'year' | 'starts_at' | 'ends_at'>;
     };
     Views: {
       public_sitters: {
@@ -671,6 +690,8 @@ export type Database = {
           p_end: string | null;
           p_pets: number;
           p_pickup: boolean;
+          p_has_puppy?: boolean;
+          p_duration?: number | null;
         };
         Returns: StayPriceRow[];
       };
@@ -680,7 +701,16 @@ export type Database = {
       };
       auto_rate_percents: {
         Args: Record<string, never>;
-        Returns: { holiday: number | null; additional_pet: number | null; extended_stay: number | null }[];
+        Returns: {
+          stay_holiday: number | null;
+          stay_extended: number | null;
+          stay_extended_min_units: number | null;
+          stay_puppy: number | null;
+          stay_additional_less_cents: number | null;
+          visit_sixty: number | null;
+          visit_additional_less: number | null;
+          visit_puppy: number | null;
+        }[];
       };
     };
     Enums: {

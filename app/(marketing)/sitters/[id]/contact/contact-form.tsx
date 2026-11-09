@@ -9,7 +9,13 @@ import { Field, FormError, Input, Select } from '@/components/ui/field';
 import { TimeSelect } from '@/components/ui/time-select';
 import { isTimedService, timeLabels } from '@/lib/booking-flow';
 import type { ServiceType, Species } from '@/lib/database.types';
-import { computeBookingTotals, RATE_KIND_LABEL, type AutoRatePercents } from '@/lib/pricing';
+import {
+  computeBookingTotals,
+  isPuppy,
+  RATE_KIND_LABEL,
+  type AutoRatePercents,
+  type HolidayPeriod,
+} from '@/lib/pricing';
 import { formatCents } from '@/lib/utils';
 
 import { contactHavenerAction, type ContactState } from './actions';
@@ -26,6 +32,8 @@ export type ContactService = {
   pickupDropoffRateCents: number | null;
   holidayRateCents: number | null;
   extendedStayRateCents: number | null;
+  puppyRateCents: number | null;
+  sixtyMinuteRateCents: number | null;
   autoRates: boolean;
 };
 
@@ -77,20 +85,20 @@ export function ContactForm({
   initialEndDate,
   rebook,
   percents,
-  holidayDays,
+  holidayPeriods,
 }: {
   sitterId: string;
   sitterFirstName: string;
   services: ContactService[];
-  pets: Array<{ id: string; name: string; species: Species }>;
+  pets: Array<{ id: string; name: string; species: Species; birthdate: string | null }>;
   initialService?: string;
   initialStartDate?: string;
   initialEndDate?: string;
   rebook: boolean;
   /** Havenr's percentages for automatic rates, for the live estimate. */
   percents: AutoRatePercents;
-  /** Upcoming holidays ('YYYY-MM-DD'), for the live estimate. */
-  holidayDays: string[];
+  /** Upcoming holiday periods, for the live estimate. */
+  holidayPeriods: HolidayPeriod[];
 }) {
   const action = contactHavenerAction.bind(null, sitterId);
   const [state, formAction] = useActionState(action, INITIAL);
@@ -135,14 +143,18 @@ export function ContactForm({
             pickup_dropoff_rate_cents: service.pickupDropoffRateCents,
             holiday_rate_cents: service.holidayRateCents,
             extended_stay_rate_cents: service.extendedStayRateCents,
+            puppy_rate_cents: service.puppyRateCents,
+            sixty_minute_rate_cents: service.sixtyMinuteRateCents,
             auto_rates: service.autoRates,
           },
           percents,
-          holidayDays,
+          holidayPeriods,
           rateUnit: service.rateUnit,
           startDate,
           endDate: endDate || null,
           petCount: petIds.length,
+          hasPuppy: selectedPets.some((pet) => isPuppy(pet, startDate)),
+          durationMinutes: hasLength ? Number(durationMinutes) : null,
           wantsPickupDropoff: wantsPickup,
         })
       : null;

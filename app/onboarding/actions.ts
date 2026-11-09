@@ -12,7 +12,7 @@ import type {
 } from '@/lib/database.types';
 import { geocode } from '@/lib/places';
 import { createClient } from '@/lib/supabase/server';
-import { bool, list, num, parseDollarsToCents, text, triState } from '@/lib/utils';
+import { bool, list, num, parseWholeDollarsToCents, text, triState } from '@/lib/utils';
 
 export type ActionState = { error: string | null };
 
@@ -409,9 +409,9 @@ export async function saveHavenerProfileAction(
     sitter_id: userId,
     service_type: serviceType,
     is_active: true,
-    base_rate_cents: parseDollarsToCents(formData.get(`rate_${serviceType}`)) ?? 0,
+    base_rate_cents: parseWholeDollarsToCents(formData.get(`rate_${serviceType}`)) ?? 0,
     additional_pet_rate_cents:
-      parseDollarsToCents(formData.get(`extraPet_${serviceType}`)) ?? 0,
+      parseWholeDollarsToCents(formData.get(`extraPet_${serviceType}`)) ?? 0,
     accepts_dogs: bool(formData, `dogs_${serviceType}`),
     accepts_cats: bool(formData, `cats_${serviceType}`),
   }));

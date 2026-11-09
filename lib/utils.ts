@@ -21,6 +21,12 @@ export function parseDollarsToCents(input: FormDataEntryValue | null): number | 
   return Math.round(value * 100);
 }
 
+/** Rates are whole dollars: cents typed in are rounded to the nearest dollar. */
+export function parseWholeDollarsToCents(input: FormDataEntryValue | null): number | null {
+  const cents = parseDollarsToCents(input);
+  return cents == null ? null : Math.round(cents / 100) * 100;
+}
+
 /** Reads a text field out of FormData, collapsing empty strings to null. */
 export function text(form: FormData, key: string): string | null {
   const value = form.get(key);

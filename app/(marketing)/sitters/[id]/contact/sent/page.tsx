@@ -5,7 +5,7 @@ import { IconCheck } from '@/components/icons';
 import type { BookingRow, PetRow } from '@/lib/database.types';
 import { requireProfile } from '@/lib/auth';
 import { findMatchingSitters } from '@/lib/matching';
-import { computeBookingTotals } from '@/lib/pricing';
+import { computeBookingTotals, isPuppy } from '@/lib/pricing';
 import { loadRateContext } from '@/lib/rate-context';
 import { SERVICE_BY_TYPE } from '@/lib/services';
 import { createClient } from '@/lib/supabase/server';
@@ -78,7 +78,7 @@ export default async function ContactSentPage({
 
   const definition = SERVICE_BY_TYPE[booking.service_type];
   const dateQuery = `startDate=${booking.start_date}&endDate=${endDate}&service=${booking.service_type}`;
-  const { percents, holidayDays } = await loadRateContext(supabase);
+  const { percents, holidayPeriods } = await loadRateContext(supabase);
 
   const suggestions: AdditionalHavener[] = sitters
     .filter((s) => !alreadyContacted.has(s.id))
@@ -89,11 +89,13 @@ export default async function ContactSentPage({
       const totals = computeBookingTotals({
         service,
         percents,
-        holidayDays,
+        holidayPeriods,
         rateUnit: definition.rateUnit,
         startDate: booking.start_date,
         endDate: booking.end_date,
         petCount: Math.max(1, pets.length),
+        hasPuppy: pets.some((pet) => isPuppy(pet, booking.start_date)),
+        durationMinutes: booking.duration_minutes,
         wantsPickupDropoff: false,
       });
       return [

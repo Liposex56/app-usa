@@ -76,7 +76,7 @@ export default async function ContactSitterPage({
   const serviceRows = (services ?? []) as SitterServiceRow[];
   const petRows = (pets ?? []) as PetRow[];
   const firstName = (sitterRow.display_name ?? 'there').split(' ')[0];
-  const { percents, holidayDays } = await loadRateContext(supabase);
+  const { percents, holidayPeriods } = await loadRateContext(supabase);
 
   const contactServices: ContactService[] = serviceRows.map((row) => {
     const definition = SERVICE_BY_TYPE[row.service_type];
@@ -90,6 +90,8 @@ export default async function ContactSitterPage({
       pickupDropoffRateCents: row.pickup_dropoff_rate_cents,
       holidayRateCents: row.holiday_rate_cents,
       extendedStayRateCents: row.extended_stay_rate_cents,
+      puppyRateCents: row.puppy_rate_cents,
+      sixtyMinuteRateCents: row.sixty_minute_rate_cents,
       autoRates: row.auto_rates,
     };
   });
@@ -129,13 +131,18 @@ export default async function ContactSitterPage({
           sitterId={id}
           sitterFirstName={firstName}
           services={contactServices}
-          pets={petRows.map((p) => ({ id: p.id, name: p.name, species: p.species }))}
+          pets={petRows.map((p) => ({
+            id: p.id,
+            name: p.name,
+            species: p.species,
+            birthdate: p.birthdate,
+          }))}
           initialService={query.service}
           initialStartDate={query.startDate}
           initialEndDate={query.endDate}
           rebook={query.rebook === '1'}
           percents={percents}
-          holidayDays={holidayDays}
+          holidayPeriods={holidayPeriods}
         />
       )}
     </div>

@@ -40,7 +40,7 @@ export async function updateCommissionAction(
   return { error: null, saved: true };
 }
 
-function percentField(
+function numberField(
   formData: FormData,
   name: string,
   min: number,
@@ -54,8 +54,8 @@ function percentField(
 }
 
 /**
- * The percentages behind "automatic rates". Leaving one empty keeps that
- * switch unavailable to Haveners until Havenr sets it.
+ * The rules behind "automatic rates", for stays and for visits. Leaving one
+ * empty keeps that switch unavailable to Haveners until Havenr sets it.
  */
 export async function updateAutoRatesAction(
   _prev: SettingsState,
@@ -66,24 +66,31 @@ export async function updateAutoRatesAction(
     return { error: 'Only an administrator can change the automatic rates.' };
   }
 
-  const holiday = percentField(formData, 'holidayPercent', 0, 500);
-  const additional = percentField(formData, 'additionalPetPercent', 0, 200);
-  const extended = percentField(formData, 'extendedStayPercent', -90, 200);
-  if (holiday === 'invalid') return { error: 'Holiday: enter a percentage from 0 to 500.' };
-  if (additional === 'invalid') {
-    return { error: 'Additional pet: enter a percentage from 0 to 200.' };
-  }
-  if (extended === 'invalid') {
-    return { error: 'Extended stay: enter a percentage from -90 to 200.' };
-  }
+  const fields = {
+    auto_stay_holiday_percent: numberField(formData, 'stayHolidayPercent', 0, 500),
+    auto_stay_extended_percent: numberField(formData, 'stayExtendedPercent', -90, 200),
+    auto_stay_extended_min_units: numberField(formData, 'stayExtendedMinUnits', 2, 60),
+    auto_stay_puppy_percent: numberField(formData, 'stayPuppyPercent', 0, 200),
+    auto_stay_additional_less_cents: numberField(formData, 'stayAdditionalLess', 0, 1000),
+    auto_visit_sixty_percent: numberField(formData, 'visitSixtyPercent', 0, 500),
+    auto_visit_additional_less_percent: numberField(formData, 'visitAdditionalLessPercent', 0, 100),
+    auto_visit_puppy_percent: numberField(formData, 'visitPuppyPercent', 0, 200),
+  };
+  const invalid = Object.entries(fields).find(([, value]) => value === 'invalid');
+  if (invalid) return { error: 'One of the values is out of range — check the hints under each field.' };
+
+  const minUnits = fields.auto_stay_extended_min_units;
+  const lessDollars = fields.auto_stay_additional_less_cents;
 
   const supabase = await createClient();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { error } = await (supabase.from('platform_settings') as any)
     .update({
-      auto_holiday_percent: holiday,
-      auto_additional_pet_percent: additional,
-      auto_extended_stay_percent: extended,
+      ...fields,
+      // Whole numbers only: nights as a count, dollars stored as cents.
+      auto_stay_extended_min_units: typeof minUnits === 'number' ? Math.round(minUnits) : null,
+      auto_stay_additional_less_cents:
+        typeof lessDollars === 'number' ? Math.round(lessDollars) * 100 : null,
       updated_by: profile.id,
     })
     .eq('id', 1);
@@ -93,36 +100,89 @@ export async function updateAutoRatesAction(
   return { error: null, saved: true };
 }
 
-export async function addHolidayAction(
+// ---------------------------------------------------------------------------
+// Holiday periods
+// ---------------------------------------------------------------------------
+
+const DATE = /^\d{4}-\d{2}-\d{2}$/;
+const TIME = /^\d{2}:\d{2}$/;
+
+function periodFromForm(
+  formData: FormData
+):
+  | { error: string }
+  | { name: string; year: number; starts_at: string; ends_at: string; active: boolean } {
+  const name = formData.get('name');
+  const startDate = formData.get('startDate');
+  const endDate = formData.get('endDate');
+  const startTime = formData.get('startTime');
+  const endTime = formData.get('endTime');
+
+  if (typeof name !== 'string' || !name.trim()) return { error: 'Give the holiday a name.' };
+  if (typeof startDate !== 'string' || !DATE.test(startDate)) {
+    return { error: 'Choose the start date.' };
+  }
+  if (typeof endDate !== 'string' || !DATE.test(endDate)) return { error: 'Choose the end date.' };
+
+  const from = typeof startTime === 'string' && TIME.test(startTime) ? startTime : '00:00';
+  const to = typeof endTime === 'string' && TIME.test(endTime) ? endTime : '23:59';
+  const starts_at = `${startDate} ${from}`;
+  const ends_at = `${endDate} ${to}`;
+  if (ends_at < starts_at) return { error: 'The end can’t be before the start.' };
+
+  return {
+    name: name.trim().slice(0, 80),
+    year: Number(startDate.slice(0, 4)),
+    starts_at,
+    ends_at,
+    active: formData.get('active') === 'on',
+  };
+}
+
+export async function addHolidayPeriodAction(
   _prev: SettingsState,
   formData: FormData
 ): Promise<SettingsState> {
   await requireStaff();
-  const day = formData.get('day');
-  const name = formData.get('name');
-  if (typeof day !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(day)) {
-    return { error: 'Choose the date.' };
-  }
-  if (typeof name !== 'string' || !name.trim()) return { error: 'Give the holiday a name.' };
+  const period = periodFromForm(formData);
+  if ('error' in period) return period;
 
   const supabase = await createClient();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { error } = await (supabase.from('holidays') as any).upsert(
-    { day, name: name.trim().slice(0, 60) },
-    { onConflict: 'day' }
-  );
+  const { error } = await (supabase.from('holiday_periods') as any).upsert(period, {
+    onConflict: 'name,year',
+  });
   if (error) return { error: error.message };
 
   revalidatePath('/dashboard/admin/settings');
   return { error: null, saved: true };
 }
 
-export async function removeHolidayAction(formData: FormData): Promise<void> {
+export async function updateHolidayPeriodAction(
+  _prev: SettingsState,
+  formData: FormData
+): Promise<SettingsState> {
   await requireStaff();
-  const day = formData.get('day');
-  if (typeof day !== 'string') return;
+  const id = formData.get('id');
+  if (typeof id !== 'string') return { error: 'Missing holiday.' };
+  const period = periodFromForm(formData);
+  if ('error' in period) return period;
 
   const supabase = await createClient();
-  await supabase.from('holidays').delete().eq('day', day);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { error } = await (supabase.from('holiday_periods') as any).update(period).eq('id', id);
+  if (error) return { error: error.message };
+
+  revalidatePath('/dashboard/admin/settings');
+  return { error: null, saved: true };
+}
+
+export async function removeHolidayPeriodAction(formData: FormData): Promise<void> {
+  await requireStaff();
+  const id = formData.get('id');
+  if (typeof id !== 'string') return;
+
+  const supabase = await createClient();
+  await supabase.from('holiday_periods').delete().eq('id', id);
   revalidatePath('/dashboard/admin/settings');
 }

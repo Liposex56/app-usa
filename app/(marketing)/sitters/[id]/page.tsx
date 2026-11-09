@@ -9,6 +9,7 @@ import type {
 import { HOME_MEDIA_BUCKET, homeMediaKind } from '@/lib/home-media';
 import { effectiveRates } from '@/lib/pricing';
 import { loadRateContext } from '@/lib/rate-context';
+import { SERVICE_BY_TYPE } from '@/lib/services';
 import { createClient } from '@/lib/supabase/server';
 
 import { SitterProfileTabs, type HomeMediaItem } from './sitter-profile-tabs';
@@ -61,12 +62,14 @@ export default async function SitterProfilePage({
   // applied to the Havener's own rate.
   const { percents } = await loadRateContext(supabase);
   const pricedServices = ((services ?? []) as SitterServiceRow[]).map((row) => {
-    const rates = effectiveRates(row, percents);
+    const rates = effectiveRates(row, percents, SERVICE_BY_TYPE[row.service_type].rateUnit);
     return {
       ...row,
       additional_pet_rate_cents: rates.additional,
       holiday_rate_cents: rates.holiday,
       extended_stay_rate_cents: rates.extended,
+      puppy_rate_cents: rates.puppy,
+      sixty_minute_rate_cents: rates.sixty,
     };
   });
 

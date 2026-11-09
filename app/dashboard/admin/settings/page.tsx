@@ -7,7 +7,7 @@ import { createClient } from '@/lib/supabase/server';
 
 import { AutoRatesForm } from './auto-rates-form';
 import { CommissionForm } from './commission-form';
-import { HolidaysPanel } from './holidays-panel';
+import { HolidaysPanel, type HolidayPeriod } from './holidays-panel';
 
 export const metadata: Metadata = { title: 'Rates — Admin panel' };
 
@@ -15,20 +15,20 @@ export default async function AdminSettingsPage() {
   const { role } = await requireStaff();
   const supabase = await createClient();
 
-  const [{ data: settings }, { data: holidays }] = await Promise.all([
+  const [{ data: settings }, { data: periods }] = await Promise.all([
     supabase
       .from('platform_settings')
       .select(
-        'company_commission_percent, auto_holiday_percent, auto_additional_pet_percent, auto_extended_stay_percent'
+        'company_commission_percent, auto_stay_holiday_percent, auto_stay_extended_percent, auto_stay_extended_min_units, auto_stay_puppy_percent, auto_stay_additional_less_cents, auto_visit_sixty_percent, auto_visit_additional_less_percent, auto_visit_puppy_percent'
       )
       .eq('id', 1)
       .maybeSingle(),
     supabase
-      .from('holidays')
-      .select('day, name')
-      .gte('day', todayInAppZone())
-      .order('day')
-      .limit(40),
+      .from('holiday_periods')
+      .select('id, name, year, starts_at, ends_at, active')
+      .gte('ends_at', todayInAppZone())
+      .order('starts_at')
+      .limit(60),
   ]);
 
   const canEdit = role === 'admin';
@@ -40,12 +40,20 @@ export default async function AdminSettingsPage() {
         <AutoRatesForm
           canEdit={canEdit}
           defaults={{
-            holiday: settings?.auto_holiday_percent ?? null,
-            additionalPet: settings?.auto_additional_pet_percent ?? null,
-            extendedStay: settings?.auto_extended_stay_percent ?? null,
+            stayHoliday: settings?.auto_stay_holiday_percent ?? null,
+            stayExtended: settings?.auto_stay_extended_percent ?? null,
+            stayExtendedMinUnits: settings?.auto_stay_extended_min_units ?? null,
+            stayPuppy: settings?.auto_stay_puppy_percent ?? null,
+            stayAdditionalLess:
+              settings?.auto_stay_additional_less_cents != null
+                ? settings.auto_stay_additional_less_cents / 100
+                : null,
+            visitSixty: settings?.auto_visit_sixty_percent ?? null,
+            visitAdditionalLess: settings?.auto_visit_additional_less_percent ?? null,
+            visitPuppy: settings?.auto_visit_puppy_percent ?? null,
           }}
         />
-        <HolidaysPanel holidays={(holidays ?? []) as Array<{ day: string; name: string }>} />
+        <HolidaysPanel periods={(periods ?? []) as HolidayPeriod[]} />
       </div>
     </div>
   );

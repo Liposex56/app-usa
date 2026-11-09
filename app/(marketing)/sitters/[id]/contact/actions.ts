@@ -10,6 +10,7 @@ import { isTimedService, timeLabels } from '@/lib/booking-flow';
 import { filterChatMessage } from '@/lib/chat-filter';
 import { findMatchingSitters } from '@/lib/matching';
 import { computeFeeSplit } from '@/lib/payments';
+import { isPuppy } from '@/lib/pricing';
 import { loadCommissionPercent } from '@/lib/rate-context';
 import { createClient } from '@/lib/supabase/server';
 import { bool, list, petAge, text } from '@/lib/utils';
@@ -69,6 +70,8 @@ async function createContactRequest(
     p_end: endDate,
     p_pets: pets.length,
     p_pickup: input.wantsPickupDropoff,
+    p_has_puppy: pets.some((pet) => isPuppy(pet, startDate)),
+    p_duration: input.durationMinutes,
   });
   const price = priceRows?.[0];
   if (priceError || !price) {
