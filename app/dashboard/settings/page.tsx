@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { requireProfile } from '@/lib/auth';
 
 import { AccountForm } from './account-form';
+import { BlockedUsers } from './blocked-users';
 
 export const metadata: Metadata = { title: 'Account' };
 
@@ -37,6 +38,8 @@ export default async function AccountPage() {
           marketing_opt_in: profile.marketing_opt_in,
         }}
       />
+
+      <BlockedUsers />
     </div>
   );
 }

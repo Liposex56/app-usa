@@ -84,7 +84,7 @@ on conflict (name, year) do nothing;
 
 -- ---------------------------------------------------------------------------
 -- 2. Automatic-rate percentages (Havenr's, by group of services)
---    The single-day `holidays` table and the three old percentages are retired.
+--    The single-day holidays table and the three old percentages are retired.
 -- ---------------------------------------------------------------------------
 drop function if exists public.auto_rate_percents();
 

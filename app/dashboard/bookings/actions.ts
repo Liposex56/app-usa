@@ -10,6 +10,7 @@ import { rebuildNotes } from '@/lib/booking-notes';
 import { getStripe } from '@/lib/stripe';
 import { filterChatMessage } from '@/lib/chat-filter';
 import { refundBookingPayment, type RefundResult } from '@/lib/refunds';
+import { REPORT_CATEGORIES } from '@/lib/reports';
 import {
   SERVICE_BUCKET,
   completionRequirements,
@@ -241,44 +242,137 @@ export async function cancelBookClickAction(bookingId: string): Promise<ActionSt
   return updateBooking(bookingId, { sitter_booked_at: null });
 }
 
-/** Hides (or restores) a booking in the current user's own lists. */
-export async function toggleArchiveAction(bookingId: string): Promise<ActionState> {
-  const profile = await requireProfile();
-  const supabase = await createClient();
-  const { data } = await supabase
-    .from('bookings')
-    .select('owner_id, sitter_id, archived_by_owner, archived_by_sitter')
-    .eq('id', bookingId)
-    .maybeSingle();
-  if (!data) return { error: 'Booking not found.' };
+/** Archive is for requests that were never booked, or that won't be accepted. */
+const ARCHIVABLE_STATUSES = ['requested', 'declined', 'cancelled'];
 
-  if (data.owner_id === profile.id) {
-    return updateBooking(bookingId, { archived_by_owner: !data.archived_by_owner });
-  }
-  if (data.sitter_id === profile.id) {
-    return updateBooking(bookingId, { archived_by_sitter: !data.archived_by_sitter });
-  }
-  return { error: 'Booking not found.' };
-}
-
-export async function reportBookingAction(
+/**
+ * Moves a request out of the current user's active lists into "Archived
+ * requests", with the reason why. Confirmed and active bookings aren't archived
+ * — they go through cancellation first.
+ */
+export async function archiveBookingAction(
   bookingId: string,
   _prev: ActionState,
   formData: FormData
 ): Promise<ActionState> {
   const profile = await requireProfile();
   const reason = text(formData, 'reason');
+  if (!reason || reason.length < 2) return { error: 'Please tell us why you’re archiving it.' };
+
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from('bookings')
+    .select('owner_id, sitter_id, status')
+    .eq('id', bookingId)
+    .maybeSingle();
+  if (!data || (data.owner_id !== profile.id && data.sitter_id !== profile.id)) {
+    return { error: 'Booking not found.' };
+  }
+  if (!ARCHIVABLE_STATUSES.includes(data.status)) {
+    return {
+      error:
+        'Only requests that were never booked can be archived. A confirmed booking has to be cancelled first.',
+    };
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { error: reasonError } = await (supabase.from('booking_archives') as any).upsert(
+    { booking_id: bookingId, user_id: profile.id, reason: reason.slice(0, 500) },
+    { onConflict: 'booking_id,user_id' }
+  );
+  if (reasonError) return { error: reasonError.message };
+
+  return updateBooking(
+    bookingId,
+    data.owner_id === profile.id ? { archived_by_owner: true } : { archived_by_sitter: true }
+  );
+}
+
+/** Brings an archived request back into the current user's lists. */
+export async function unarchiveBookingAction(bookingId: string): Promise<ActionState> {
+  const profile = await requireProfile();
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from('bookings')
+    .select('owner_id, sitter_id')
+    .eq('id', bookingId)
+    .maybeSingle();
+  if (!data || (data.owner_id !== profile.id && data.sitter_id !== profile.id)) {
+    return { error: 'Booking not found.' };
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  await (supabase.from('booking_archives') as any)
+    .delete()
+    .eq('booking_id', bookingId)
+    .eq('user_id', profile.id);
+
+  return updateBooking(
+    bookingId,
+    data.owner_id === profile.id ? { archived_by_owner: false } : { archived_by_sitter: false }
+  );
+}
+
+/**
+ * Either side reports the conversation to Havenr, saying what kind of problem
+ * it is, and can block the other person at the same time.
+ */
+export async function reportBookingAction(
+  bookingId: string,
+  _prev: ActionState,
+  formData: FormData
+): Promise<ActionState> {
+  const profile = await requireProfile();
+  const category = text(formData, 'category');
+  if (!category || !REPORT_CATEGORIES.some((item) => item.value === category)) {
+    return { error: 'Please choose what you’re reporting.' };
+  }
+  const reason = text(formData, 'reason');
   if (!reason || reason.length < 3) return { error: 'Please tell us what happened.' };
 
   const supabase = await createClient();
+  const { data: booking } = await supabase
+    .from('bookings')
+    .select('owner_id, sitter_id')
+    .eq('id', bookingId)
+    .maybeSingle();
+  if (!booking || (booking.owner_id !== profile.id && booking.sitter_id !== profile.id)) {
+    return { error: 'Booking not found.' };
+  }
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { error } = await (supabase.from('booking_reports') as any).insert({
     booking_id: bookingId,
     reporter_id: profile.id,
+    category,
     reason,
   });
   if (error) return { error: error.message };
+
+  if (bool(formData, 'block')) {
+    const otherId = booking.owner_id === profile.id ? booking.sitter_id : booking.owner_id;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { error: blockError } = await (supabase.from('blocked_users') as any).upsert(
+      { blocker_id: profile.id, blocked_id: otherId },
+      { onConflict: 'blocker_id,blocked_id' }
+    );
+    if (blockError) return { error: blockError.message };
+  }
   return { error: null };
+}
+
+/** Lets someone blocked earlier talk to them again. */
+export async function unblockUserAction(formData: FormData): Promise<void> {
+  const profile = await requireProfile();
+  const blockedId = text(formData, 'blockedId');
+  if (!blockedId) return;
+  const supabase = await createClient();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  await (supabase.from('blocked_users') as any)
+    .delete()
+    .eq('blocker_id', profile.id)
+    .eq('blocked_id', blockedId);
+  revalidatePath('/dashboard/settings');
 }
 
 /**

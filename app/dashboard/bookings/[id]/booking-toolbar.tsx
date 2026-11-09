@@ -3,15 +3,17 @@
 import { useActionState, useState, useTransition } from 'react';
 
 import { Button } from '@/components/ui/button';
-import { Field, FormError, Input } from '@/components/ui/field';
+import { Field, FormError, Input, Select } from '@/components/ui/field';
 import { TimeSelect } from '@/components/ui/time-select';
 import { timeLabels } from '@/lib/booking-flow';
+import { ARCHIVE_REASONS, REPORT_CATEGORIES } from '@/lib/reports';
 import {
+  archiveBookingAction,
   bookAction,
   cancelBookClickAction,
   modifyBookingAction,
   reportBookingAction,
-  toggleArchiveAction,
+  unarchiveBookingAction,
   type ActionState,
 } from '../actions';
 
@@ -250,9 +252,13 @@ function ModifyPanel({
 
 function ReportPanel({ bookingId, onDone }: { bookingId: string; onDone: () => void }) {
   const [sent, setSent] = useState(false);
+  const [blocked, setBlocked] = useState(false);
   const action = async (prev: ActionState, formData: FormData) => {
     const result = await reportBookingAction(bookingId, prev, formData);
-    if (!result.error) setSent(true);
+    if (!result.error) {
+      setSent(true);
+      setBlocked(formData.get('block') === 'on');
+    }
     return result;
   };
   const [state, formAction, pending] = useActionState(action, INITIAL);
@@ -261,6 +267,7 @@ function ReportPanel({ bookingId, onDone }: { bookingId: string; onDone: () => v
     return (
       <p className="mt-3 rounded-xl bg-green-50 px-4 py-3 text-sm text-green-800">
         Thanks — our team will review this conversation.
+        {blocked && ' You won’t be able to message each other or send new requests.'}
       </p>
     );
   }
@@ -268,11 +275,29 @@ function ReportPanel({ bookingId, onDone }: { bookingId: string; onDone: () => v
   return (
     <form
       action={formAction}
-      className="mt-3 space-y-2 rounded-2xl border border-espresso-700/12 bg-bone p-4"
+      className="mt-3 space-y-3 rounded-2xl border border-espresso-700/12 bg-bone p-4"
     >
       <FormError message={state.error} />
+      <fieldset className="space-y-1.5">
+        <legend className="text-sm font-medium text-espresso-700">What are you reporting?</legend>
+        {REPORT_CATEGORIES.map((category) => (
+          <label
+            key={category.value}
+            className="flex cursor-pointer items-center gap-2 text-sm text-espresso-700"
+          >
+            <input
+              type="radio"
+              name="category"
+              value={category.value}
+              required
+              className="accent-[#26100B]"
+            />
+            {category.label}
+          </label>
+        ))}
+      </fieldset>
       <label className="block text-sm font-medium text-espresso-700">
-        What would you like to report?
+        Tell us what happened
         <textarea
           name="reason"
           required
@@ -281,9 +306,65 @@ function ReportPanel({ bookingId, onDone }: { bookingId: string; onDone: () => v
           className="mt-1 w-full rounded-lg border border-espresso-700/15 bg-hv-paper p-2.5 text-sm text-espresso-700 focus:border-gold-500 focus:outline-none"
         />
       </label>
+      <label className="flex cursor-pointer items-start gap-2 text-sm text-espresso-700">
+        <input type="checkbox" name="block" className="mt-0.5 accent-[#26100B]" />
+        <span>
+          Also block this person
+          <span className="block text-xs text-espresso-500">
+            You won’t be able to message each other or send new requests. You can
+            unblock them later in your account settings.
+          </span>
+        </span>
+      </label>
       <div className="flex gap-2">
         <Button type="submit" size="sm" variant="dark" disabled={pending}>
           {pending ? 'Sending…' : 'Send report'}
+        </Button>
+        <Button type="button" size="sm" variant="ghost" onClick={onDone}>
+          Never mind
+        </Button>
+      </div>
+    </form>
+  );
+}
+
+/** Archiving a request that won't go ahead: always with the reason why. */
+function ArchivePanel({ bookingId, onDone }: { bookingId: string; onDone: () => void }) {
+  const [reason, setReason] = useState<string>(ARCHIVE_REASONS[0]);
+  const action = async (prev: ActionState, formData: FormData) => {
+    const result = await archiveBookingAction(bookingId, prev, formData);
+    if (!result.error) onDone();
+    return result;
+  };
+  const [state, formAction, pending] = useActionState(action, INITIAL);
+
+  return (
+    <form
+      action={formAction}
+      className="mt-3 space-y-3 rounded-2xl border border-espresso-700/12 bg-bone p-4"
+    >
+      <FormError message={state.error} />
+      <p className="text-sm text-espresso-600">
+        Archived requests move to <strong>Archived requests</strong> in your list, and
+        you can bring them back any time.
+      </p>
+      <Field label="Why are you archiving it?" htmlFor="archive-reason">
+        <Select
+          id="archive-reason"
+          value={reason}
+          onChange={(event) => setReason(event.target.value)}
+        >
+          {ARCHIVE_REASONS.map((option) => (
+            <option key={option} value={option}>
+              {option}
+            </option>
+          ))}
+        </Select>
+      </Field>
+      <input type="hidden" name="reason" value={reason} />
+      <div className="flex gap-2">
+        <Button type="submit" size="sm" disabled={pending}>
+          {pending ? 'Archiving…' : 'Archive'}
         </Button>
         <Button type="button" size="sm" variant="ghost" onClick={onDone}>
           Never mind
@@ -321,7 +402,7 @@ export function BookingToolbar({
   details?: DetailRow[];
 }) {
   const [isPending, startTransition] = useTransition();
-  const [panel, setPanel] = useState<'modify' | 'report' | null>(null);
+  const [panel, setPanel] = useState<'modify' | 'report' | 'archive' | null>(null);
   const [showTips, setShowTips] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -355,19 +436,33 @@ export function BookingToolbar({
               Details
             </Button>
           )}
-          <Button
-            size="sm"
-            variant="secondary"
-            disabled={isPending}
-            onClick={() =>
-              startTransition(async () => {
-                const result = await toggleArchiveAction(bookingId);
-                setError(result.error);
-              })
-            }
-          >
-            {archived ? 'Unarchive' : 'Archive'}
-          </Button>
+          {archived ? (
+            <Button
+              size="sm"
+              variant="secondary"
+              disabled={isPending}
+              onClick={() =>
+                startTransition(async () => {
+                  const result = await unarchiveBookingAction(bookingId);
+                  setError(result.error);
+                })
+              }
+            >
+              Unarchive
+            </Button>
+          ) : (
+            // Only a request that never went ahead can be archived; a confirmed
+            // or active booking has to be cancelled first.
+            ['requested', 'declined', 'cancelled'].includes(status) && (
+              <Button
+                size="sm"
+                variant="secondary"
+                onClick={() => setPanel(panel === 'archive' ? null : 'archive')}
+              >
+                Archive
+              </Button>
+            )
+          )}
           <Button
             size="sm"
             variant="ghost"
@@ -386,6 +481,12 @@ export function BookingToolbar({
         {panel === 'report' && (
           <div className="absolute right-0 top-full z-30 mt-2 w-[min(24rem,calc(100vw-2.5rem))] rounded-2xl shadow-lift">
             <ReportPanel bookingId={bookingId} onDone={() => setPanel(null)} />
+          </div>
+        )}
+
+        {panel === 'archive' && (
+          <div className="absolute right-0 top-full z-30 mt-2 w-[min(24rem,calc(100vw-2.5rem))] rounded-2xl shadow-lift">
+            <ArchivePanel bookingId={bookingId} onDone={() => setPanel(null)} />
           </div>
         )}
 

@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 
 import type { ProfileRow } from '@/lib/database.types';
+import { reportCategoryLabel } from '@/lib/reports';
 import { createClient } from '@/lib/supabase/server';
 
 export const metadata: Metadata = { title: 'Reports — Admin panel' };
@@ -10,6 +11,7 @@ type ReportRow = {
   id: string;
   booking_id: string;
   reporter_id: string;
+  category: string | null;
   reason: string;
   created_at: string;
 };
@@ -56,6 +58,9 @@ export default async function AdminReportsPage() {
               {new Date(report.created_at).toLocaleString('en-US')}
             </p>
           </div>
+          <p className="mt-2 inline-block rounded-full bg-hv-butter px-3 py-0.5 text-xs font-semibold text-olive-700">
+            {reportCategoryLabel(report.category)}
+          </p>
           <p className="mt-2 whitespace-pre-line text-sm text-espresso-600">{report.reason}</p>
           <Link
             href={`/dashboard/bookings/${report.booking_id}`}

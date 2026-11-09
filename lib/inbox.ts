@@ -14,7 +14,7 @@ export const INBOX_TABS: Array<{ id: InboxFilter; label: string; empty: string }
   { id: 'upcoming', label: 'Upcoming', empty: 'Nothing coming up.' },
   { id: 'current', label: 'In progress', empty: 'Nothing in progress right now.' },
   { id: 'past', label: 'Past', empty: 'No past bookings yet.' },
-  { id: 'archived', label: 'Archived', empty: 'Nothing archived.' },
+  { id: 'archived', label: 'Archived requests', empty: 'No archived requests.' },
 ];
 
 /** Accepts `?tab=` and the older `?archived=1` link. */
