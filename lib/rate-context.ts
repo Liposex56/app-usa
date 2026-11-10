@@ -31,9 +31,12 @@ export async function loadRateContext(supabase: SupabaseClient<Database>): Promi
       stayExtendedMinUnits: row?.stay_extended_min_units ?? null,
       stayPuppy: row?.stay_puppy ?? null,
       stayAdditionalLessCents: row?.stay_additional_less_cents ?? null,
+      houseAdditionalLess: row?.house_additional_less ?? null,
       visitSixty: row?.visit_sixty ?? null,
       visitAdditionalLess: row?.visit_additional_less ?? null,
       visitPuppy: row?.visit_puppy ?? null,
+      visitHoliday: row?.visit_holiday ?? null,
+      visitCatLess: row?.visit_cat_less ?? null,
     },
     holidayPeriods: (periodRows ?? []).map((period) => ({
       start: (period.starts_at as string).slice(0, 10),

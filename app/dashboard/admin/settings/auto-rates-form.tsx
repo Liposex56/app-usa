@@ -19,6 +19,9 @@ export type AutoRateDefaults = {
   visitSixty: number | null;
   visitAdditionalLess: number | null;
   visitPuppy: number | null;
+  houseAdditionalLess: number | null;
+  visitHoliday: number | null;
+  visitCatLess: number | null;
 };
 
 /**
@@ -56,7 +59,7 @@ export function AutoRatesForm({
         <Field
           label="Holiday — added to the rate (%)"
           htmlFor="stayHolidayPercent"
-          hint="20 means a $50 rate becomes $60 in a holiday period. A puppy’s rate goes up first, then the holiday on top of it."
+          hint="20 means a $50 rate becomes $60 in a holiday period. A puppy’s rate goes up first, then the holiday on top of it. The additional-dog rate goes up by the same percentage."
         >
           <Input
             id="stayHolidayPercent"
@@ -118,7 +121,7 @@ export function AutoRatesForm({
           />
         </Field>
         <Field
-          label="Additional dog — dollars less than the rate (USD)"
+          label="Additional dog, boarding and daycare — dollars less than the rate (USD)"
           htmlFor="stayAdditionalLess"
           hint="10 means a second dog pays $10 less than the regular rate, per night."
         >
@@ -133,6 +136,27 @@ export function AutoRatesForm({
             disabled={!canEdit}
           />
         </Field>
+        <Field
+          label="Additional dog, house sitting — less than the rate (%)"
+          htmlFor="houseAdditionalLessPercent"
+          hint="50 means a second dog pays half of the rate, per night."
+        >
+          <Input
+            id="houseAdditionalLessPercent"
+            name="houseAdditionalLessPercent"
+            type="number"
+            min={0}
+            max={100}
+            step="0.5"
+            defaultValue={defaults.houseAdditionalLess ?? ''}
+            disabled={!canEdit}
+          />
+        </Field>
+        <p className="text-sm text-espresso-500">
+          Extended care (boarding and house sitting) is fixed: a pick-up more than 2
+          hours later in the day than the drop-off adds 50% of a night (2–8 hours) or
+          100% (8 hours or more), for every pet.
+        </p>
       </fieldset>
 
       <fieldset className="space-y-4 border-t border-espresso-700/10 pt-5">
@@ -184,6 +208,38 @@ export function AutoRatesForm({
             max={200}
             step="0.5"
             defaultValue={defaults.visitPuppy ?? ''}
+            disabled={!canEdit}
+          />
+        </Field>
+        <Field
+          label="Holiday — added to the rate (%)"
+          htmlFor="visitHolidayPercent"
+          hint="20 means a $20 walk is $24 in a holiday period. The additional-dog rate goes up too."
+        >
+          <Input
+            id="visitHolidayPercent"
+            name="visitHolidayPercent"
+            type="number"
+            min={0}
+            max={500}
+            step="0.5"
+            defaultValue={defaults.visitHoliday ?? ''}
+            disabled={!canEdit}
+          />
+        </Field>
+        <Field
+          label="Cats on drop-in visits — less than the rate (%)"
+          htmlFor="visitCatLessPercent"
+          hint="10 means a drop-in visit for cats costs 10% less than the regular rate."
+        >
+          <Input
+            id="visitCatLessPercent"
+            name="visitCatLessPercent"
+            type="number"
+            min={0}
+            max={100}
+            step="0.5"
+            defaultValue={defaults.visitCatLess ?? ''}
             disabled={!canEdit}
           />
         </Field>

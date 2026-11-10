@@ -62,7 +62,12 @@ export default async function SitterProfilePage({
   // applied to the Havener's own rate.
   const { percents } = await loadRateContext(supabase);
   const pricedServices = ((services ?? []) as SitterServiceRow[]).map((row) => {
-    const rates = effectiveRates(row, percents, SERVICE_BY_TYPE[row.service_type].rateUnit);
+    const rates = effectiveRates(
+      row,
+      percents,
+      SERVICE_BY_TYPE[row.service_type].rateUnit,
+      row.service_type
+    );
     return {
       ...row,
       additional_pet_rate_cents: rates.additional,

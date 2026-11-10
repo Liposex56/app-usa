@@ -1,6 +1,7 @@
 'use client';
 
 import { useActionState, useState, useTransition } from 'react';
+import { createPortal } from 'react-dom';
 
 import { Button } from '@/components/ui/button';
 import { Field, FormError, Input, Select } from '@/components/ui/field';
@@ -32,12 +33,17 @@ export type ModifyDefaults = {
   /** Boarding, daycare and house sitting run on exact start and end times. */
   timed: boolean;
   serviceType: string;
+  isHavener: boolean;
+  /** A walk or a drop-in visit, booked for 30 or 60 minutes. */
+  hasLength: boolean;
+  durationMinutes: number | null;
+  adjustmentCents: number;
 };
 
 const hhmm = (value: string | null) => value?.slice(0, 5) ?? '';
 
 function SafetyTips({ onConfirm, onClose }: { onConfirm: () => void; onClose: () => void }) {
-  return (
+  return createPortal(
     <div
       className="fixed inset-0 z-40 flex items-center justify-center bg-espresso-900/50 p-4"
       role="dialog"
@@ -76,6 +82,8 @@ function SafetyTips({ onConfirm, onClose }: { onConfirm: () => void; onClose: ()
         </Button>
       </div>
     </div>
+    ,
+    document.body
   );
 }
 
@@ -182,25 +190,51 @@ function ModifyPanel({
       </div>
 
       {defaults.timed ? (
-        <div className="grid gap-3 sm:grid-cols-2">
-          <Field label={timeLabels(defaults.serviceType).start} htmlFor="m-dropoff" required>
-            <TimeSelect
-              id="m-dropoff"
-              name="dropoffFrom"
-              placeholder="Select time"
-              required
-              defaultValue={hhmm(defaults.dropoffFrom)}
-            />
-          </Field>
-          <Field label={timeLabels(defaults.serviceType).end} htmlFor="m-pickup" required>
-            <TimeSelect
-              id="m-pickup"
-              name="pickupFrom"
-              placeholder="Select time"
-              required
-              defaultValue={hhmm(defaults.pickupFrom)}
-            />
-          </Field>
+        <div className="grid gap-3">
+          <fieldset>
+            <legend className="mb-1.5 text-sm font-semibold uppercase tracking-[0.06em] text-espresso-700">
+              {timeLabels(defaults.serviceType).start.replace(' time', '')} range *
+            </legend>
+            <div className="flex items-center gap-2">
+              <TimeSelect
+                id="m-dropoff"
+                name="dropoffFrom"
+                aria-label="From"
+                placeholder="From"
+                required
+                defaultValue={hhmm(defaults.dropoffFrom)}
+              />
+              <span className="text-xs text-espresso-500">to</span>
+              <TimeSelect
+                name="dropoffTo"
+                aria-label="To"
+                placeholder="To"
+                defaultValue={hhmm(defaults.dropoffTo)}
+              />
+            </div>
+          </fieldset>
+          <fieldset>
+            <legend className="mb-1.5 text-sm font-semibold uppercase tracking-[0.06em] text-espresso-700">
+              {timeLabels(defaults.serviceType).end.replace(' time', '')} range *
+            </legend>
+            <div className="flex items-center gap-2">
+              <TimeSelect
+                id="m-pickup"
+                name="pickupFrom"
+                aria-label="From"
+                placeholder="From"
+                required
+                defaultValue={hhmm(defaults.pickupFrom)}
+              />
+              <span className="text-xs text-espresso-500">to</span>
+              <TimeSelect
+                name="pickupTo"
+                aria-label="To"
+                placeholder="To"
+                defaultValue={hhmm(defaults.pickupTo)}
+              />
+            </div>
+          </fieldset>
         </div>
       ) : (
         <fieldset>
@@ -236,6 +270,39 @@ function ModifyPanel({
             className="h-5 w-5 accent-gold-500"
           />
         </label>
+      )}
+
+      {defaults.isHavener && (
+        <fieldset className="space-y-3 rounded-xl border border-espresso-700/12 bg-hv-paper p-3">
+          <legend className="px-1 text-sm font-semibold uppercase tracking-[0.06em] text-espresso-700">
+            Extras and adjustments
+          </legend>
+          {defaults.hasLength && (
+            <Field label="Length" htmlFor="m-duration">
+              <Select
+                id="m-duration"
+                name="durationMinutes"
+                defaultValue={String(defaults.durationMinutes ?? 30)}
+              >
+                <option value="30">30 minutes</option>
+                <option value="60">60 minutes (60-minute rate)</option>
+              </Select>
+            </Field>
+          )}
+          <Field
+            label="Adjust the cost of this booking (USD)"
+            htmlFor="m-adjustment"
+            hint="You can increase the cost, or decrease it by adding a minus (–) sign, like -10."
+          >
+            <Input
+              id="m-adjustment"
+              name="adjustment"
+              inputMode="numeric"
+              placeholder="0"
+              defaultValue={defaults.adjustmentCents ? String(defaults.adjustmentCents / 100) : ''}
+            />
+          </Field>
+        </fieldset>
       )}
 
       <div className="flex gap-2">

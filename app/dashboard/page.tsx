@@ -218,11 +218,28 @@ export default async function DashboardPage({
             <IconCheck width={20} height={20} />
           </span>
           <div>
-            <h2 className="text-lg text-espresso-700">You’re all set up</h2>
-            <p className="mt-1 text-sm leading-relaxed text-espresso-600">
-              You can now search for a Havener, contact them, and chat — right
-              from here.
-            </p>
+            {profile.is_havener && sitterProfile?.status !== 'approved' ? (
+              <>
+                <h2 className="text-lg text-espresso-700">
+                  {sitterProfile?.status === 'pending_review'
+                    ? 'Your Havener application is in review'
+                    : 'Your Havener profile is saved'}
+                </h2>
+                <p className="mt-1 text-sm leading-relaxed text-espresso-600">
+                  {sitterProfile?.status === 'pending_review'
+                    ? 'You can’t receive bookings yet. Next: the background check, a video interview and, for boarding and daycare, a short video of your home. You’ll see each step under “Verification”, and we’ll let you know the moment you’re approved.'
+                    : 'Finish it and send it for review whenever you’re ready — owners can’t see you until you’re approved.'}
+                </p>
+              </>
+            ) : (
+              <>
+                <h2 className="text-lg text-espresso-700">You’re all set up</h2>
+                <p className="mt-1 text-sm leading-relaxed text-espresso-600">
+                  You can now search for a Havener, contact them, and chat — right
+                  from here.
+                </p>
+              </>
+            )}
           </div>
         </div>
       )}
@@ -524,6 +541,32 @@ export default async function DashboardPage({
       {profile.is_havener && (
         <section>
           <h2 className="mb-4 text-xl">Havener profile</h2>
+
+          {sitterProfile?.status === 'approved' && (
+            <div className="mb-4 rounded-3xl border border-gold-200 bg-cream p-7">
+              <h3 className="text-lg text-espresso-700">Finish setting up your profile</h3>
+              <p className="mt-2 text-[17px] leading-relaxed text-espresso-600">
+                You’re approved — welcome! Finish your profile and each of the services you
+                want to offer, and remember to add a photo of yourself: pet parents book
+                more easily with someone they can see.
+              </p>
+              <p className="mt-2 text-[17px] leading-relaxed text-espresso-600">
+                Bring your own clients too. Reviews are the best way to build trust — every
+                review makes it easier for the next pet parent to book with you.
+              </p>
+              <div className="mt-4 flex flex-wrap gap-2">
+                <ButtonLink href="/dashboard/havener/edit" size="sm">
+                  Finish my profile
+                </ButtonLink>
+                <ButtonLink href="/dashboard/havener/services" size="sm" variant="secondary">
+                  Set up my services
+                </ButtonLink>
+                <ButtonLink href="/resources/haveners/how-booking-works" size="sm" variant="ghost">
+                  Learn the whole booking process →
+                </ButtonLink>
+              </div>
+            </div>
+          )}
 
           <div className="grid gap-4 lg:grid-cols-[1.3fr_1fr]">
             <div className="rounded-3xl border border-espresso-700/8 bg-hv-paper p-7 shadow-card">

@@ -94,8 +94,12 @@ export default async function ContactSentPage({
         startDate: booking.start_date,
         endDate: booking.end_date,
         petCount: Math.max(1, pets.length),
+        serviceType: booking.service_type,
         hasPuppy: pets.some((pet) => isPuppy(pet, booking.start_date)),
+        allCats: pets.length > 0 && pets.every((pet) => pet.species === 'cat'),
         durationMinutes: booking.duration_minutes,
+        dropoffTime: booking.dropoff_from,
+        pickupTime: booking.pickup_from,
         wantsPickupDropoff: false,
       });
       return [

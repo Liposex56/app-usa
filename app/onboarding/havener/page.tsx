@@ -13,5 +13,10 @@ export default async function HavenerOnboardingPage() {
   if (profile.onboarding_step === 'role') redirect('/onboarding');
   if (!profile.is_havener) redirect('/dashboard');
 
-  return <HavenerForm isOwner={profile.is_owner} />;
+  return (
+    <HavenerForm
+      isOwner={profile.is_owner}
+      defaults={{ city: profile.city, state: profile.state, postalCode: profile.postal_code }}
+    />
+  );
 }

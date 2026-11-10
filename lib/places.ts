@@ -12,6 +12,27 @@ export type PlaceSuggestion = {
   label: string;
   lat: number;
   lng: number;
+  /** The pieces of the address, for forms that store them separately. */
+  street: string | null;
+  city: string | null;
+  /** Two-letter state code when it can be worked out, else the name. */
+  state: string | null;
+  postcode: string | null;
+};
+
+const STATE_CODES: Record<string, string> = {
+  alabama: 'AL', alaska: 'AK', arizona: 'AZ', arkansas: 'AR', california: 'CA',
+  colorado: 'CO', connecticut: 'CT', delaware: 'DE', 'district of columbia': 'DC',
+  florida: 'FL', georgia: 'GA', hawaii: 'HI', idaho: 'ID', illinois: 'IL',
+  indiana: 'IN', iowa: 'IA', kansas: 'KS', kentucky: 'KY', louisiana: 'LA',
+  maine: 'ME', maryland: 'MD', massachusetts: 'MA', michigan: 'MI', minnesota: 'MN',
+  mississippi: 'MS', missouri: 'MO', montana: 'MT', nebraska: 'NE', nevada: 'NV',
+  'new hampshire': 'NH', 'new jersey': 'NJ', 'new mexico': 'NM', 'new york': 'NY',
+  'north carolina': 'NC', 'north dakota': 'ND', ohio: 'OH', oklahoma: 'OK',
+  oregon: 'OR', pennsylvania: 'PA', 'rhode island': 'RI', 'south carolina': 'SC',
+  'south dakota': 'SD', tennessee: 'TN', texas: 'TX', utah: 'UT', vermont: 'VT',
+  virginia: 'VA', washington: 'WA', 'west virginia': 'WV', wisconsin: 'WI',
+  wyoming: 'WY',
 };
 
 type PhotonFeature = {
@@ -69,7 +90,16 @@ export async function searchPlaces(query: string, limit = 6): Promise<PlaceSugge
       if (!label || seen.has(label)) continue;
       seen.add(label);
       const [lng, lat] = feature.geometry.coordinates;
-      results.push({ label, lat, lng });
+      const p = feature.properties;
+      results.push({
+        label,
+        lat,
+        lng,
+        street: [p.housenumber, p.street].filter(Boolean).join(' ') || p.name || null,
+        city: p.city ?? p.district ?? p.county ?? null,
+        state: p.state ? (STATE_CODES[p.state.toLowerCase()] ?? p.state) : null,
+        postcode: p.postcode ?? null,
+      });
       if (results.length >= limit) break;
     }
     return results;

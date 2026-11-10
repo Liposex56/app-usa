@@ -42,7 +42,12 @@ export function scheduleLines(input: ScheduleLines): string[] {
   const pickup = clockRange(input.pickupFrom, input.pickupTo);
   // One exact time = a timed service (it starts and ends then); a from–to
   // range is just the time the owner would prefer.
-  const dropoffLabel = input.dropoffFrom && input.dropoffTo ? 'Preferred time' : 'Drop-off time';
+  const dropoffLabel =
+    input.dropoffFrom && input.dropoffTo
+      ? input.pickupFrom
+        ? 'Drop-off window'
+        : 'Preferred time'
+      : 'Drop-off time';
   const pickupLabel = input.pickupFrom && input.pickupTo ? 'Pick-up window' : 'Pick-up time';
   return [
     dropoff ? `${dropoffLabel}: ${dropoff}` : null,

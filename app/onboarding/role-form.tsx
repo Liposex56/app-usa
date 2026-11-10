@@ -29,7 +29,7 @@ export function RoleForm({ firstName }: { firstName: string | null }) {
 
       <OnboardingHeading
         title={firstName ? `Welcome, ${firstName}` : 'Welcome to Havenr'}
-        description="First, tell us how you plan to use Havenr. You can add the other side later from your profile — plenty of people do both."
+        description="First, tell us how you plan to use Havenr. You can add the other side later from your profile — some people do both."
       />
 
       <form action={formAction} className="space-y-6">
@@ -51,6 +51,10 @@ export function RoleForm({ firstName }: { firstName: string | null }) {
             description="Set your rates and calendar. You’ll need to pass verification before taking bookings."
           />
         </div>
+
+        <p className="text-sm text-espresso-500">
+          You can become a Havener — or add a pet — later from your profile.
+        </p>
 
         <Submit />
       </form>

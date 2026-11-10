@@ -26,6 +26,8 @@ export default async function OwnerOnboardingPage() {
         postal_code: profile.postal_code,
         emergency_contact_name: profile.emergency_contact_name,
         emergency_contact_phone: profile.emergency_contact_phone,
+        latitude: profile.latitude,
+        longitude: profile.longitude,
       }}
       isOwner={profile.is_owner}
     />

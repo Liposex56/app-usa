@@ -11,6 +11,7 @@ import { isTimedService, timeLabels } from '@/lib/booking-flow';
 import type { ServiceType, Species } from '@/lib/database.types';
 import {
   computeBookingTotals,
+  EXTENDED_CARE_HELP,
   isPuppy,
   RATE_KIND_LABEL,
   type AutoRatePercents,
@@ -113,6 +114,8 @@ export function ContactForm({
   const [petIds, setPetIds] = useState<string[]>(pets.length === 1 ? [pets[0].id] : []);
   const [wantsPickup, setWantsPickup] = useState(false);
   const [durationMinutes, setDurationMinutes] = useState('30');
+  const [dropoffTime, setDropoffTime] = useState('');
+  const [pickupTime, setPickupTime] = useState('');
   const [messageEdited, setMessageEdited] = useState<string | null>(null);
 
   const service = services.find((s) => s.type === serviceType) ?? null;
@@ -149,12 +152,16 @@ export function ContactForm({
           },
           percents,
           holidayPeriods,
+          serviceType: service.type,
           rateUnit: service.rateUnit,
           startDate,
           endDate: endDate || null,
           petCount: petIds.length,
           hasPuppy: selectedPets.some((pet) => isPuppy(pet, startDate)),
+          allCats: selectedPets.length > 0 && selectedPets.every((pet) => pet.species === 'cat'),
           durationMinutes: hasLength ? Number(durationMinutes) : null,
+          dropoffTime: timed ? dropoffTime : null,
+          pickupTime: timed ? pickupTime : null,
           wantsPickupDropoff: wantsPickup,
         })
       : null;
@@ -248,27 +255,44 @@ export function ContactForm({
           /* Boarding and house sitting run on these two times: the service
              starts at the first and finishes at the second. */
           <div className="grid gap-3 sm:grid-cols-2">
-            <Field label={labels.start} htmlFor="dropoffFrom" required>
-              <TimeSelect
-                id="dropoffFrom"
-                name="dropoffFrom"
-                aria-label={labels.start}
-                placeholder="Select time"
-                required
-              />
-            </Field>
-            <Field label={labels.end} htmlFor="pickupFrom" required>
-              <TimeSelect
-                id="pickupFrom"
-                name="pickupFrom"
-                aria-label={labels.end}
-                placeholder="Select time"
-                required
-              />
-            </Field>
+            <fieldset>
+              <legend className="mb-1.5 text-sm font-semibold uppercase tracking-[0.06em] text-espresso-700">
+                {labels.start.replace(' time', '')} range <span className="text-gold-600">*</span>
+              </legend>
+              <div className="flex items-center gap-2">
+                <TimeSelect
+                  id="dropoffFrom"
+                  name="dropoffFrom"
+                  aria-label={`${labels.start} from`}
+                  placeholder="From"
+                  required
+                  onChange={(event) => setDropoffTime(event.target.value)}
+                />
+                <span className="text-xs text-espresso-500">to</span>
+                <TimeSelect name="dropoffTo" aria-label={`${labels.start} until`} placeholder="To" />
+              </div>
+            </fieldset>
+            <fieldset>
+              <legend className="mb-1.5 text-sm font-semibold uppercase tracking-[0.06em] text-espresso-700">
+                {labels.end.replace(' time', '')} range <span className="text-gold-600">*</span>
+              </legend>
+              <div className="flex items-center gap-2">
+                <TimeSelect
+                  id="pickupFrom"
+                  name="pickupFrom"
+                  aria-label={`${labels.end} from`}
+                  placeholder="From"
+                  required
+                  onChange={(event) => setPickupTime(event.target.value)}
+                />
+                <span className="text-xs text-espresso-500">to</span>
+                <TimeSelect name="pickupTo" aria-label={`${labels.end} until`} placeholder="To" />
+              </div>
+            </fieldset>
             <p className="text-sm leading-snug text-espresso-500 sm:col-span-2">
-              The service starts at the {labels.start.toLowerCase()} on the first day and
-              finishes at the {labels.end.toLowerCase()} on the last day.
+              The service starts at the beginning of the first range and finishes at the end
+              of the second. Each night covers 24 hours: a pick-up more than 2 hours later
+              in the day than the drop-off adds extended care.
             </p>
           </div>
         ) : (
@@ -375,6 +399,59 @@ export function ContactForm({
           />
         </Field>
       </div>
+
+      {totals && service && (
+        <div className="mt-4 rounded-3xl border border-espresso-700/8 bg-hv-paper p-5 shadow-card">
+          <p className="text-sm font-semibold uppercase tracking-[0.06em] text-espresso-700">
+            Price
+          </p>
+          <dl className="mt-2 space-y-1.5 text-[17px] text-espresso-700">
+            <div className="flex justify-between gap-4">
+              <dt>
+                {totals.quantity} {UNIT_LABEL[service.rateUnit] ?? service.rateUnit}
+                {totals.quantity === 1 ? '' : 's'} × {formatCents(totals.unitCents)}
+                {RATE_KIND_LABEL[totals.rateKind]
+                  ? ` (${RATE_KIND_LABEL[totals.rateKind]?.toLowerCase()})`
+                  : ''}
+              </dt>
+              <dd>{formatCents(totals.baseCents)}</dd>
+            </div>
+            {totals.extraPetsCents > 0 && (
+              <div className="flex justify-between gap-4">
+                <dt>
+                  Additional pets · {petIds.length - 1} × {formatCents(totals.additionalCents)}
+                  {totals.quantity > 1 ? ` × ${totals.quantity}` : ''}
+                </dt>
+                <dd>{formatCents(totals.extraPetsCents)}</dd>
+              </div>
+            )}
+            {totals.careCents > 0 && (
+              <div className="flex justify-between gap-4">
+                <dt>
+                  Extended care{' '}
+                  <span title={EXTENDED_CARE_HELP} className="cursor-help text-espresso-500">
+                    ⓘ
+                  </span>
+                </dt>
+                <dd>{formatCents(totals.careCents)}</dd>
+              </div>
+            )}
+            {totals.pickupCents > 0 && (
+              <div className="flex justify-between gap-4">
+                <dt>Pick-up and drop-off</dt>
+                <dd>{formatCents(totals.pickupCents)}</dd>
+              </div>
+            )}
+            <div className="flex justify-between gap-4 border-t border-espresso-700/10 pt-2 font-bold">
+              <dt>Estimated total</dt>
+              <dd>{formatCents(totals.totalCents)}</dd>
+            </div>
+          </dl>
+          {totals.careCents > 0 && (
+            <p className="mt-2 text-sm text-espresso-500">{EXTENDED_CARE_HELP}</p>
+          )}
+        </div>
+      )}
 
       {/* Pinned so the button is always on screen, however long the message. */}
       <div className="fixed inset-x-0 bottom-0 z-20 border-t border-espresso-700/10 bg-bone/95 backdrop-blur">

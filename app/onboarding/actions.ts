@@ -73,6 +73,12 @@ export async function saveOwnerProfileAction(
   if (!firstName || !lastName) {
     return { error: 'Please enter your first and last name.' };
   }
+  if (!text(formData, 'phone')) return { error: 'Please enter your mobile number.' };
+  if (!text(formData, 'addressLine1') || !text(formData, 'city') || !text(formData, 'state')) {
+    return { error: 'Please choose your address from the suggestions.' };
+  }
+  const latitude = num(formData, 'latitude');
+  const longitude = num(formData, 'longitude');
 
   const { data: profile } = await supabase
     .from('profiles')
@@ -96,6 +102,7 @@ export async function saveOwnerProfileAction(
       state: text(formData, 'state'),
       postal_code: text(formData, 'postalCode'),
       country: 'US',
+      ...(latitude != null && longitude != null ? { latitude, longitude } : {}),
       emergency_contact_name: text(formData, 'emergencyName'),
       emergency_contact_phone: text(formData, 'emergencyPhone'),
       marketing_opt_in: bool(formData, 'marketingOptIn'),
@@ -327,16 +334,67 @@ export async function saveHavenerProfileAction(
 
   const homeType = text(formData, 'homeType');
   const acceptedSizes = list(formData, 'acceptedSizes') as PetSize[];
-  const acceptedEnergy = list(formData, 'acceptedEnergyLevels') as EnergyLevel[];
   const skills = list(formData, 'skills') as Skill[];
 
   const submitForReview = formData.get('intent') === 'submit';
+
+  const yardType = text(formData, 'yardType');
+  const kids05 = bool(formData, 'hasKids05');
+  const kids612 = bool(formData, 'hasKids612');
+  const dogsAtHome = bool(formData, 'hasDogsAtHome');
+  const catsAtHome = bool(formData, 'hasCatsAtHome');
+  const cagedPets = bool(formData, 'hasCagedPets');
+  const unneutered = bool(formData, 'acceptsUnneuteredMales');
+  const unspayed = bool(formData, 'acceptsUnspayedFemales');
+  const acceptsDogs = bool(formData, 'acceptsDogs');
+  const acceptsCats = bool(formData, 'acceptsCats');
+  const policy = text(formData, 'cancellationPolicy');
+  const servicePolicy = (
+    ['same_day', 'one_day', 'three_day', 'seven_day'] as const
+  ).find((value) => value === policy);
+
+  // A profile sent for review has to be complete: an empty one is no use to
+  // owners. ("Save and finish later" skips this.)
+  if (submitForReview) {
+    const homeAnswered =
+      kids05 || kids612 || dogsAtHome || catsAtHome || cagedPets ||
+      bool(formData, 'dogsOnFurniture') || bool(formData, 'dogsOnBed') ||
+      bool(formData, 'allowsSmoking') || bool(formData, 'homeNone');
+    const hostAnswered =
+      bool(formData, 'hostsMultipleFamilies') || bool(formData, 'acceptsPuppies') ||
+      bool(formData, 'acceptsNotCrateTrained') || unneutered || unspayed ||
+      bool(formData, 'acceptsInHeat') || bool(formData, 'hostNone');
+    const missing = [
+      !text(formData, 'headline') && 'a headline',
+      !text(formData, 'bio') && 'the "About you" text',
+      !text(formData, 'routineDescription') && 'what a day of care looks like',
+      num(formData, 'yearsExperience') == null && 'your years of experience',
+      !text(formData, 'scheduleDescription') && 'your schedule',
+      !text(formData, 'homeEnvironmentDescription') && 'safety, trust and environment',
+      !text(formData, 'petCareNotes') && 'what you need to know about pets ahead of time',
+      !homeType && 'your home type',
+      !yardType && 'your type of yard',
+      !text(formData, 'homeFullTime') && 'whether you are home full-time',
+      !homeAnswered && 'what owners can expect at your home (or "None of the above")',
+      !acceptsDogs && !acceptsCats && 'whether you take dogs, cats or both',
+      acceptsDogs && acceptedSizes.length === 0 && 'the sizes of dog you accept',
+      !hostAnswered && 'what you are able to host (or "None of the above")',
+      !servicePolicy && 'a cancellation policy',
+      acceptsCats && !text(formData, 'catBio') && 'your experience with cats',
+    ].filter(Boolean);
+    if (missing.length > 0) {
+      return { error: `Please complete: ${missing.join('; ')}.` };
+    }
+  }
 
   // Pin the Havener on the map from their city/zip so search can measure how
   // far they are from an owner. If the lookup finds nothing the old pin stays.
   const where = await geocode(
     [city, state, text(formData, 'servicePostalCode')].filter(Boolean).join(', ')
   );
+
+  const boardingSpaces = num(formData, 'maxBoardingPets');
+  const daycareSpaces = num(formData, 'maxDaycarePets');
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { error: profileError } = await (supabase.from('sitter_profiles') as any)
@@ -362,31 +420,37 @@ export async function saveHavenerProfileAction(
         provides_transport: bool(formData, 'providesTransport'),
 
         home_type: homeType as HomeType | null,
-        has_yard: bool(formData, 'hasYard'),
-        yard_is_fenced: bool(formData, 'yardIsFenced'),
-        has_kids_at_home: bool(formData, 'hasKidsAtHome'),
-        has_own_pets: bool(formData, 'hasOwnPets'),
+        has_yard: yardType === 'fenced' || yardType === 'unfenced',
+        yard_is_fenced: yardType === 'fenced',
+        home_full_time: text(formData, 'homeFullTime') === 'yes',
+        works_outside_home: text(formData, 'homeFullTime') === 'no',
+        has_kids_0_5: kids05,
+        has_kids_6_12: kids612,
+        has_kids_at_home: kids05 || kids612,
+        has_dogs_at_home: dogsAtHome,
+        has_cats_at_home: catsAtHome,
+        has_caged_pets: cagedPets,
+        has_own_pets: dogsAtHome || catsAtHome || cagedPets,
         own_pets_description: text(formData, 'ownPetsDescription'),
-        works_outside_home: bool(formData, 'worksOutsideHome'),
-        provides_daily_exercise: bool(formData, 'providesDailyExercise'),
-        has_stairs: bool(formData, 'hasStairs'),
-        max_pets_per_day: num(formData, 'maxPetsPerDay') ?? 2,
+        dogs_on_furniture: bool(formData, 'dogsOnFurniture'),
+        dogs_on_bed: bool(formData, 'dogsOnBed'),
+        allows_smoking: bool(formData, 'allowsSmoking'),
+        max_pets_per_day: Math.max(boardingSpaces ?? 0, daycareSpaces ?? 0) || 2,
 
-        accepts_dogs: bool(formData, 'acceptsDogs'),
-        accepts_cats: bool(formData, 'acceptsCats'),
+        accepts_dogs: acceptsDogs,
+        accepts_cats: acceptsCats,
         accepted_sizes: acceptedSizes.length ? acceptedSizes : ['small', 'medium'],
+        hosts_multiple_families: bool(formData, 'hostsMultipleFamilies'),
         accepts_puppies: bool(formData, 'acceptsPuppies'),
-        accepts_seniors: bool(formData, 'acceptsSeniors'),
-        accepted_energy_levels: acceptedEnergy.length
-          ? acceptedEnergy
-          : ['low', 'moderate'],
-        accepts_unfixed: bool(formData, 'acceptsUnfixed'),
+        accepts_not_crate_trained: bool(formData, 'acceptsNotCrateTrained'),
+        accepts_unneutered_males: unneutered,
+        accepts_unspayed_females: unspayed,
+        accepts_unfixed: unneutered || unspayed,
         accepts_in_heat: bool(formData, 'acceptsInHeat'),
-        comfortable_with_meds: bool(formData, 'comfortableWithMeds'),
-        comfortable_with_anxiety: bool(formData, 'comfortableWithAnxiety'),
-        comfortable_with_reactive: bool(formData, 'comfortableWithReactive'),
+        // No longer asked: every energy level and senior pets are welcome.
+        accepts_seniors: true,
+        accepted_energy_levels: ['low', 'moderate', 'high'],
 
-        cancellation_policy: text(formData, 'cancellationPolicy') ?? 'moderate',
         calendar_updated_at: new Date().toISOString(),
         ...(submitForReview
           ? { status: 'pending_review' as const, submitted_at: new Date().toISOString() }
@@ -414,6 +478,7 @@ export async function saveHavenerProfileAction(
       parseWholeDollarsToCents(formData.get(`extraPet_${serviceType}`)) ?? 0,
     accepts_dogs: bool(formData, `dogs_${serviceType}`),
     accepts_cats: bool(formData, `cats_${serviceType}`),
+    cancellation_policy: servicePolicy ?? 'three_day',
   }));
 
   const missingRate = rows.find((row) => row.base_rate_cents <= 0);
@@ -429,6 +494,22 @@ export async function saveHavenerProfileAction(
 
   if (servicesError) return { error: servicesError.message };
 
+  // Spaces per service: pets per night for boarding, pets per day for daycare.
+  const capacity = [
+    selectedServices.includes('boarding') && boardingSpaces != null
+      ? { sitter_id: userId, service_type: 'boarding', spaces: boardingSpaces }
+      : null,
+    selectedServices.includes('daycare') && daycareSpaces != null
+      ? { sitter_id: userId, service_type: 'daycare', spaces: daycareSpaces }
+      : null,
+  ].filter(Boolean);
+  if (capacity.length > 0) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await (supabase.from('sitter_service_capacity') as any).upsert(capacity, {
+      onConflict: 'sitter_id,service_type',
+    });
+  }
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   await (supabase.from('profiles') as any)
     .update({
@@ -438,5 +519,6 @@ export async function saveHavenerProfileAction(
     .eq('id', userId);
 
   revalidatePath('/dashboard');
-  redirect('/dashboard?welcome=1');
+  // Straight to the background check once the profile is sent for review.
+  redirect(submitForReview ? '/dashboard/havener/verification?submitted=1' : '/dashboard?welcome=1');
 }

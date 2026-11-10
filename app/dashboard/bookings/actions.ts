@@ -417,9 +417,26 @@ export async function modifyBookingAction(
   if (timed && (!dropoffFrom || !pickupFrom)) {
     return { error: 'Please choose both times — the service starts and ends at them.' };
   }
-  // Timed services use one exact time each; others an optional preferred range.
-  const dropoffTo = timed ? null : text(formData, 'dropoffTo');
-  const pickupTo = null;
+  // Timed services have a drop-off range and a pick-up range; the others an
+  // optional preferred time.
+  const dropoffTo = text(formData, 'dropoffTo');
+  const pickupTo = timed ? text(formData, 'pickupTo') : null;
+  if (
+    timed &&
+    ((dropoffTo && dropoffFrom && dropoffTo < dropoffFrom) ||
+      (pickupTo && pickupFrom && pickupTo < pickupFrom))
+  ) {
+    return { error: 'In each time range, the second time has to be later than the first.' };
+  }
+
+  // Only the Havener changes the length of a walk or visit and adjusts the cost.
+  const isHavener = booking.sitter_id === profile.id;
+  const durationChoice = Number(text(formData, 'durationMinutes'));
+  const adjustmentText = text(formData, 'adjustment');
+  const adjustmentDollars = adjustmentText ? Number(adjustmentText.replace(/[$,\s]/g, '')) : 0;
+  if (isHavener && adjustmentText && !Number.isFinite(adjustmentDollars)) {
+    return { error: 'The adjustment has to be a number, like 15 or -10.' };
+  }
   const wantsPickupDropoff = bool(formData, 'wantsPickupDropoff');
 
   const notes = rebuildNotes(booking.owner_notes, {
@@ -444,6 +461,12 @@ export async function modifyBookingAction(
     p_pickup_to: pickupTo,
     p_wants_pickup: wantsPickupDropoff,
     p_notes: notes,
+    ...(isHavener
+      ? {
+          p_duration: [30, 60].includes(durationChoice) ? durationChoice : null,
+          p_adjustment_cents: Math.round(adjustmentDollars) * 100,
+        }
+      : {}),
   });
   if (error) return { error: error.message };
 

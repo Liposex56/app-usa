@@ -1,6 +1,6 @@
 'use client';
 
-import { useActionState } from 'react';
+import { useActionState, useState } from 'react';
 import { useFormStatus } from 'react-dom';
 
 import {
@@ -8,6 +8,7 @@ import {
   OnboardingHeading,
   Steps,
 } from '@/components/onboarding/steps';
+import { AddressAutocomplete } from '@/components/ui/address-autocomplete';
 import { Button } from '@/components/ui/button';
 import {
   CheckboxCard,
@@ -33,6 +34,8 @@ type ProfileFields = {
   postal_code: string | null;
   emergency_contact_name: string | null;
   emergency_contact_phone: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
 };
 
 function Submit() {
@@ -52,6 +55,13 @@ export function OwnerProfileForm({
   isOwner: boolean;
 }) {
   const [state, formAction] = useActionState(saveOwnerProfileAction, INITIAL);
+  // Picking a suggested address fills the street, city, state and ZIP.
+  const [address, setAddress] = useState({
+    street: profile.address_line1 ?? '',
+    city: profile.city ?? '',
+    state: profile.state ?? '',
+    postalCode: profile.postal_code ?? '',
+  });
 
   return (
     <div>
@@ -106,6 +116,7 @@ export function OwnerProfileForm({
           <Field
             label="Mobile number"
             htmlFor="phone"
+            required
             hint="Used for booking alerts. We verify it by SMS before your first booking."
           >
             <Input
@@ -115,6 +126,7 @@ export function OwnerProfileForm({
               defaultValue={profile.phone ?? ''}
               autoComplete="tel"
               placeholder="(555) 123-4567"
+              required
             />
           </Field>
         </Fieldset>
@@ -123,14 +135,42 @@ export function OwnerProfileForm({
           legend="Your address"
           hint="Only used to find Haveners near you. Your street address is never shown to anyone until you confirm a booking."
         >
-          <Field label="Street address" htmlFor="addressLine1">
-            <Input
-              id="addressLine1"
-              name="addressLine1"
-              defaultValue={profile.address_line1 ?? ''}
-              autoComplete="address-line1"
+          <Field
+            label="Street address"
+            htmlFor="addressSearch"
+            required
+            hint="Start typing and pick your address from the list — the city, state and ZIP fill in by themselves."
+          >
+            <AddressAutocomplete
+              id="addressSearch"
+              name="addressFull"
+              latName="latitude"
+              lngName="longitude"
+              required
+              defaultAddress={
+                profile.address_line1
+                  ? [
+                      profile.address_line1,
+                      profile.city,
+                      [profile.state, profile.postal_code].filter(Boolean).join(' '),
+                    ]
+                      .filter(Boolean)
+                      .join(', ')
+                  : ''
+              }
+              defaultLat={profile.latitude}
+              defaultLng={profile.longitude}
+              onSelect={(picked) =>
+                setAddress({
+                  street: picked.street ?? picked.label,
+                  city: picked.city ?? '',
+                  state: picked.state ?? '',
+                  postalCode: picked.postcode ?? '',
+                })
+              }
             />
           </Field>
+          <input type="hidden" name="addressLine1" value={address.street} />
           <Field label="Apartment, suite, unit" htmlFor="addressLine2">
             <Input
               id="addressLine2"
@@ -140,31 +180,36 @@ export function OwnerProfileForm({
             />
           </Field>
           <div className="grid gap-5 sm:grid-cols-3">
-            <Field label="City" htmlFor="city">
+            <Field label="City" htmlFor="city" required>
               <Input
                 id="city"
                 name="city"
-                defaultValue={profile.city ?? ''}
-                autoComplete="address-level2"
+                value={address.city}
+                onChange={(event) => setAddress({ ...address, city: event.target.value })}
+                required
               />
             </Field>
-            <Field label="State" htmlFor="state">
+            <Field label="State" htmlFor="state" required>
               <Input
                 id="state"
                 name="state"
                 maxLength={2}
-                defaultValue={profile.state ?? ''}
-                autoComplete="address-level1"
-                placeholder="FL"
+                value={address.state}
+                onChange={(event) =>
+                  setAddress({ ...address, state: event.target.value.toUpperCase() })
+                }
+                placeholder="MA"
+                required
               />
             </Field>
-            <Field label="ZIP code" htmlFor="postalCode">
+            <Field label="ZIP code" htmlFor="postalCode" required>
               <Input
                 id="postalCode"
                 name="postalCode"
                 inputMode="numeric"
-                defaultValue={profile.postal_code ?? ''}
-                autoComplete="postal-code"
+                value={address.postalCode}
+                onChange={(event) => setAddress({ ...address, postalCode: event.target.value })}
+                required
               />
             </Field>
           </div>

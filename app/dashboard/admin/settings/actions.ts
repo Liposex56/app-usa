@@ -75,6 +75,9 @@ export async function updateAutoRatesAction(
     auto_visit_sixty_percent: numberField(formData, 'visitSixtyPercent', 0, 500),
     auto_visit_additional_less_percent: numberField(formData, 'visitAdditionalLessPercent', 0, 100),
     auto_visit_puppy_percent: numberField(formData, 'visitPuppyPercent', 0, 200),
+    auto_house_additional_less_percent: numberField(formData, 'houseAdditionalLessPercent', 0, 100),
+    auto_visit_holiday_percent: numberField(formData, 'visitHolidayPercent', 0, 500),
+    auto_visit_cat_less_percent: numberField(formData, 'visitCatLessPercent', 0, 100),
   };
   const invalid = Object.entries(fields).find(([, value]) => value === 'invalid');
   if (invalid) return { error: 'One of the values is out of range — check the hints under each field.' };

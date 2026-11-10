@@ -3,6 +3,7 @@
 import { useActionState, useMemo, useState } from 'react';
 import { useFormStatus } from 'react-dom';
 
+import { CancellationPoliciesHelp } from '@/components/cancellation-policies';
 import { Fieldset } from '@/components/onboarding/steps';
 import { Button } from '@/components/ui/button';
 import {
@@ -106,9 +107,10 @@ export function ServiceSettingsForm({
           auto_rates: true,
         },
         percents,
-        service.rateUnit
+        service.rateUnit,
+        service.type
       ),
-    [baseRate, percents, service.rateUnit]
+    [baseRate, percents, service.rateUnit, service.type]
   );
   const dollars = (value: number | null) => (value != null ? String(value / 100) : '');
   const [yardType, setYardType] = useState<'fenced' | 'unfenced' | 'none'>(
@@ -224,7 +226,7 @@ export function ServiceSettingsForm({
               <span className="mt-0.5 block text-xs leading-relaxed text-espresso-500/75">
                 {autoRatesAvailable
                   ? visit
-                    ? 'The 60-minute rate, puppy rate and additional dog are worked out from your rate with Havenr’s rules, in whole dollars. Everything else stays yours to set.'
+                    ? 'The 60-minute rate, holiday rate, puppy rate and additional dog are worked out from your rate with Havenr’s rules, in whole dollars. Everything else stays yours to set.'
                     : 'Holiday, extended stay, puppy rate and additional dog are worked out from your rate with Havenr’s rules, in whole dollars. Everything else stays yours to set.'
                   : 'Havenr hasn’t set the automatic percentages yet — until then, set these rates yourself.'}
               </span>
@@ -279,11 +281,15 @@ export function ServiceSettingsForm({
                 />
               </Field>
             )}
-            {!visit && (
+            {(
               <Field
                 label="Holiday rate (USD)"
                 htmlFor="holidayRate"
-                hint="Charged for the whole stay when any day of it falls in a holiday period (Thanksgiving, Christmas, New Year, long weekends…). Havenr keeps the list of periods."
+                hint={
+                  visit
+                    ? 'Charged when the day falls in a holiday period (Thanksgiving, Christmas, New Year, long weekends…). Havenr keeps the list of periods.'
+                    : 'Charged for the whole stay when any day of it falls in a holiday period (Thanksgiving, Christmas, New Year, long weekends…). Havenr keeps the list of periods.'
+                }
               >
                 <Input
                   key={autoRates ? 'auto' : 'manual'}
@@ -343,21 +349,10 @@ export function ServiceSettingsForm({
               </Field>
             )}
             <Field
-              label="Extra hour rate (USD per hour)"
-              htmlFor="extraHourRate"
-              hint="What you charge for each extra hour — a late pick-up or a longer day."
+              label="Bathing / grooming (USD)"
+              htmlFor="bathingRate"
+              hint="Optional. Leave it empty if you don’t offer it; put 0 if you offer it for free."
             >
-              <Input
-                id="extraHourRate"
-                name="extraHourRate"
-                type="number"
-                min="0"
-                step="1"
-                inputMode="numeric"
-                defaultValue={cents(existing?.extra_hour_rate_cents)}
-              />
-            </Field>
-            <Field label="Bathing / grooming (USD)" htmlFor="bathingRate">
               <Input
                 id="bathingRate"
                 name="bathingRate"
@@ -539,24 +534,39 @@ export function ServiceSettingsForm({
               defaultChecked={sitterProfile.allows_smoking}
             />
             <CheckboxCard
-              name="hasKidsAtHome"
-              label="Children at home"
-              defaultChecked={sitterProfile.has_kids_at_home}
+              name="hasKids05"
+              label="Children age 0-5"
+              defaultChecked={sitterProfile.has_kids_0_5}
+            />
+            <CheckboxCard
+              name="hasKids612"
+              label="Children age 6-12"
+              defaultChecked={sitterProfile.has_kids_6_12}
             />
             <CheckboxCard
               name="dogsOnFurniture"
-              label="Dogs allowed on furniture"
+              label="Dogs are allowed on furniture"
               defaultChecked={sitterProfile.dogs_on_furniture}
             />
             <CheckboxCard
               name="dogsOnBed"
-              label="Dogs allowed on bed"
+              label="Dogs are allowed on bed"
               defaultChecked={sitterProfile.dogs_on_bed}
             />
             <CheckboxCard
-              name="hasOwnPets"
-              label="Other pets in home"
-              defaultChecked={sitterProfile.has_own_pets}
+              name="hasDogsAtHome"
+              label="Dogs in home"
+              defaultChecked={sitterProfile.has_dogs_at_home}
+            />
+            <CheckboxCard
+              name="hasCatsAtHome"
+              label="Cats in home"
+              defaultChecked={sitterProfile.has_cats_at_home}
+            />
+            <CheckboxCard
+              name="hasCagedPets"
+              label="Caged pets in home"
+              defaultChecked={sitterProfile.has_caged_pets}
             />
           </div>
 
@@ -580,9 +590,14 @@ export function ServiceSettingsForm({
               defaultChecked={sitterProfile.accepts_not_crate_trained}
             />
             <CheckboxCard
-              name="acceptsUnfixed"
-              label="Unspayed or unneutered pets"
-              defaultChecked={sitterProfile.accepts_unfixed}
+              name="acceptsUnneuteredMales"
+              label="Unneutered male dogs"
+              defaultChecked={sitterProfile.accepts_unneutered_males}
+            />
+            <CheckboxCard
+              name="acceptsUnspayedFemales"
+              label="Unspayed female dogs"
+              defaultChecked={sitterProfile.accepts_unspayed_females}
             />
             <CheckboxCard
               name="acceptsInHeat"
@@ -651,6 +666,7 @@ export function ServiceSettingsForm({
               ))}
             </Select>
           </Field>
+          <CancellationPoliciesHelp />
           <p className="text-xs text-espresso-500/70">
             Note: Haveners must abide by applicable laws and regulations.
           </p>

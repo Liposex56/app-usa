@@ -77,9 +77,7 @@ export async function saveServiceSettingsAction(
           : {
               additional_pet_rate_cents:
                 parseWholeDollarsToCents(formData.get('additionalPetRate')) ?? 0,
-              holiday_rate_cents: visit
-                ? null
-                : parseWholeDollarsToCents(formData.get('holidayRate')),
+              holiday_rate_cents: parseWholeDollarsToCents(formData.get('holidayRate')),
               // Left equal to the regular rate it means "same as regular" and
               // keeps following it; only a different number is stored.
               extended_stay_rate_cents: visit ? null : extendedStayRate,
@@ -90,7 +88,6 @@ export async function saveServiceSettingsAction(
                 ? parseWholeDollarsToCents(formData.get('sixtyMinuteRate'))
                 : null,
             }),
-        extra_hour_rate_cents: parseWholeDollarsToCents(formData.get('extraHourRate')),
         bathing_rate_cents: parseWholeDollarsToCents(formData.get('bathingRate')),
         pickup_dropoff_rate_cents: parseWholeDollarsToCents(
           formData.get('pickupDropoffRate')
@@ -123,14 +120,25 @@ export async function saveServiceSettingsAction(
       has_yard: bool(formData, 'hasYard'),
       yard_is_fenced: bool(formData, 'yardIsFenced'),
       allows_smoking: bool(formData, 'allowsSmoking'),
-      has_kids_at_home: bool(formData, 'hasKidsAtHome'),
+      has_kids_0_5: bool(formData, 'hasKids05'),
+      has_kids_6_12: bool(formData, 'hasKids612'),
+      has_kids_at_home: bool(formData, 'hasKids05') || bool(formData, 'hasKids612'),
       dogs_on_furniture: bool(formData, 'dogsOnFurniture'),
       dogs_on_bed: bool(formData, 'dogsOnBed'),
-      has_own_pets: bool(formData, 'hasOwnPets'),
+      has_dogs_at_home: bool(formData, 'hasDogsAtHome'),
+      has_cats_at_home: bool(formData, 'hasCatsAtHome'),
+      has_caged_pets: bool(formData, 'hasCagedPets'),
+      has_own_pets:
+        bool(formData, 'hasDogsAtHome') ||
+        bool(formData, 'hasCatsAtHome') ||
+        bool(formData, 'hasCagedPets'),
       hosts_multiple_families: bool(formData, 'hostsMultipleFamilies'),
       accepts_puppies: bool(formData, 'acceptsPuppies'),
       accepts_not_crate_trained: bool(formData, 'acceptsNotCrateTrained'),
-      accepts_unfixed: bool(formData, 'acceptsUnfixed'),
+      accepts_unneutered_males: bool(formData, 'acceptsUnneuteredMales'),
+      accepts_unspayed_females: bool(formData, 'acceptsUnspayedFemales'),
+      accepts_unfixed:
+        bool(formData, 'acceptsUnneuteredMales') || bool(formData, 'acceptsUnspayedFemales'),
       accepts_in_heat: bool(formData, 'acceptsInHeat'),
       max_pets_per_day: num(formData, 'maxPetsPerDay') ?? 2,
       accepted_sizes: acceptedSizes.length

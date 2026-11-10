@@ -19,7 +19,7 @@ export default async function AdminSettingsPage() {
     supabase
       .from('platform_settings')
       .select(
-        'company_commission_percent, auto_stay_holiday_percent, auto_stay_extended_percent, auto_stay_extended_min_units, auto_stay_puppy_percent, auto_stay_additional_less_cents, auto_visit_sixty_percent, auto_visit_additional_less_percent, auto_visit_puppy_percent'
+        'company_commission_percent, auto_stay_holiday_percent, auto_stay_extended_percent, auto_stay_extended_min_units, auto_stay_puppy_percent, auto_stay_additional_less_cents, auto_visit_sixty_percent, auto_visit_additional_less_percent, auto_visit_puppy_percent, auto_house_additional_less_percent, auto_visit_holiday_percent, auto_visit_cat_less_percent'
       )
       .eq('id', 1)
       .maybeSingle(),
@@ -51,6 +51,9 @@ export default async function AdminSettingsPage() {
             visitSixty: settings?.auto_visit_sixty_percent ?? null,
             visitAdditionalLess: settings?.auto_visit_additional_less_percent ?? null,
             visitPuppy: settings?.auto_visit_puppy_percent ?? null,
+            houseAdditionalLess: settings?.auto_house_additional_less_percent ?? null,
+            visitHoliday: settings?.auto_visit_holiday_percent ?? null,
+            visitCatLess: settings?.auto_visit_cat_less_percent ?? null,
           }}
         />
         <HolidaysPanel periods={(periods ?? []) as HolidayPeriod[]} />

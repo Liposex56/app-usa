@@ -222,6 +222,13 @@ export type SitterProfileRow = {
   dogs_on_bed: boolean;
   hosts_multiple_families: boolean;
   accepts_not_crate_trained: boolean;
+  has_kids_0_5: boolean;
+  has_kids_6_12: boolean;
+  has_dogs_at_home: boolean;
+  has_cats_at_home: boolean;
+  has_caged_pets: boolean;
+  accepts_unneutered_males: boolean;
+  accepts_unspayed_females: boolean;
   skills: string[];
   schedule_description: string | null;
   home_environment_description: string | null;
@@ -391,6 +398,10 @@ export type BookingRow = {
   duration_minutes: number | null;
   /** Which of the Havener's rates priced this booking. */
   rate_kind: 'standard' | 'holiday' | 'extended' | 'puppy';
+  /** Extended care (time past the 24-hour cycle), inside extra_fees_cents. */
+  extended_care_cents: number;
+  /** What the Havener added to (or took off) the price; inside total_cents. */
+  adjustment_cents: number;
 
   created_at: string;
   updated_at: string;
@@ -513,6 +524,9 @@ export type PlatformSettingsRow = {
   auto_visit_sixty_percent: number | null;
   auto_visit_additional_less_percent: number | null;
   auto_visit_puppy_percent: number | null;
+  auto_house_additional_less_percent: number | null;
+  auto_visit_holiday_percent: number | null;
+  auto_visit_cat_less_percent: number | null;
   updated_by: string | null;
   updated_at: string;
 };
@@ -552,6 +566,8 @@ export type StayPriceRow = {
   quantity: number;
   extra_cents: number;
   total_cents: number;
+  /** Extended care, already inside extra_cents and total_cents. */
+  care_cents: number;
 };
 
 export type WaitlistRow = {
@@ -692,6 +708,9 @@ export type Database = {
           p_pickup: boolean;
           p_has_puppy?: boolean;
           p_duration?: number | null;
+          p_dropoff_time?: string | null;
+          p_pickup_time?: string | null;
+          p_all_cats?: boolean;
         };
         Returns: StayPriceRow[];
       };
@@ -707,9 +726,12 @@ export type Database = {
           stay_extended_min_units: number | null;
           stay_puppy: number | null;
           stay_additional_less_cents: number | null;
+          house_additional_less: number | null;
           visit_sixty: number | null;
           visit_additional_less: number | null;
           visit_puppy: number | null;
+          visit_holiday: number | null;
+          visit_cat_less: number | null;
         }[];
       };
     };

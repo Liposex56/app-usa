@@ -4,7 +4,16 @@ import { useEffect, useRef, useState } from 'react';
 
 import { CONTROL } from '@/components/ui/field';
 
-type Suggestion = { label: string; lat: number; lng: number };
+export type AddressSuggestion = {
+  label: string;
+  lat: number;
+  lng: number;
+  street?: string | null;
+  city?: string | null;
+  state?: string | null;
+  postcode?: string | null;
+};
+type Suggestion = AddressSuggestion;
 
 /**
  * Address field that suggests real addresses as you type (from /api/places).
@@ -23,6 +32,7 @@ export function AddressAutocomplete({
   defaultLng,
   required = false,
   placeholder = 'Start typing an address',
+  onSelect,
 }: {
   id?: string;
   name?: string;
@@ -33,6 +43,8 @@ export function AddressAutocomplete({
   defaultLng?: number | null;
   required?: boolean;
   placeholder?: string;
+  /** Called with the picked address, e.g. to fill city / state / ZIP fields. */
+  onSelect?: (suggestion: AddressSuggestion) => void;
 }) {
   const [text, setText] = useState(defaultAddress);
   const [selected, setSelected] = useState<Suggestion | null>(
@@ -87,6 +99,7 @@ export function AddressAutocomplete({
     setSelected(option);
     setOpen(false);
     setOptions([]);
+    onSelect?.(option);
   }
 
   return (

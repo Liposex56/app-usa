@@ -72,6 +72,9 @@ async function createContactRequest(
     p_pickup: input.wantsPickupDropoff,
     p_has_puppy: pets.some((pet) => isPuppy(pet, startDate)),
     p_duration: input.durationMinutes,
+    p_dropoff_time: input.dropoffFrom,
+    p_pickup_time: input.pickupFrom,
+    p_all_cats: pets.every((pet) => pet.species === 'cat'),
   });
   const price = priceRows?.[0];
   if (priceError || !price) {
@@ -113,6 +116,7 @@ async function createContactRequest(
       base_rate_cents: price.unit_cents,
       additional_pet_rate_cents: price.additional_cents,
       extra_fees_cents: price.extra_cents,
+      extended_care_cents: price.care_cents ?? 0,
       commission_percent: commissionPercent,
       platform_fee_cents: split.companyFeeCents,
       sitter_payout_cents: split.sitterPayoutCents,
@@ -188,6 +192,15 @@ export async function contactHavenerAction(
       error: `Please choose the ${labels.start.toLowerCase()} and the ${labels.end.toLowerCase()} — the service starts and ends at those times.`,
     };
   }
+  const dropoffToCheck = text(formData, 'dropoffTo');
+  const pickupToCheck = text(formData, 'pickupTo');
+  if (
+    timed &&
+    ((dropoffToCheck && dropoffFrom && dropoffToCheck < dropoffFrom) ||
+      (pickupToCheck && pickupFrom && pickupToCheck < pickupFrom))
+  ) {
+    return { error: 'In each time range, the second time has to be later than the first.' };
+  }
   if (timed && !endDate && pickupFrom && dropoffFrom && pickupFrom <= dropoffFrom) {
     return {
       error: 'For a single day, the pick-up time has to be after the drop-off time.',
@@ -239,10 +252,11 @@ export async function contactHavenerAction(
     endDate: endDate || null,
     pets,
     dropoffFrom,
-    // Timed services use one exact time each; others an optional preferred range.
-    dropoffTo: timed ? null : text(formData, 'dropoffTo'),
+    // Timed services have a drop-off range and a pick-up range; the others an
+    // optional preferred time.
+    dropoffTo: text(formData, 'dropoffTo'),
     pickupFrom: timed ? pickupFrom : null,
-    pickupTo: null,
+    pickupTo: timed ? text(formData, 'pickupTo') : null,
     wantsPickupDropoff: bool(formData, 'wantsPickupDropoff'),
     durationMinutes,
     message: filtered.body,

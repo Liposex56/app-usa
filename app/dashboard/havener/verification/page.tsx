@@ -71,7 +71,12 @@ function Step({
   );
 }
 
-export default async function HavenerVerificationPage() {
+export default async function HavenerVerificationPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ submitted?: string }>;
+}) {
+  const { submitted } = await searchParams;
   const profile = await requireProfile();
   if (!profile.is_havener) redirect('/dashboard');
 
@@ -114,6 +119,18 @@ export default async function HavenerVerificationPage() {
       >
         ← Back to my Havener profile
       </Link>
+
+      {submitted && (
+        <div className="mt-6 rounded-3xl border border-gold-200 bg-cream p-6">
+          <h2 className="text-lg text-espresso-700">Your profile was sent for review 🐾</h2>
+          <p className="mt-1 text-[17px] leading-relaxed text-espresso-600">
+            You can’t receive bookings until you’re approved. Start with the two steps
+            below — the background check asks for your consent on a secure page. After
+            that we’ll set up your video interview and, for boarding and daycare, ask
+            for a short video of your home.
+          </p>
+        </div>
+      )}
 
       <h1 className="mt-6 text-[clamp(34px,3.4vw,46px)] leading-none">Verification</h1>
       <p className="mt-3 text-[17px] text-espresso-500">

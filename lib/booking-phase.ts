@@ -23,9 +23,19 @@ const BASE: Record<BookingStatus, { label: string; tone: string }> = {
  * owner has already paid.
  */
 export function bookingPhase(
-  booking: Pick<BookingRow, 'status' | 'owner_booked_at' | 'sitter_booked_at'>,
+  booking: Pick<BookingRow, 'status' | 'owner_booked_at' | 'sitter_booked_at'> & {
+    service_type?: string;
+  },
   viewer: Viewer
 ): BookingPhase {
+  // Boarding and house sitting start by themselves at the drop-off time, so
+  // nobody "starts" them: once both sides booked they stay "Confirmed".
+  if (
+    booking.status === 'in_progress' &&
+    (booking.service_type === 'boarding' || booking.service_type === 'house_sitting')
+  ) {
+    return { ...BASE.confirmed, hint: 'The stay is under way — it finishes by itself at the pick-up time.' };
+  }
   if (booking.status !== 'requested') {
     return { ...BASE[booking.status], hint: null };
   }

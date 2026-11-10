@@ -17,7 +17,7 @@ import { CHAT_BUCKET, isTimedService, timeLabels } from '@/lib/booking-flow';
 import { cancellationWindow } from '@/lib/cancellation';
 import { timeInAppZone } from '@/lib/dates';
 import { bookingPhase } from '@/lib/booking-phase';
-import { bookingQuantity, RATE_KIND_LABEL } from '@/lib/pricing';
+import { bookingQuantity, EXTENDED_CARE_HELP, RATE_KIND_LABEL } from '@/lib/pricing';
 import { getStripe } from '@/lib/stripe';
 import { SERVICE_BY_TYPE, serviceName } from '@/lib/services';
 import {
@@ -158,7 +158,7 @@ export default async function BookingDetailPage({
       .order('created_at', { ascending: true }),
     supabase
       .from('sitter_services')
-      .select('cancellation_policy, extra_hour_rate_cents')
+      .select('cancellation_policy')
       .eq('sitter_id', booking.sitter_id)
       .eq('service_type', booking.service_type)
       .maybeSingle(),
@@ -243,9 +243,6 @@ export default async function BookingDetailPage({
   // Cancelling: inside the Havener's window (counted from when it was booked),
   // never during the service, and Havenr confirms it.
   const policy = (serviceSettings as { cancellation_policy: string } | null)?.cancellation_policy;
-  const extraHourCents =
-    (serviceSettings as { extra_hour_rate_cents: number | null } | null)?.extra_hour_rate_cents ??
-    null;
   const windowInfo = cancellationWindow(
     policy,
     booking.confirmed_at ?? booking.created_at
@@ -273,7 +270,9 @@ export default async function BookingDetailPage({
   const rateLabel = RATE_KIND_LABEL[booking.rate_kind ?? 'standard'];
   const extraPetsCents =
     Math.max(0, pets.length - 1) * booking.additional_pet_rate_cents * quantity;
-  const transportCents = Math.max(0, booking.extra_fees_cents - extraPetsCents);
+  const careCents = booking.extended_care_cents ?? 0;
+  const adjustmentCents = booking.adjustment_cents ?? 0;
+  const transportCents = Math.max(0, booking.extra_fees_cents - extraPetsCents - careCents);
   const dropoff = clockRange(booking.dropoff_from, booking.dropoff_to);
   const pickup = clockRange(booking.pickup_from, booking.pickup_to);
 
@@ -412,15 +411,16 @@ export default async function BookingDetailPage({
       value: [
         `${serviceName(booking.service_type)} · ${quantity} ${unit}${quantity === 1 ? '' : 's'} × ${formatCents(booking.base_rate_cents)}${rateLabel ? ` (${rateLabel.toLowerCase()})` : ''} = ${formatCents(baseCents)}`,
         ...(extraPetsCents > 0 ? [`Additional pets: ${formatCents(extraPetsCents)}`] : []),
+        ...(careCents > 0 ? [`Extended care: ${formatCents(careCents)}`] : []),
         ...(transportCents > 0 ? [`Pick-up and drop-off: ${formatCents(transportCents)}`] : []),
+        ...(adjustmentCents !== 0
+          ? [`Adjustment by the Havener: ${adjustmentCents > 0 ? '+' : '−'}${formatCents(Math.abs(adjustmentCents))}`]
+          : []),
       ].join('\n'),
     },
     { label: 'Total', value: formatCents(booking.total_cents), strong: true },
     ...(viewerRole === 'sitter'
       ? [{ label: 'Your earnings', value: formatCents(booking.sitter_payout_cents) }]
-      : []),
-    ...(timed && extraHourCents
-      ? [{ label: 'Extra time', value: `${formatCents(extraHourCents)} per hour` }]
       : []),
     {
       label: 'Cancellation',
@@ -441,6 +441,12 @@ export default async function BookingDetailPage({
     allowsTransport: booking.service_type === 'boarding' || booking.service_type === 'daycare',
     timed: isTimedService(booking.service_type),
     serviceType: booking.service_type,
+    // Only the Havener changes the length of a walk or visit and adjusts the cost.
+    isHavener: viewerRole === 'sitter',
+    hasLength:
+      booking.service_type === 'dog_walking' || booking.service_type === 'drop_in_visit',
+    durationMinutes: booking.duration_minutes,
+    adjustmentCents: booking.adjustment_cents ?? 0,
   };
 
   return (
@@ -491,11 +497,6 @@ export default async function BookingDetailPage({
                 It starts and finishes by itself at these times.
               </p>
             )}
-            {timed && extraHourCents ? (
-              <p className="text-[16px] text-espresso-500">
-                Extra time: {formatCents(extraHourCents)} per hour.
-              </p>
-            ) : null}
           </Section>
 
           <Section title="Pets">
@@ -511,8 +512,25 @@ export default async function BookingDetailPage({
               {extraPetsCents > 0 && (
                 <ChargeRow label="Additional pets" value={formatCents(extraPetsCents)} />
               )}
+              {careCents > 0 && (
+                <>
+                  <ChargeRow label="Extended care" value={formatCents(careCents)} />
+                  <details className="text-sm text-espresso-500">
+                    <summary className="cursor-pointer underline underline-offset-2">
+                      ⓘ What is extended care?
+                    </summary>
+                    <p className="mt-1 leading-relaxed">{EXTENDED_CARE_HELP}</p>
+                  </details>
+                </>
+              )}
               {transportCents > 0 && (
                 <ChargeRow label="Pick-up and drop-off" value={formatCents(transportCents)} />
+              )}
+              {adjustmentCents !== 0 && (
+                <ChargeRow
+                  label="Adjustment by the Havener"
+                  value={`${adjustmentCents > 0 ? '+' : '−'}${formatCents(Math.abs(adjustmentCents))}`}
+                />
               )}
               <div className="border-t border-espresso-700/10 pt-2">
                 <ChargeRow label="Total" value={formatCents(booking.total_cents)} strong />
