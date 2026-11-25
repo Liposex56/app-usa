@@ -82,34 +82,73 @@ export type TrustCheck = {
   label: string;
   bg: string;
   color: string;
+  /** Color of the text shown while the panel is open. */
+  textColor: string;
   dog?: boolean;
-  /** Optional text shown while the panel is open. */
+  /** Text shown while the panel is open. */
   text?: string;
+  /** Black-and-white photo shown while the panel is open. */
+  image?: string;
 };
+
+const PLACEHOLDER = Array(24).fill('Texto').join(' ');
 
 export const trust = {
   eyebrow: 'Trust & Safety',
   title: ['Four checks.', 'No', 'exceptions.'],
   // In the Figma, panels 2, 3 and 4 all say "INTERVIEW" (copy of the same frame).
   // The real names of checks 3 and 4 still have to be confirmed.
+  // Each open panel shows its text and photo; they hide when it closes.
+  // The texts are placeholders until the real ones arrive. The first photo is the
+  // Figma one (FOTOS/generales/3); the other three are provisional.
   checks: [
-    { label: 'Background checked', bg: 'bg-hv-ink', color: 'text-hv-sky', dog: true },
-    { label: 'Interview', bg: 'bg-hv-mustard', color: 'text-hv-cream' },
-    { label: 'Check 3 (pendiente)', bg: 'bg-hv-sky', color: 'text-hv-ink' },
-    { label: 'Check 4 (pendiente)', bg: 'bg-hv-cocoa', color: 'text-hv-mustard' },
+    {
+      label: 'Background checked',
+      bg: 'bg-hv-ink',
+      color: 'text-hv-sky',
+      textColor: 'text-hv-cream',
+      text: PLACEHOLDER,
+      image: '/home/images/checks/background-checked.jpg',
+      dog: true,
+    },
+    {
+      label: 'Interview',
+      bg: 'bg-hv-mustard',
+      color: 'text-hv-cream',
+      textColor: 'text-hv-cream',
+      text: PLACEHOLDER,
+      image: '/home/images/checks/interview.jpg',
+    },
+    {
+      label: 'Check 3 (pendiente)',
+      bg: 'bg-hv-sky',
+      color: 'text-hv-ink',
+      textColor: 'text-hv-ink',
+      text: PLACEHOLDER,
+      image: '/home/images/checks/check-3.jpg',
+    },
+    {
+      label: 'Check 4 (pendiente)',
+      bg: 'bg-hv-cocoa',
+      color: 'text-hv-mustard',
+      textColor: 'text-hv-cream',
+      text: PLACEHOLDER,
+      image: '/home/images/checks/check-4.jpg',
+    },
   ] as TrustCheck[],
 };
 
 export const howItWorks = {
   eyebrow: 'What we offer',
   title: 'From “Who can watch my dog?” to booked',
-  // Step 1 comes from the Figma and step 2 from "Frame 15.svg".
-  // Step 3 is provisional: the real copy is still missing.
+  // Each card has its illustration, in the Figma order (originals in ILUSTRACIONES/pasos).
+  // Steps 2 and 4 have no title in the Figma yet (title: null = no title).
   steps: [
-    { n: 1, title: 'Tell us about your pet' },
-    { n: 2, title: 'Message, book and pay in one place' },
-    { n: 3, title: 'Get updates while you’re away' },
-  ],
+    { n: 1, title: 'Tell us about your pet', image: '/home/images/steps/step-1.webp', alt: 'A dog picking a Havener from three rated profiles' },
+    { n: 2, title: null, image: '/home/images/steps/step-2.webp', alt: 'A woman hugging her dog' },
+    { n: 3, title: 'Message, book and pay in one place', image: '/home/images/steps/step-3.webp', alt: 'A phone showing services and chat messages' },
+    { n: 4, title: null, image: '/home/images/steps/step-4.webp', alt: 'A cat at home next to a booking confirmed checklist' },
+  ] as Array<{ n: number; title: string | null; image: string; alt: string }>,
 };
 
 export type DetailTile = {

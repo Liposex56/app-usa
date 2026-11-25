@@ -1,16 +1,19 @@
 'use client';
 
+/* eslint-disable @next/next/no-img-element */
 import { useEffect, useRef, useState } from 'react';
 
 import { howItWorks } from './content';
 
 const GAP = 28; // gap between cards (px)
 const MAX_W = 415; // max width of each card on desktop (px)
+const CARD_RATIO = 1918 / 2000; // height / width of the step illustrations
+const DECK_ROTATION = [0, 4, -5, 3]; // tilt of each card while they are stacked
 
 // All steps are visible together. When the section arrives the cards are
-// stacked in the middle (1 in front, 2 and 3 behind) and, as the page scrolls,
-// the back ones slide until the three are in a row.
-// On mobile they are shown one under the other, without animation.
+// stacked in the middle (1 in front, the rest behind) and, as the page scrolls,
+// the back ones slide until they are all in a row.
+// On tablet they go two by two and on mobile one under the other, without animation.
 export function HowItWorks() {
   const stageRef = useRef<HTMLOListElement>(null);
   const [progress, setProgress] = useState(0);
@@ -54,14 +57,14 @@ export function HowItWorks() {
   }, []);
 
   const cardWidth = Math.min(MAX_W, (layout.width - GAP * (steps.length - 1)) / steps.length);
-  const cardHeight = (cardWidth * 644) / 676;
+  const cardHeight = cardWidth * CARD_RATIO;
   const eased = 1 - Math.pow(1 - progress, 3);
 
   // Position of each card: from a "deck" in the middle to its place in the row
   const cardStyle = (i: number): React.CSSProperties | undefined => {
     if (!layout.desktop) return undefined;
     const slot = (i - (steps.length - 1) / 2) * (cardWidth + GAP);
-    const deck = { x: i * 22, y: i * -12, rotate: [0, 4, -5][i % 3], scale: 1 - i * 0.05 };
+    const deck = { x: i * 22, y: i * -12, rotate: DECK_ROTATION[i % DECK_ROTATION.length], scale: 1 - i * 0.05 };
     const mix = (a: number, b: number) => a + (b - a) * eased;
     return {
       width: cardWidth,
@@ -83,21 +86,25 @@ export function HowItWorks() {
       <div className="mx-auto mt-[clamp(32px,5vw,72px)] max-w-[1440px] px-5 lg:px-[70px]">
         <ol
           ref={stageRef}
-          className="relative flex flex-col gap-4 lg:block"
+          className="relative grid gap-4 md:grid-cols-2 lg:block"
           style={layout.desktop ? { height: cardHeight } : undefined}
         >
           {steps.map((step, i) => (
             <li
               key={step.n}
               style={cardStyle(i)}
-              className="relative aspect-[676/644] w-full max-w-[676px] self-center rounded-[clamp(24px,3.5vw,44px)] bg-hv-paper shadow-[0_10px_30px_-18px_rgba(38,16,11,0.35)] will-change-transform [container-type:inline-size] lg:absolute lg:left-1/2 lg:top-0 lg:max-w-none"
+              className="relative aspect-[2000/1918] w-full max-w-[676px] justify-self-center overflow-hidden rounded-[8%] shadow-[0_10px_30px_-18px_rgba(38,16,11,0.35)] will-change-transform [container-type:inline-size] lg:absolute lg:left-1/2 lg:top-0 lg:max-w-none"
             >
-              <span className="absolute right-[5%] top-[2%] text-[length:26cqw] font-bold leading-none text-hv-sky">
+              {/* The illustration already has the cream background and rounded corners */}
+              <img src={step.image} alt={step.alt} className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
+              <span className="absolute right-[6%] top-[3%] text-[length:24cqw] font-bold leading-none text-hv-sky">
                 {step.n}
               </span>
-              <h3 className="absolute bottom-[4%] left-[5%] right-[5%] text-right text-[clamp(16px,4.6cqw,27px)] font-medium leading-tight">
-                {step.title}
-              </h3>
+              {step.title && (
+                <h3 className="absolute bottom-[5%] right-[5%] max-w-[80%] rounded-full bg-hv-paper/90 px-[0.5em] py-[0.1em] text-right text-[clamp(15px,5.4cqw,27px)] font-medium leading-tight">
+                  {step.title}
+                </h3>
+              )}
             </li>
           ))}
         </ol>

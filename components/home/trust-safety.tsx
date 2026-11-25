@@ -5,6 +5,9 @@ import { useState } from 'react';
 
 import { trust } from './content';
 
+// Width of each closed panel (cqw = % of the width of the panel row)
+const CLOSED_WIDTH = 'clamp(56px, 7cqw, 110px)';
+
 export function TrustSafety() {
   // Open panel (the first one, "Background checked", by default)
   const [open, setOpen] = useState(0);
@@ -23,8 +26,9 @@ export function TrustSafety() {
       </div>
 
       {/* Horizontal accordion: closed panels are narrow strips at the side.
-          Clicking one opens it and closes the one that was open. */}
-      <div className="flex h-[clamp(320px,30.3vw,436px)] w-full">
+          Clicking one opens it and closes the one that was open; the text and the
+          photo only show in the open panel. */}
+      <div className="flex h-[460px] w-full [container-type:inline-size] md:h-[clamp(320px,30.3vw,436px)]">
         {trust.checks.map((check, i) => {
           const isOpen = i === open;
           return (
@@ -36,8 +40,42 @@ export function TrustSafety() {
               className={`group relative h-full overflow-hidden text-left transition-[flex-grow,flex-basis] duration-700 ease-[cubic-bezier(.65,0,.35,1)] motion-reduce:transition-none ${check.bg} ${
                 isOpen ? 'cursor-default' : 'cursor-pointer'
               }`}
-              style={{ flexGrow: isOpen ? 1 : 0, flexBasis: isOpen ? 0 : 'clamp(56px, 7vw, 110px)' }}
+              style={{ flexGrow: isOpen ? 1 : 0, flexBasis: isOpen ? 0 : CLOSED_WIDTH }}
             >
+              {/* Content of the open panel. It has the width of the panel once open so it
+                  does not get squeezed while opening or closing. */}
+              <div
+                aria-hidden={!isOpen}
+                className={`absolute inset-y-0 left-0 transition-opacity ${
+                  isOpen ? 'opacity-100 delay-300 duration-500' : 'pointer-events-none opacity-0 duration-150'
+                }`}
+                style={{ width: `calc(100cqw - ${trust.checks.length - 1} * ${CLOSED_WIDTH})` }}
+              >
+                {check.text && (
+                  <p
+                    className={`absolute left-16 right-4 top-[7%] text-[clamp(17px,1.8vw,26px)] font-medium uppercase leading-[1.2] md:left-[9.2%] md:right-auto md:top-[24%] md:w-[36%] ${check.textColor}`}
+                  >
+                    {check.text}
+                  </p>
+                )}
+                {check.image && (
+                  <img
+                    src={check.image}
+                    alt=""
+                    loading="lazy"
+                    className="absolute bottom-0 left-16 h-[46%] w-[calc(100%-5rem)] object-cover md:left-[47.6%] md:top-0 md:h-full md:w-[39%]"
+                  />
+                )}
+                {check.dog && (
+                  <img
+                    src="/home/images/dachshund-blue.png"
+                    alt=""
+                    aria-hidden="true"
+                    className="absolute bottom-0 right-[3.2%] hidden w-[8.8%] md:block"
+                  />
+                )}
+              </div>
+
               <span
                 className={`absolute bottom-[clamp(24px,3.2vw,46px)] left-[clamp(14px,2.4vw,34px)] rotate-180 whitespace-nowrap text-[clamp(24px,2.8vw,40px)] font-bold uppercase leading-none transition-opacity [writing-mode:vertical-rl] ${check.color} ${
                   isOpen ? '' : 'opacity-80 group-hover:opacity-100'
@@ -45,27 +83,6 @@ export function TrustSafety() {
               >
                 {check.label}
               </span>
-
-              {check.text && (
-                <p
-                  className={`absolute bottom-[clamp(24px,3.2vw,46px)] left-[clamp(70px,8vw,130px)] max-w-[520px] pr-6 text-[clamp(18px,1.8vw,26px)] font-medium leading-snug transition-opacity duration-500 ${check.color} ${
-                    isOpen ? 'opacity-100 delay-300' : 'pointer-events-none opacity-0'
-                  }`}
-                >
-                  {check.text}
-                </p>
-              )}
-
-              {check.dog && (
-                <img
-                  src="/home/images/dachshund-blue.png"
-                  alt=""
-                  aria-hidden="true"
-                  className={`absolute bottom-0 right-[clamp(16px,3.1vw,45px)] w-[clamp(90px,9vw,130px)] transition-opacity duration-500 ${
-                    isOpen ? 'opacity-100 delay-300' : 'opacity-0'
-                  }`}
-                />
-              )}
             </button>
           );
         })}
